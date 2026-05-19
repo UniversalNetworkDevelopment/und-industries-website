@@ -765,6 +765,7 @@ textarea.form-input { min-height: 140px; resize: vertical; }
 .mb-8   { margin-bottom: 8px; }
 .mb-12  { margin-bottom: 12px; }
 .mb-16  { margin-bottom: 16px; }
+.mb-20  { margin-bottom: 20px; }
 .mb-24  { margin-bottom: 24px; }
 .mb-32  { margin-bottom: 32px; }
 
@@ -1091,6 +1092,12 @@ a.footer-copy:hover,
 .backend-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--warning); flex-shrink: 0; }
 .backend-dot.online { background: #10b981; }
 
+.backend-status.online {
+  background: rgba(16,185,129,0.06);
+  border-color: rgba(16,185,129,0.2);
+  color: #6ee7b7;
+}
+
 /* ── Profile edit section ───────────────────────────────── */
 .profile-edit-wrap { padding: 0 32px 32px; }
 .profile-edit-wrap .card h4 { margin-bottom: 8px; }
@@ -1353,3 +1360,51 @@ body.auth-loading .auth-page { opacity: 0; }
 .admin-panel-wrap .card h4 { margin-bottom: 8px; }
 .admin-panel-wrap .card p  { font-size: 0.875rem; }
 .admin-panel-wrap .card a  { color: var(--accent-light); }
+
+/* ── Typography utilities ───────────────────────────────── */
+.text-center { text-align: center; }
+.text-sm     { font-size: 0.875rem; }
+
+/* ── About page ─────────────────────────────────────────── */
+.about-hero-desc    { max-width: 600px; margin-top: 24px; font-size: 1.05rem; }
+.about-pillar-stack { display: flex; flex-direction: column; gap: 20px; }
+.about-stripe       { background: var(--bg-alt); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.about-quote-wrap   { max-width: 640px; }
+.about-cta-wrap     { max-width: 720px; margin: 0 auto; text-align: center; }
+.about-cta-desc     { font-size: 1.1rem; color: var(--text-soft); }
+
+/* ── 404 page ────────────────────────────────────────────── */
+.notfound-title   { font-size: 1.75rem; }
+.notfound-desc    { max-width: 380px; text-align: center; }
+.notfound-actions { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin-top: 16px; }
+.notfound-back    { font-size: 0.75rem; color: var(--text-muted); margin-top: 24px; transition: color var(--transition); }
+.notfound-back:hover { color: var(--text-soft); }
+
+/* ── Contact page ────────────────────────────────────────── */
+.contact-platforms-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  margin-bottom: 16px;
+}
+.contact-platforms-list { display: flex; flex-direction: column; gap: 10px; }
+
+/* ── Studio panel card headers ───────────────────────────── */
+.studio-card-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.studio-panel-md { max-width: 640px; }
+
+/* ── Music page ──────────────────────────────────────────── */
+.music-catalog-note { font-size: 0.85rem; color: var(--text-muted); margin-top: 24px; }
+
+/* ── Legal page inline links ─────────────────────────────── */
+.privacy-body a { color: var(--accent-light); transition: color var(--transition); }
+.privacy-body a:hover { color: var(--text); }

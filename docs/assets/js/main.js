@@ -270,9 +270,7 @@
     if (backendStatusEl) {
       if (supabase) {
         backendStatusEl.innerHTML = '<span class="backend-dot online"></span> Backend connected';
-        backendStatusEl.style.background    = 'rgba(16,185,129,0.06)';
-        backendStatusEl.style.borderColor   = 'rgba(16,185,129,0.2)';
-        backendStatusEl.style.color         = '#6ee7b7';
+        backendStatusEl.classList.add('online');
       } else {
         backendStatusEl.innerHTML = '<span class="backend-dot"></span> Backend offline — authentication and data storage are not yet active';
       }
@@ -369,6 +367,7 @@
         btn.disabled    = true;
         btn.textContent = 'Sending…';
 
+        var name    = document.getElementById('c-name').value.trim();
         var email   = document.getElementById('c-email').value.trim();
         var subject = document.getElementById('c-subject').value.trim();
         var message = document.getElementById('c-message').value.trim();
@@ -376,6 +375,7 @@
         var user   = await Auth.getUser();
         var insert = await supabase.from('contact_messages').insert({
           user_id: user ? user.id : null,
+          name:    name,
           email:   email,
           subject: subject,
           message: message
