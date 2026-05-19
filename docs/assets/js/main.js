@@ -365,6 +365,12 @@
           return;
         }
 
+        if (password.length < 8) {
+          alertEl.textContent = 'Password must be at least 8 characters.';
+          alertEl.className   = 'auth-alert error visible';
+          return;
+        }
+
         if (password !== confirm) {
           alertEl.textContent = 'Passwords do not match.';
           alertEl.className   = 'auth-alert error visible';
