@@ -801,3 +801,119 @@ textarea.form-input { min-height: 140px; resize: vertical; }
   .stat-grid { grid-template-columns: 1fr; }
   .hero h1   { font-size: 2.2rem; }
 }
+
+/* ── Hero two-column layout ─────────────────────────────── */
+.hero-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: center;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+/* override the default max-width when inside the new grid */
+.hero-inner .hero-content { max-width: none; }
+
+.hero-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-visual svg {
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+  filter: drop-shadow(0 0 56px rgba(124,58,237,0.28));
+}
+
+/* ── Hero entrance animation ────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.hero-animate {
+  opacity: 0;
+  animation: fadeUp 0.65s cubic-bezier(0.4,0,0.2,1) both;
+  animation-delay: var(--delay, 0s);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-animate { animation: none; opacity: 1; }
+}
+
+/* ── SVG pillar icons ───────────────────────────────────── */
+.pillar-icon { color: var(--accent-light); }
+.pillar-icon svg { width: 24px; height: 24px; display: block; }
+
+/* ── Active nav underline glow ──────────────────────────── */
+.nav-links a.active::after { box-shadow: 0 0 8px rgba(167,139,250,0.45); }
+
+/* ── About studio two-column grid ───────────────────────── */
+.about-studio-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: start;
+}
+
+/* ── Dashboard mobile bar ───────────────────────────────── */
+.dash-mobile-bar {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: var(--bg-alt);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.dash-mobile-logo {
+  font-family: var(--font-head);
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text);
+}
+.dash-mobile-logo span { color: var(--accent-light); }
+
+/* ── Contact form notice ────────────────────────────────── */
+.form-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 18px;
+  background: rgba(245,158,11,0.07);
+  border: 1px solid rgba(245,158,11,0.22);
+  border-radius: var(--radius-sm);
+  margin-bottom: 20px;
+  font-size: 0.85rem;
+  color: var(--text-soft);
+  line-height: 1.65;
+}
+.form-notice svg {
+  width: 18px; height: 18px; min-width: 18px;
+  color: var(--warning);
+  margin-top: 1px;
+}
+.form-notice a {
+  color: var(--accent-light);
+  font-weight: 500;
+}
+.form-notice a:hover { text-decoration: underline; }
+
+/* ── Responsive additions ───────────────────────────────── */
+@media (max-width: 1024px) {
+  .hero-inner        { grid-template-columns: 1fr; gap: 0; }
+  .hero-visual       { display: none; }
+  .about-studio-grid { gap: 40px; }
+}
+
+@media (max-width: 768px) {
+  .about-studio-grid { grid-template-columns: 1fr; gap: 32px; }
+  .dash-mobile-bar   { display: flex; }
+}

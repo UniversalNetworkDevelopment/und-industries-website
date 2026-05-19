@@ -8,7 +8,9 @@
   <meta property="og:title"       content="U.N.D Industries">
   <meta property="og:description" content="Music, technology, and creative innovation from UND Tyzen and U.N.D Industries.">
   <meta property="og:url"         content="https://wyrmm999.github.io/und-industries-website/">
+  <meta property="og:image"       content="https://wyrmm999.github.io/und-industries-website/assets/img/und-og.svg">
   <meta name="twitter:card"       content="summary_large_image">
+  <meta name="twitter:image"      content="https://wyrmm999.github.io/und-industries-website/assets/img/und-og.svg">
   <link rel="canonical"           href="https://wyrmm999.github.io/und-industries-website/">
   <title>U.N.D Industries — Universal Network Development</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
@@ -40,19 +42,70 @@
 
     <section class="hero">
       <div class="container">
-        <div class="hero-content">
-          <div class="hero-badge">
-            <span class="hero-badge-dot"></span>
-            Building Something Real
+        <div class="hero-inner">
+          <div class="hero-content">
+            <div class="hero-badge hero-animate" style="--delay:0s">
+              <span class="hero-badge-dot"></span>
+              Building Something Real
+            </div>
+            <h1 class="hero-animate" style="--delay:0.1s">Universal Network<br><span class="accent">Development</span><br>Industries</h1>
+            <p class="hero-sub hero-animate" style="--delay:0.22s">
+              A multidisciplinary creative and technology organization.
+              Music, vision, and innovation — built from the ground up.
+            </p>
+            <div class="hero-actions hero-animate" style="--delay:0.34s">
+              <a href="music.html" class="btn btn-primary btn-lg">Hear the Music</a>
+              <a href="about.html" class="btn btn-secondary btn-lg">About the Studio</a>
+            </div>
           </div>
-          <h1>Universal Network<br><span class="accent">Development</span><br>Industries</h1>
-          <p class="hero-sub">
-            A multidisciplinary creative and technology organization.
-            Music, vision, and innovation — built from the ground up.
-          </p>
-          <div class="hero-actions">
-            <a href="music.html" class="btn btn-primary btn-lg">Hear the Music</a>
-            <a href="about.html" class="btn btn-secondary btn-lg">About the Studio</a>
+          <div class="hero-visual" aria-hidden="true">
+            <svg viewBox="0 0 480 480" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="hv-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#a78bfa"/>
+                  <stop offset="100%" stop-color="#7c3aed"/>
+                </linearGradient>
+                <filter id="hv-glow" x="-30%" y="-30%" width="160%" height="160%">
+                  <feGaussianBlur stdDeviation="10" result="blur"/>
+                  <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
+              </defs>
+              <!-- Outer hex: center(240,240) r=180 -->
+              <polygon points="240,60 395.9,150 395.9,330 240,420 84.1,330 84.1,150"
+                fill="none" stroke="rgba(124,58,237,0.25)" stroke-width="1.5"/>
+              <!-- Mid hex: center(240,240) r=112 -->
+              <polygon points="240,128 337,184 337,296 240,352 143,296 143,184"
+                fill="none" stroke="rgba(167,139,250,0.18)" stroke-width="1.5"/>
+              <!-- Inner hex: center(240,240) r=64 -->
+              <polygon points="240,176 295.4,208 295.4,272 240,304 184.6,272 184.6,208"
+                fill="rgba(124,58,237,0.08)" stroke="rgba(167,139,250,0.45)" stroke-width="1.5"/>
+              <!-- Orbital ring -->
+              <circle cx="240" cy="240" r="148" fill="none"
+                stroke="rgba(124,58,237,0.1)" stroke-width="1" stroke-dasharray="6,10"/>
+              <!-- Vertex dots outer -->
+              <circle cx="240" cy="60"    r="5" fill="rgba(167,139,250,0.75)"/>
+              <circle cx="395.9" cy="150" r="4" fill="rgba(124,58,237,0.7)"/>
+              <circle cx="395.9" cy="330" r="3.5" fill="rgba(167,139,250,0.5)"/>
+              <circle cx="240" cy="420"   r="4" fill="rgba(124,58,237,0.65)"/>
+              <circle cx="84.1" cy="330"  r="3.5" fill="rgba(167,139,250,0.5)"/>
+              <circle cx="84.1" cy="150"  r="4" fill="rgba(124,58,237,0.7)"/>
+              <!-- Cyan mid-vertex accents -->
+              <circle cx="337" cy="184"  r="3" fill="rgba(6,182,212,0.55)"/>
+              <circle cx="337" cy="296"  r="3" fill="rgba(6,182,212,0.55)"/>
+              <circle cx="143" cy="296"  r="3" fill="rgba(6,182,212,0.55)"/>
+              <circle cx="143" cy="184"  r="3" fill="rgba(6,182,212,0.55)"/>
+              <!-- Connector dashes outer→mid -->
+              <line x1="240" y1="60" x2="240" y2="128" stroke="rgba(124,58,237,0.28)" stroke-width="1" stroke-dasharray="4,5"/>
+              <line x1="395.9" y1="150" x2="337" y2="184" stroke="rgba(124,58,237,0.28)" stroke-width="1" stroke-dasharray="4,5"/>
+              <line x1="395.9" y1="330" x2="337" y2="296" stroke="rgba(124,58,237,0.28)" stroke-width="1" stroke-dasharray="4,5"/>
+              <line x1="240" y1="420" x2="240" y2="352" stroke="rgba(124,58,237,0.28)" stroke-width="1" stroke-dasharray="4,5"/>
+              <line x1="84.1" y1="330" x2="143" y2="296" stroke="rgba(124,58,237,0.28)" stroke-width="1" stroke-dasharray="4,5"/>
+              <line x1="84.1" y1="150" x2="143" y2="184" stroke="rgba(124,58,237,0.28)" stroke-width="1" stroke-dasharray="4,5"/>
+              <!-- Center U -->
+              <text x="240" y="258" font-family="Space Grotesk, system-ui, sans-serif"
+                font-size="88" font-weight="800" fill="url(#hv-grad)"
+                text-anchor="middle" dominant-baseline="middle" filter="url(#hv-glow)" opacity="0.92">U</text>
+            </svg>
           </div>
         </div>
       </div>
@@ -67,18 +120,27 @@
         </div>
         <div class="pillars-grid">
           <div class="pillar-card">
-            <div class="pillar-icon">🎵</div>
+            <div class="pillar-icon">
+              <!-- Music note -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+            </div>
             <h3>Music</h3>
             <p>Original releases, features, and collaborations from UND Tyzen — available across all major streaming platforms.</p>
             <a href="music.html" class="btn btn-outline btn-sm mt-24" style="width:fit-content;">Listen Now</a>
           </div>
           <div class="pillar-card">
-            <div class="pillar-icon">⚡</div>
+            <div class="pillar-icon">
+              <!-- Lightning bolt -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4.09 12.96A1 1 0 005 14h6l-2 8 8.91-10.96A1 1 0 0017 10h-6l2-8z"/></svg>
+            </div>
             <h3>Technology</h3>
             <p>Internal tools and systems powering the studio workflow. Built to support creative work at every stage of the process.</p>
           </div>
           <div class="pillar-card">
-            <div class="pillar-icon">🎨</div>
+            <div class="pillar-icon">
+              <!-- Star / creative -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
             <h3>Creative</h3>
             <p>Visual storytelling, character development, and a growing creative universe that extends beyond music.</p>
           </div>

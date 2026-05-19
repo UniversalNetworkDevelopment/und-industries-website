@@ -155,14 +155,13 @@
     });
   }
 
-  // ── Logout ────────────────────────────────────────────────
-  var logoutBtn = document.getElementById('logout-btn');
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', function () {
+  // ── Logout (handles sidebar + mobile bar buttons) ─────────
+  document.querySelectorAll('[data-action="logout"]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
       Auth.logout();
       window.location.href = 'index.html';
     });
-  }
+  });
 
   // ── Dashboard user name ───────────────────────────────────
   var userNameEl = document.getElementById('dashboard-user-name');

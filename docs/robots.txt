@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# Private / auth pages — no indexing
+Disallow: /login.html
+Disallow: /register.html
+Disallow: /dashboard.html
+Disallow: /dashboard-elijah.html
+
+Sitemap: https://wyrmm999.github.io/und-industries-website/sitemap.xml
