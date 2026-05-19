@@ -1011,3 +1011,44 @@ a.footer-copy:hover,
   color: var(--warning);
   font-weight: 600;
 }
+
+/* ── Terms checkbox ─────────────────────────────────────── */
+.auth-terms-check {
+  margin-top: 12px;
+  margin-bottom: 4px;
+}
+.auth-terms-check label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.auth-terms-check input[type="checkbox"] {
+  margin-top: 2px;
+  flex-shrink: 0;
+  accent-color: var(--accent);
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}
+.auth-terms-check a {
+  color: var(--accent-light);
+  text-decoration: none;
+}
+.auth-terms-check a:hover { text-decoration: underline; }
+
+/* ── Contact form sensitive data warning ────────────────── */
+.form-sensitive-warning {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  background: rgba(239,68,68,0.07);
+  border: 1px solid rgba(239,68,68,0.2);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  line-height: 1.6;
+  margin-top: 16px;
+  margin-bottom: 12px;
+}

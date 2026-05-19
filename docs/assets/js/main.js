@@ -155,6 +155,13 @@
       var alert    = document.getElementById('reg-alert');
       var password = document.getElementById('reg-password').value;
       var confirm  = document.getElementById('reg-confirm').value;
+      var termsBox = document.getElementById('agree-terms');
+
+      if (termsBox && !termsBox.checked) {
+        alert.textContent = 'You must agree to the Terms of Use and Privacy Policy to create an account.';
+        alert.className   = 'auth-alert error visible';
+        return;
+      }
 
       if (password !== confirm) {
         alert.textContent = 'Passwords do not match.';
