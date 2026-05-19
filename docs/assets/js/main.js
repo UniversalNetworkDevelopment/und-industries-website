@@ -1,4 +1,4 @@
-// U.N.D Industries — Main JS
+﻿// U.N.D Industries — Main JS
 // Real auth via Supabase. The anon key is public by design — Row Level Security
 // on the database handles access control. Passwords are hashed server-side.
 //
@@ -345,36 +345,36 @@
     }
 
     // ── Contact form ─────────────────────────────────────────
-    var contactForm = document.getElementById(‘contact-form’);
+    var contactForm = document.getElementById('contact-form');
     if (contactForm) {
       // Show offline notice immediately if no backend is connected
-      var contactOfflineEl = document.getElementById(‘contact-offline-notice’);
+      var contactOfflineEl = document.getElementById('contact-offline-notice');
       if (!supabase && contactOfflineEl) {
         contactOfflineEl.hidden = false;
-        var submitBtn = contactForm.querySelector(‘[type="submit"]’);
+        var submitBtn = contactForm.querySelector('[type="submit"]');
         if (submitBtn) submitBtn.disabled = true;
       }
 
-      contactForm.addEventListener(‘submit’, async function (e) {
+      contactForm.addEventListener('submit', async function (e) {
         e.preventDefault();
-        var alertEl = document.getElementById(‘contact-alert’);
-        var btn     = contactForm.querySelector(‘[type="submit"]’);
+        var alertEl = document.getElementById('contact-alert');
+        var btn     = contactForm.querySelector('[type="submit"]');
 
         if (!supabase) {
-          alertEl.textContent = ‘This form is currently offline. Please email officialtyzen@gmail.com directly.’;
-          alertEl.className   = ‘auth-alert offline visible’;
+          alertEl.textContent = 'This form is currently offline. Please email officialtyzen@gmail.com directly.';
+          alertEl.className   = 'auth-alert offline visible';
           return;
         }
 
         btn.disabled    = true;
-        btn.textContent = ‘Sending…’;
+        btn.textContent = 'Sending…';
 
-        var email   = document.getElementById(‘c-email’).value.trim();
-        var subject = document.getElementById(‘c-subject’).value.trim();
-        var message = document.getElementById(‘c-message’).value.trim();
+        var email   = document.getElementById('c-email').value.trim();
+        var subject = document.getElementById('c-subject').value.trim();
+        var message = document.getElementById('c-message').value.trim();
 
         var user   = await Auth.getUser();
-        var insert = await supabase.from(‘contact_messages’).insert({
+        var insert = await supabase.from('contact_messages').insert({
           user_id: user ? user.id : null,
           email:   email,
           subject: subject,
@@ -382,14 +382,14 @@
         });
 
         btn.disabled    = false;
-        btn.textContent = ‘Send Message’;
+        btn.textContent = 'Send Message';
 
         if (insert.error) {
-          alertEl.textContent = ‘Message could not be sent. Please email officialtyzen@gmail.com directly.’;
-          alertEl.className   = ‘auth-alert error visible’;
+          alertEl.textContent = 'Message could not be sent. Please email officialtyzen@gmail.com directly.';
+          alertEl.className   = 'auth-alert error visible';
         } else {
-          alertEl.textContent = ‘Message sent. We\’ll reply to ‘ + email + ‘ soon.’;
-          alertEl.className   = ‘auth-alert success visible’;
+          alertEl.textContent = 'Message sent. We\'ll reply to ' + email + ' soon.';
+          alertEl.className   = 'auth-alert success visible';
           contactForm.reset();
         }
       });
