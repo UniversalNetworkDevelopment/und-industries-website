@@ -1,14 +1,12 @@
 # ============================================================
-# PRIVATE — These files are NEVER committed to any branch
+# PRIVATE — These files and folders are NEVER committed
 # ============================================================
 
 # Internal planning — local only
+private/
 MASTERPLAN.md
 *.private.md
 *.internal.md
-docs/
-private/
-internal/
 
 # Environment and credentials — NEVER
 .env

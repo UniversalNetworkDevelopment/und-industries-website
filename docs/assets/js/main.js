@@ -1,6 +1,5 @@
 // U.N.D Industries — Main JS
 // UI behavior only. No API keys. No secrets. No internal data.
-// All user input uses textContent — no XSS risk.
 
 (function () {
   'use strict';
@@ -45,28 +44,26 @@
   }
 
   // ── Elijah Context System ─────────────────────────────────
-  // Tracks current page and section for future internal Elijah integration.
-  // No AI logic. No Elijah internals. Integration happens server-side only.
+  // Tracks page and section for future internal integration only.
+  // No AI logic exposed here.
   var _ctx = { pageId: null, sectionId: null };
 
   window.setContext = function (pageId, sectionId) {
     _ctx.pageId    = pageId    || null;
     _ctx.sectionId = sectionId || null;
-    window.dispatchEvent(new CustomEvent('und:context', { detail: { page: _ctx.pageId, section: _ctx.sectionId } }));
+    window.dispatchEvent(new CustomEvent('und:context', {
+      detail: { page: _ctx.pageId, section: _ctx.sectionId }
+    }));
   };
 
   window.getContext = function () { return Object.assign({}, _ctx); };
 
-  // Set context from data attributes on <body> if present
   var body = document.body;
   if (body.dataset.page) {
     window.setContext(body.dataset.page, body.dataset.section || null);
   }
 
-  // ── Auth System (localStorage mock — NOT real security) ───
-  // This is a UI demonstration layer only.
-  // Replace with real server-side auth before storing any sensitive data.
-
+  // ── Auth (localStorage — UI demo only, NOT real security) ─
   var AUTH_KEY  = 'und_auth_user';
   var TOKEN_KEY = 'und_auth_token';
 
@@ -75,66 +72,48 @@
       if (!name || !email || !password) return { ok: false, msg: 'All fields are required.' };
       if (password.length < 8)          return { ok: false, msg: 'Password must be at least 8 characters.' };
       var existing = localStorage.getItem(AUTH_KEY);
-      if (existing) {
-        var user = JSON.parse(existing);
-        if (user.email === email)        return { ok: false, msg: 'An account with this email already exists.' };
-      }
-      var newUser = { name: name, email: email, password: password, created: Date.now() };
-      localStorage.setItem(AUTH_KEY, JSON.stringify(newUser));
+      if (existing && JSON.parse(existing).email === email)
+        return { ok: false, msg: 'An account with this email already exists.' };
+      localStorage.setItem(AUTH_KEY, JSON.stringify({ name: name, email: email, password: password }));
       return { ok: true };
     },
 
     login: function (email, password) {
       var stored = localStorage.getItem(AUTH_KEY);
-      if (!stored) return { ok: false, msg: 'No account found. Please register first.' };
+      if (!stored)                          return { ok: false, msg: 'No account found. Please register first.' };
       var user = JSON.parse(stored);
-      if (user.email !== email)    return { ok: false, msg: 'Incorrect email or password.' };
-      if (user.password !== password) return { ok: false, msg: 'Incorrect email or password.' };
-      var token = 'und_' + Math.random().toString(36).slice(2) + Date.now();
-      localStorage.setItem(TOKEN_KEY, token);
-      return { ok: true, user: user };
+      if (user.email !== email || user.password !== password)
+        return { ok: false, msg: 'Incorrect email or password.' };
+      localStorage.setItem(TOKEN_KEY, 'und_' + Math.random().toString(36).slice(2) + Date.now());
+      return { ok: true };
     },
 
-    logout: function () {
-      localStorage.removeItem(TOKEN_KEY);
-    },
-
-    isLoggedIn: function () {
-      return !!localStorage.getItem(TOKEN_KEY);
-    },
-
-    getUser: function () {
-      var stored = localStorage.getItem(AUTH_KEY);
-      return stored ? JSON.parse(stored) : null;
-    }
+    logout:    function () { localStorage.removeItem(TOKEN_KEY); },
+    isLoggedIn:function () { return !!localStorage.getItem(TOKEN_KEY); },
+    getUser:   function () { var s = localStorage.getItem(AUTH_KEY); return s ? JSON.parse(s) : null; }
   };
 
   window.UNDAuth = Auth;
 
-  // ── Guard: Redirect to login if not authenticated ─────────
-  if (body.dataset.protected === 'true') {
-    if (!Auth.isLoggedIn()) {
-      window.location.href = 'login.html';
-    }
+  // ── Route guards ──────────────────────────────────────────
+  if (body.dataset.protected === 'true' && !Auth.isLoggedIn()) {
+    window.location.href = 'login.html';
   }
 
-  // ── Guard: Redirect to dashboard if already logged in ─────
-  if (body.dataset.authPage === 'true') {
-    if (Auth.isLoggedIn()) {
-      window.location.href = 'dashboard.html';
-    }
+  if (body.dataset.authPage === 'true' && Auth.isLoggedIn()) {
+    window.location.href = 'dashboard.html';
   }
 
-  // ── Login Form ────────────────────────────────────────────
+  // ── Login form ────────────────────────────────────────────
   var loginForm = document.getElementById('login-form');
   if (loginForm) {
     loginForm.addEventListener('submit', function (e) {
       e.preventDefault();
-      var email    = document.getElementById('login-email').value.trim();
-      var password = document.getElementById('login-password').value;
-      var alert    = document.getElementById('login-alert');
-
-      var result = Auth.login(email, password);
+      var alert  = document.getElementById('login-alert');
+      var result = Auth.login(
+        document.getElementById('login-email').value.trim(),
+        document.getElementById('login-password').value
+      );
       if (result.ok) {
         window.location.href = 'dashboard.html';
       } else {
@@ -144,16 +123,14 @@
     });
   }
 
-  // ── Register Form ─────────────────────────────────────────
+  // ── Register form ─────────────────────────────────────────
   var registerForm = document.getElementById('register-form');
   if (registerForm) {
     registerForm.addEventListener('submit', function (e) {
       e.preventDefault();
-      var name     = document.getElementById('reg-name').value.trim();
-      var email    = document.getElementById('reg-email').value.trim();
+      var alert    = document.getElementById('reg-alert');
       var password = document.getElementById('reg-password').value;
       var confirm  = document.getElementById('reg-confirm').value;
-      var alert    = document.getElementById('reg-alert');
 
       if (password !== confirm) {
         alert.textContent = 'Passwords do not match.';
@@ -161,7 +138,12 @@
         return;
       }
 
-      var result = Auth.register(name, email, password);
+      var result = Auth.register(
+        document.getElementById('reg-name').value.trim(),
+        document.getElementById('reg-email').value.trim(),
+        password
+      );
+
       if (result.ok) {
         alert.textContent = 'Account created. Redirecting to login…';
         alert.className   = 'auth-alert success visible';
@@ -173,7 +155,7 @@
     });
   }
 
-  // ── Logout Button ─────────────────────────────────────────
+  // ── Logout ────────────────────────────────────────────────
   var logoutBtn = document.getElementById('logout-btn');
   if (logoutBtn) {
     logoutBtn.addEventListener('click', function () {
@@ -182,23 +164,21 @@
     });
   }
 
-  // ── Dashboard: Populate user name ─────────────────────────
+  // ── Dashboard user name ───────────────────────────────────
   var userNameEl = document.getElementById('dashboard-user-name');
   if (userNameEl) {
-    var dashUser = Auth.getUser();
-    if (dashUser) {
-      userNameEl.textContent = dashUser.name;
-    }
+    var u = Auth.getUser();
+    if (u) userNameEl.textContent = u.name;
   }
 
-  // ── Contact Form (static — no backend submission) ─────────
+  // ── Contact form (static — no backend) ───────────────────
   var contactForm = document.getElementById('contact-form');
   if (contactForm) {
-    var contactAlert = document.getElementById('contact-alert');
     contactForm.addEventListener('submit', function (e) {
       e.preventDefault();
-      contactAlert.textContent = 'Message received. This form is not yet connected to a backend — please email directly using the address above.';
-      contactAlert.className   = 'auth-alert success visible';
+      var alert = document.getElementById('contact-alert');
+      alert.textContent = 'Message received. For fastest response, email directly using the address above.';
+      alert.className   = 'auth-alert success visible';
     });
   }
 
