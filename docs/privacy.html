@@ -78,9 +78,10 @@
             <p>Account credentials and contact messages are stored in a <strong class="text-strong">Supabase Postgres database</strong>. This means:</p>
             <ul class="privacy-list">
               <li>Your password is hashed using bcrypt before storage — it is never stored in plaintext.</li>
-              <li>Data is stored on Supabase-managed servers and is accessible from any device after you log in.</li>
+              <li>Data is stored on Supabase-managed servers (AWS, US East region by default) and is accessible from any device after you log in.</li>
               <li>Row Level Security (RLS) policies ensure each user can only access their own data.</li>
               <li>Contact messages are visible only to site administrators.</li>
+              <li>Authentication and data storage are only active once the backend has been configured. Until then, no data is transmitted or stored by this site.</li>
             </ul>
           </div>
 
@@ -119,7 +120,7 @@
             <h2 class="privacy-heading">6. Your Control &amp; Data Deletion</h2>
             <p>Because account data and contact messages are stored in a Supabase-managed database, you may request deletion by contacting us directly. To request removal of your account or any submitted contact message:</p>
             <ul class="privacy-list">
-              <li>Email <a href="mailto:officialtyzen@gmail.com" style="color:var(--accent-light);">officialtyzen@gmail.com</a> with the subject "Data Deletion Request" and the email address associated with your account.</li>
+              <li>Email <a href="mailto:officialtyzen@gmail.com" class="accent">officialtyzen@gmail.com</a> with the subject "Data Deletion Request" and the email address associated with your account.</li>
               <li>Your account and all associated data will be permanently deleted within a reasonable time.</li>
             </ul>
             <p class="mt-16">The Supabase client may also store a session token in your browser's localStorage to maintain your login state. You can clear this at any time through your browser's site data settings (Settings → Privacy → Site Data or similar), which will sign you out locally.</p>

@@ -1030,20 +1030,72 @@ a.footer-copy:hover,
 }
 .dash-legal-footer a:hover { color: var(--text-soft); }
 
-/* ── Auth demo notice ───────────────────────────────────── */
-.auth-demo-notice {
+/* ── Auth offline banner ────────────────────────────────── */
+.auth-offline-banner {
   padding: 10px 14px;
   background: rgba(245,158,11,0.07);
-  border: 1px solid rgba(245,158,11,0.2);
+  border: 1px solid rgba(245,158,11,0.3);
   border-radius: var(--radius-sm);
   font-size: 0.8rem;
   color: var(--text-muted);
   line-height: 1.6;
   margin-bottom: 20px;
 }
-.auth-demo-notice strong {
+.auth-offline-banner strong {
   color: var(--warning);
   font-weight: 600;
+}
+
+/* ── Auth alert — offline variant ───────────────────────── */
+.auth-alert.offline { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); color: #fcd34d; }
+
+/* ── Role badge ─────────────────────────────────────────── */
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 99px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  vertical-align: middle;
+  margin-left: 8px;
+}
+.role-badge-owner  { background: rgba(168,85,247,0.15); border: 1px solid rgba(168,85,247,0.35); color: var(--accent-light); }
+.role-badge-member { background: rgba(100,116,139,0.12); border: 1px solid rgba(100,116,139,0.25); color: var(--text-muted); }
+
+/* ── Backend status indicator ───────────────────────────── */
+.backend-status {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  padding: 8px 12px;
+  background: rgba(245,158,11,0.06);
+  border: 1px solid rgba(245,158,11,0.18);
+  border-radius: var(--radius-sm);
+  margin-bottom: 16px;
+}
+.backend-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--warning); flex-shrink: 0; }
+.backend-dot.online { background: #10b981; }
+
+/* ── Profile edit section ───────────────────────────────── */
+.profile-edit-wrap { padding: 0 32px 32px; }
+.profile-edit-wrap .card h4 { margin-bottom: 8px; }
+.profile-edit-wrap .card p  { font-size: 0.875rem; margin-bottom: 16px; }
+
+/* ── Admin inbox placeholder ────────────────────────────── */
+.inbox-placeholder {
+  padding: 28px 20px;
+  text-align: center;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-top: 16px;
+  line-height: 1.6;
 }
 
 /* ── Auth Terms Checkbox ────────────────────────────────── */

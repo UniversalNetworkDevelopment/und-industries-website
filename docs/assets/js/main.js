@@ -100,8 +100,42 @@
       var uid = sessionRes.data.session.user.id;
       var res = await supabase.from('profiles').select('*').eq('id', uid).single();
       return res.error ? null : res.data;
+    },
+
+    requestPasswordReset: async function (email) {
+      if (!supabase) return { ok: false, msg: 'Password reset is not yet available. Email officialtyzen@gmail.com for account help.' };
+      var redirectUrl = window.location.origin + (window.location.pathname.includes('und-industries-website') ? '/und-industries-website' : '') + '/reset-password.html';
+      var res = await supabase.auth.resetPasswordForEmail(email, { redirectTo: redirectUrl });
+      if (res.error) return { ok: false, msg: res.error.message };
+      return { ok: true };
+    },
+
+    updateProfile: async function (displayName) {
+      if (!supabase) return { ok: false, msg: 'Profile editing is not yet available.' };
+      var sessionRes = await supabase.auth.getSession();
+      if (!sessionRes.data.session) return { ok: false, msg: 'Not signed in.' };
+      var uid = sessionRes.data.session.user.id;
+      var res = await supabase.from('profiles').update({ display_name: displayName }).eq('id', uid);
+      if (res.error) return { ok: false, msg: res.error.message };
+      return { ok: true };
     }
   };
+
+  // ── Rate limiting (placeholder) ───────────────────────────
+  // TODO: Implement per-form submission rate limiting before going to production.
+  // Suggested approach: track last submission timestamp per form ID in sessionStorage.
+  // Reject submissions within a configurable cooldown window (e.g. 30s for contact, 5s for auth).
+  // Server-side: configure Supabase Auth rate limits in project settings (default: 3 signups/hour per IP).
+  function applyRateLimit(formId, cooldownMs) {
+    var key     = 'ratelimit_' + formId;
+    var lastStr = sessionStorage.getItem(key);
+    var now     = Date.now();
+    if (lastStr && now - parseInt(lastStr, 10) < cooldownMs) {
+      return false; // blocked
+    }
+    sessionStorage.setItem(key, String(now));
+    return true; // allowed
+  }
 
   window.UNDAuth = Auth;
 
@@ -216,57 +250,138 @@
     });
 
     // ── Dashboard profile + admin ────────────────────────────
-    var userNameEl   = document.getElementById('dashboard-user-name');
-    var adminSection = document.getElementById('admin-section');
+    var userNameEl      = document.getElementById('dashboard-user-name');
+    var roleBadgeEl     = document.getElementById('dashboard-role-badge');
+    var adminSection    = document.getElementById('admin-section');
+    var profileEditWrap = document.getElementById('profile-edit-wrap');
+    var backendStatusEl = document.getElementById('backend-status-bar');
 
-    if (userNameEl || adminSection) {
+    // Show backend connection status
+    if (backendStatusEl) {
+      if (supabase) {
+        backendStatusEl.innerHTML = '<span class="backend-dot online"></span> Backend connected';
+        backendStatusEl.style.background    = 'rgba(16,185,129,0.06)';
+        backendStatusEl.style.borderColor   = 'rgba(16,185,129,0.2)';
+        backendStatusEl.style.color         = '#6ee7b7';
+      } else {
+        backendStatusEl.innerHTML = '<span class="backend-dot"></span> Backend offline — authentication and data storage are not yet active';
+      }
+    }
+
+    if (userNameEl || adminSection || profileEditWrap) {
       Auth.getProfile().then(function (profile) {
         if (profile) {
           if (userNameEl) userNameEl.textContent = profile.display_name || 'Studio';
+          if (roleBadgeEl) {
+            roleBadgeEl.textContent  = profile.role === 'owner' ? 'Owner' : 'Member';
+            roleBadgeEl.className    = 'role-badge ' + (profile.role === 'owner' ? 'role-badge-owner' : 'role-badge-member');
+            roleBadgeEl.removeAttribute('hidden');
+          }
           if (adminSection && profile.role === 'owner') {
             adminSection.removeAttribute('hidden');
           }
         }
+        // Show profile edit section once we know auth is live
+        if (profileEditWrap) profileEditWrap.removeAttribute('hidden');
+      });
+    }
+
+    // ── Profile edit form ────────────────────────────────────
+    var profileForm = document.getElementById('profile-edit-form');
+    if (profileForm) {
+      profileForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        var alertEl     = document.getElementById('profile-edit-alert');
+        var btn         = profileForm.querySelector('[type="submit"]');
+        var displayName = document.getElementById('profile-display-name').value.trim();
+
+        btn.disabled    = true;
+        btn.textContent = 'Saving…';
+
+        var result = await Auth.updateProfile(displayName);
+
+        btn.disabled    = false;
+        btn.textContent = 'Save';
+
+        alertEl.textContent = result.ok ? 'Profile updated.' : result.msg;
+        alertEl.className   = 'auth-alert ' + (result.ok ? 'success' : 'error') + ' visible';
+
+        if (result.ok && userNameEl) userNameEl.textContent = displayName || 'Studio';
+      });
+    }
+
+    // ── Reset password form (reset-password.html) ────────────
+    var resetForm = document.getElementById('reset-form');
+    if (resetForm) {
+      resetForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        var alertEl = document.getElementById('reset-alert');
+        var btn     = resetForm.querySelector('[type="submit"]');
+        var email   = document.getElementById('reset-email').value.trim();
+
+        btn.disabled    = true;
+        btn.textContent = 'Sending…';
+
+        var result = await Auth.requestPasswordReset(email);
+
+        btn.disabled    = false;
+        btn.textContent = 'Send Reset Link';
+
+        alertEl.textContent = result.ok
+          ? 'Reset link sent. Check your inbox (and spam folder).'
+          : result.msg;
+        alertEl.className = 'auth-alert ' + (result.ok ? 'success' : 'offline') + ' visible';
       });
     }
 
     // ── Contact form ─────────────────────────────────────────
-    var contactForm = document.getElementById('contact-form');
+    var contactForm = document.getElementById(‘contact-form’);
     if (contactForm) {
-      contactForm.addEventListener('submit', async function (e) {
+      // Show offline notice immediately if no backend is connected
+      var contactOfflineEl = document.getElementById(‘contact-offline-notice’);
+      if (!supabase && contactOfflineEl) {
+        contactOfflineEl.hidden = false;
+        var submitBtn = contactForm.querySelector(‘[type="submit"]’);
+        if (submitBtn) submitBtn.disabled = true;
+      }
+
+      contactForm.addEventListener(‘submit’, async function (e) {
         e.preventDefault();
-        var alertEl = document.getElementById('contact-alert');
-        var btn     = contactForm.querySelector('[type="submit"]');
-        btn.disabled    = true;
-        btn.textContent = 'Sending…';
+        var alertEl = document.getElementById(‘contact-alert’);
+        var btn     = contactForm.querySelector(‘[type="submit"]’);
 
-        var email   = document.getElementById('c-email').value.trim();
-        var subject = document.getElementById('c-subject').value.trim();
-        var message = document.getElementById('c-message').value.trim();
-
-        if (supabase) {
-          var user   = await Auth.getUser();
-          var insert = await supabase.from('contact_messages').insert({
-            user_id: user ? user.id : null,
-            email:   email,
-            subject: subject,
-            message: message
-          });
-          if (insert.error) {
-            alertEl.textContent = 'Message could not be sent. Email officialtyzen@gmail.com directly.';
-            alertEl.className   = 'auth-alert error visible';
-          } else {
-            alertEl.textContent = 'Message sent. We’ll reply to ' + email + '.';
-            alertEl.className   = 'auth-alert success visible';
-            contactForm.reset();
-          }
-        } else {
-          alertEl.textContent = 'For a guaranteed response, email officialtyzen@gmail.com directly.';
-          alertEl.className   = 'auth-alert success visible';
+        if (!supabase) {
+          alertEl.textContent = ‘This form is currently offline. Please email officialtyzen@gmail.com directly.’;
+          alertEl.className   = ‘auth-alert offline visible’;
+          return;
         }
 
+        btn.disabled    = true;
+        btn.textContent = ‘Sending…’;
+
+        var email   = document.getElementById(‘c-email’).value.trim();
+        var subject = document.getElementById(‘c-subject’).value.trim();
+        var message = document.getElementById(‘c-message’).value.trim();
+
+        var user   = await Auth.getUser();
+        var insert = await supabase.from(‘contact_messages’).insert({
+          user_id: user ? user.id : null,
+          email:   email,
+          subject: subject,
+          message: message
+        });
+
         btn.disabled    = false;
-        btn.textContent = 'Send Message';
+        btn.textContent = ‘Send Message’;
+
+        if (insert.error) {
+          alertEl.textContent = ‘Message could not be sent. Please email officialtyzen@gmail.com directly.’;
+          alertEl.className   = ‘auth-alert error visible’;
+        } else {
+          alertEl.textContent = ‘Message sent. We\’ll reply to ‘ + email + ‘ soon.’;
+          alertEl.className   = ‘auth-alert success visible’;
+          contactForm.reset();
+        }
       });
     }
   }

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0d0d0f">
-  <meta name="description" content="Contact UND Tyzen for bookings, collaborations, and business inquiries. Demo form only.">
+  <meta name="description" content="Contact UND Tyzen for bookings, collaborations, and business inquiries.">
   <meta property="og:type"  content="website">
   <meta property="og:title" content="Contact | UND Tyzen">
   <meta property="og:url"   content="https://wyrmm999.github.io/und-industries-website/contact.html">
@@ -88,9 +88,9 @@
 
           <div class="card">
             <h3 style="margin-bottom:24px;">Send a Message</h3>
-            <div class="form-notice">
+            <div id="contact-offline-notice" class="form-notice" hidden>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              <p>This form is a demo and does <strong>not</strong> send your message automatically. For a guaranteed response, email <a href="mailto:officialtyzen@gmail.com">officialtyzen@gmail.com</a> directly or reach out via the social links on the left.</p>
+              <p>This form is currently offline. For a guaranteed response, email <a href="mailto:officialtyzen@gmail.com">officialtyzen@gmail.com</a> directly or reach out via the social links on the left.</p>
             </div>
             <div id="contact-alert" class="auth-alert" role="alert"></div>
             <form id="contact-form" class="form" novalidate>
@@ -113,8 +113,7 @@
               <p class="form-sensitive-warning">
                 Do not send passwords, financial details, government ID numbers, or other sensitive personal information through this form.
               </p>
-              <p class="form-demo-note">This contact form is part of a front-end demo experience. Messages submitted here are not delivered or stored on any server.</p>
-              <button type="submit" class="btn btn-primary" style="width:100%;">Send Message</button>
+              <button type="submit" class="btn btn-primary btn-full">Send Message</button>
             </form>
           </div>
 
@@ -164,6 +163,7 @@
     </div>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/main.js"></script>
 </body>
 </html>
