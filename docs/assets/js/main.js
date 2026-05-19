@@ -48,12 +48,19 @@
   }
 
   // ── Supabase ──────────────────────────────────────────────
-  var SUPABASE_URL      = 'YOUR_SUPABASE_URL';
-  var SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+  var SUPABASE_URL      = 'https://wgcgzuflpxijhzlpphab.supabase.co';
+  var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndnY2d6dWZscHhpamh6bHBwaGFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMTc3MTgsImV4cCI6MjA5NDc5MzcxOH0.y96jBpi9ECy1RU76q4AuZQFlqPVrS6CJDwNyx__2K9A';
 
   var supabase = null;
-  if (SUPABASE_URL !== 'YOUR_SUPABASE_URL' && window.supabase) {
+  if (window.supabase) {
     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+
+  // Hide offline banners now that backend is connected
+  if (supabase) {
+    document.querySelectorAll('.auth-offline-banner').forEach(function (el) {
+      el.hidden = true;
+    });
   }
 
   // ── Auth ─────────────────────────────────────────────────
