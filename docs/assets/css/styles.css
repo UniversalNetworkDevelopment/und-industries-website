@@ -995,3 +995,19 @@ a.footer-copy:hover,
   transition: color var(--transition);
 }
 .dash-legal-footer a:hover { color: var(--text-soft); }
+
+/* ── Auth demo notice ───────────────────────────────────── */
+.auth-demo-notice {
+  padding: 10px 14px;
+  background: rgba(245,158,11,0.07);
+  border: 1px solid rgba(245,158,11,0.2);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+.auth-demo-notice strong {
+  color: var(--warning);
+  font-weight: 600;
+}

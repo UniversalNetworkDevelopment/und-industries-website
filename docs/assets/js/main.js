@@ -63,12 +63,35 @@
     window.setContext(body.dataset.page, body.dataset.section || null);
   }
 
-  // ── Auth (localStorage — UI demo only, NOT real security) ─
+  // ── Auth ─────────────────────────────────────────────────
+  //
+  // IMPORTANT — FRONT-END DEMO ONLY.
+  //
+  // This authentication system is NOT production-safe and is NOT suitable
+  // for storing real user credentials or sensitive data of any kind.
+  //
+  // What it does:
+  //   - Stores a single user object { name, email, password } as plaintext
+  //     JSON in the browser's localStorage under the key 'und_auth_user'.
+  //   - Stores a randomly generated session token in localStorage under
+  //     the key 'und_auth_token'.
+  //
+  // What it does NOT do:
+  //   - No server-side validation.
+  //   - No password hashing or encryption of any kind.
+  //   - No secure session management.
+  //   - No protection against local device access.
+  //
+  // This system exists solely to demonstrate gated UI flows (dashboard
+  // access, route guards). It must not be used to protect real sensitive
+  // content or real user accounts.
+  //
   var AUTH_KEY  = 'und_auth_user';
   var TOKEN_KEY = 'und_auth_token';
 
   var Auth = {
     register: function (name, email, password) {
+      // Stores plaintext credentials in localStorage — demo only.
       if (!name || !email || !password) return { ok: false, msg: 'All fields are required.' };
       if (password.length < 8)          return { ok: false, msg: 'Password must be at least 8 characters.' };
       var existing = localStorage.getItem(AUTH_KEY);
@@ -79,6 +102,7 @@
     },
 
     login: function (email, password) {
+      // Compares plaintext values — demo only. Not suitable for real passwords.
       var stored = localStorage.getItem(AUTH_KEY);
       if (!stored)                          return { ok: false, msg: 'No account found. Please register first.' };
       var user = JSON.parse(stored);
