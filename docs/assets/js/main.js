@@ -1,4 +1,4 @@
-﻿// U.N.D Industries — Main JS
+// U.N.D Industries — Main JS
 // Real auth via Supabase. The anon key is public by design — Row Level Security
 // on the database handles access control. Passwords are hashed server-side.
 //
@@ -60,16 +60,16 @@
   if (!supabase) {
     var _banner = document.getElementById('auth-status-banner');
     if (_banner) {
-      _banner.className   = 'auth-offline-banner';
+      _banner.className = 'auth-offline-banner';
       _banner.setAttribute('role', 'alert');
-      _banner.innerHTML   = '<strong>Authentication is currently offline.</strong> This feature activates once the backend is connected. No data is stored or transmitted right now.';
+      _banner.innerHTML = '<strong>Authentication is currently offline.</strong> This feature activates once the backend is connected. No data is stored or transmitted right now.';
     }
   }
 
   // ── Auth ─────────────────────────────────────────────────
   var Auth = {
     register: async function (email, password, displayName) {
-      if (!supabase) return { ok: false, msg: 'Registration not yet open. Email officialtyzen@gmail.com to register interest.' };
+      if (!supabase) return { ok: false, msg: 'Registration is currently unavailable.' };
       var res = await supabase.auth.signUp({
         email: email,
         password: password,
@@ -80,7 +80,7 @@
     },
 
     login: async function (email, password) {
-      if (!supabase) return { ok: false, msg: 'Login not yet available. Check back soon.' };
+      if (!supabase) return { ok: false, msg: 'Login is currently unavailable.' };
       var res = await supabase.auth.signInWithPassword({ email: email, password: password });
       if (res.error) return { ok: false, msg: res.error.message };
       return { ok: true };
@@ -113,7 +113,7 @@
     },
 
     requestPasswordReset: async function (email) {
-      if (!supabase) return { ok: false, msg: 'Password reset is not yet available. Email officialtyzen@gmail.com for account help.' };
+      if (!supabase) return { ok: false, msg: 'Password reset is currently unavailable.' };
       var redirectUrl = window.location.origin + (window.location.pathname.includes('und-industries-website') ? '/und-industries-website' : '') + '/reset-password.html';
       var res = await supabase.auth.resetPasswordForEmail(email, { redirectTo: redirectUrl });
       if (res.error) return { ok: false, msg: res.error.message };
@@ -121,7 +121,7 @@
     },
 
     updateProfile: async function (displayName) {
-      if (!supabase) return { ok: false, msg: 'Profile editing is not yet available.' };
+      if (!supabase) return { ok: false, msg: 'Profile editing is currently unavailable.' };
       var sessionRes = await supabase.auth.getSession();
       if (!sessionRes.data.session) return { ok: false, msg: 'Not signed in.' };
       var uid = sessionRes.data.session.user.id;
@@ -131,11 +131,9 @@
     }
   };
 
-  // ── Rate limiting (placeholder) ───────────────────────────
-  // TODO: Implement per-form submission rate limiting before going to production.
-  // Suggested approach: track last submission timestamp per form ID in sessionStorage.
-  // Reject submissions within a configurable cooldown window (e.g. 30s for contact, 5s for auth).
-  // Server-side: configure Supabase Auth rate limits in project settings (default: 3 signups/hour per IP).
+  // ── Rate limiting ─────────────────────────────────────────
+  // Client-side cooldown via sessionStorage. Prevents rapid-fire submissions.
+  // Not a substitute for server-side rate limits in Supabase project settings.
   function applyRateLimit(formId, cooldownMs) {
     var key     = 'ratelimit_' + formId;
     var lastStr = sessionStorage.getItem(key);
@@ -146,8 +144,6 @@
     sessionStorage.setItem(key, String(now));
     return true; // allowed
   }
-
-  window.UNDAuth = Auth;
 
   // ── Route guards ──────────────────────────────────────────
   // auth-loading hides page content during async session check (prevents flash).
@@ -175,7 +171,148 @@
     initPage();
   }
 
+  // ── HTML escaping ─────────────────────────────────────────
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // ── Owner contact inbox ───────────────────────────────────
+  // Requires RLS SELECT policy for owner on contact_messages:
+  //   CREATE POLICY "owner_select_contact_messages"
+  //   ON public.contact_messages FOR SELECT
+  //   USING (EXISTS (
+  //     SELECT 1 FROM public.profiles
+  //     WHERE profiles.id = auth.uid() AND profiles.role = 'owner'
+  //   ));
+  function loadInbox() {
+    var inboxEl = document.getElementById('admin-inbox');
+    if (!inboxEl || !supabase) return;
+
+    supabase
+      .from('contact_messages')
+      .select('id, name, email, subject, message, created_at')
+      .order('created_at', { ascending: false })
+      .limit(50)
+      .then(function (res) {
+        if (res.error) {
+          inboxEl.innerHTML = '<p class="inbox-empty">Messages could not be loaded. Ensure the owner SELECT policy is configured in Supabase.</p>';
+          inboxEl.className = 'inbox-placeholder';
+          return;
+        }
+        if (!res.data || res.data.length === 0) {
+          inboxEl.innerHTML = '<p class="inbox-empty">No messages yet.</p>';
+          inboxEl.className = 'inbox-placeholder';
+          return;
+        }
+        var html = res.data.map(function (msg) {
+          var date = new Date(msg.created_at).toLocaleDateString('en-US', {
+            month: 'short', day: 'numeric', year: 'numeric'
+          });
+          return '<div class="inbox-message">' +
+            '<div class="inbox-message-header">' +
+              '<span class="inbox-message-from">' + escapeHtml(msg.name || 'Anonymous') + '</span>' +
+              '<span class="inbox-message-email">' + escapeHtml(msg.email) + '</span>' +
+              '<span class="inbox-message-date">' + date + '</span>' +
+            '</div>' +
+            '<div class="inbox-message-subject">' + escapeHtml(msg.subject) + '</div>' +
+            '<div class="inbox-message-body">' + escapeHtml(msg.message) + '</div>' +
+          '</div>';
+        }).join('');
+        inboxEl.innerHTML = html;
+        inboxEl.className = 'inbox-list';
+      });
+  }
+
   function initPage() {
+
+    // ── Recovery token detection (reset-password.html) ───────
+    // Supabase appends #access_token=...&type=recovery to the reset email link.
+    // Detect this hash, swap UI to "set new password" mode, and exchange the token.
+    var resetRequestWrap = document.getElementById('reset-request-wrap');
+    var resetSetWrap     = document.getElementById('reset-set-wrap');
+
+    if (resetRequestWrap && resetSetWrap) {
+      var hashParams   = new URLSearchParams(window.location.hash.substring(1));
+      var isRecovery   = hashParams.get('type') === 'recovery';
+      var accessToken  = hashParams.get('access_token');
+      var refreshToken = hashParams.get('refresh_token') || '';
+
+      if (isRecovery) {
+        resetRequestWrap.hidden = true;
+        resetSetWrap.removeAttribute('hidden');
+
+        var setAlertEl   = document.getElementById('set-password-alert');
+        var setSubmitBtn = document.getElementById('set-password-submit');
+
+        if (!supabase || !accessToken) {
+          setAlertEl.textContent = 'This reset link is invalid or has expired. Please request a new one.';
+          setAlertEl.className   = 'auth-alert error visible';
+          if (setSubmitBtn) setSubmitBtn.disabled = true;
+        } else {
+          supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
+            .then(function (res) {
+              if (res.error) {
+                setAlertEl.textContent = 'This reset link has expired or has already been used. Please request a new one.';
+                setAlertEl.className   = 'auth-alert error visible';
+                if (setSubmitBtn) setSubmitBtn.disabled = true;
+              }
+            });
+        }
+      }
+    }
+
+    // ── Set new password form ────────────────────────────────
+    var setPasswordForm = document.getElementById('set-password-form');
+    if (setPasswordForm) {
+      setPasswordForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        var alertEl  = document.getElementById('set-password-alert');
+        var btn      = document.getElementById('set-password-submit');
+        var password = document.getElementById('new-password').value;
+        var confirm  = document.getElementById('confirm-new-password').value;
+
+        if (!supabase) {
+          alertEl.textContent = 'Authentication service is unavailable. Please try again later.';
+          alertEl.className   = 'auth-alert error visible';
+          return;
+        }
+
+        if (password.length < 8) {
+          alertEl.textContent = 'Password must be at least 8 characters.';
+          alertEl.className   = 'auth-alert error visible';
+          return;
+        }
+
+        if (password !== confirm) {
+          alertEl.textContent = 'Passwords do not match.';
+          alertEl.className   = 'auth-alert error visible';
+          return;
+        }
+
+        btn.disabled    = true;
+        btn.textContent = 'Updating…';
+
+        var result = await supabase.auth.updateUser({ password: password });
+
+        btn.disabled    = false;
+        btn.textContent = 'Set Password';
+
+        if (result.error) {
+          alertEl.textContent = result.error.message || 'Could not update password. Please request a new reset link.';
+          alertEl.className   = 'auth-alert error visible';
+        } else {
+          alertEl.textContent = 'Password updated. Redirecting to sign in…';
+          alertEl.className   = 'auth-alert success visible';
+          await supabase.auth.signOut();
+          setTimeout(function () { window.location.href = 'login.html'; }, 2000);
+        }
+      });
+    }
 
     // ── Login form ──────────────────────────────────────────
     var loginForm = document.getElementById('login-form');
@@ -184,6 +321,13 @@
         e.preventDefault();
         var alertEl = document.getElementById('login-alert');
         var btn     = loginForm.querySelector('[type="submit"]');
+
+        if (!applyRateLimit('login', 30000)) {
+          alertEl.textContent = 'Please wait before trying again.';
+          alertEl.className   = 'auth-alert error visible';
+          return;
+        }
+
         btn.disabled    = true;
         btn.textContent = 'Signing in…';
 
@@ -227,6 +371,12 @@
           return;
         }
 
+        if (!applyRateLimit('register', 30000)) {
+          alertEl.textContent = 'Please wait before trying again.';
+          alertEl.className   = 'auth-alert error visible';
+          return;
+        }
+
         btn.disabled    = true;
         btn.textContent = 'Creating account…';
 
@@ -266,7 +416,6 @@
     var profileEditWrap = document.getElementById('profile-edit-wrap');
     var backendStatusEl = document.getElementById('backend-status-bar');
 
-    // Show backend connection status
     if (backendStatusEl) {
       if (supabase) {
         backendStatusEl.innerHTML = '<span class="backend-dot online"></span> Backend connected';
@@ -281,16 +430,19 @@
         if (profile) {
           if (userNameEl) userNameEl.textContent = profile.display_name || 'Studio';
           if (roleBadgeEl) {
-            roleBadgeEl.textContent  = profile.role === 'owner' ? 'Owner' : 'Member';
-            roleBadgeEl.className    = 'role-badge ' + (profile.role === 'owner' ? 'role-badge-owner' : 'role-badge-member');
+            roleBadgeEl.textContent = profile.role === 'owner' ? 'Owner' : 'Member';
+            roleBadgeEl.className   = 'role-badge ' + (profile.role === 'owner' ? 'role-badge-owner' : 'role-badge-member');
             roleBadgeEl.removeAttribute('hidden');
           }
           if (adminSection && profile.role === 'owner') {
             adminSection.removeAttribute('hidden');
+            loadInbox();
           }
+          if (profileEditWrap) profileEditWrap.removeAttribute('hidden');
+        } else if (profileEditWrap && supabase) {
+          // Auth is live but profile row is missing (trigger may not have fired).
+          profileEditWrap.removeAttribute('hidden');
         }
-        // Show profile edit section once we know auth is live
-        if (profileEditWrap) profileEditWrap.removeAttribute('hidden');
       });
     }
 
@@ -318,7 +470,7 @@
       });
     }
 
-    // ── Reset password form (reset-password.html) ────────────
+    // ── Reset password request form ───────────────────────────
     var resetForm = document.getElementById('reset-form');
     if (resetForm) {
       resetForm.addEventListener('submit', async function (e) {
@@ -345,7 +497,6 @@
     // ── Contact form ─────────────────────────────────────────
     var contactForm = document.getElementById('contact-form');
     if (contactForm) {
-      // Show offline notice immediately if no backend is connected
       var contactOfflineEl = document.getElementById('contact-offline-notice');
       if (!supabase && contactOfflineEl) {
         contactOfflineEl.hidden = false;
@@ -359,8 +510,14 @@
         var btn     = contactForm.querySelector('[type="submit"]');
 
         if (!supabase) {
-          alertEl.textContent = 'This form is currently offline. Please email officialtyzen@gmail.com directly.';
+          alertEl.textContent = 'This form is currently offline. Please email us directly.';
           alertEl.className   = 'auth-alert offline visible';
+          return;
+        }
+
+        if (!applyRateLimit('contact', 60000)) {
+          alertEl.textContent = 'Please wait a moment before sending another message.';
+          alertEl.className   = 'auth-alert error visible';
           return;
         }
 
@@ -385,10 +542,10 @@
         btn.textContent = 'Send Message';
 
         if (insert.error) {
-          alertEl.textContent = 'Message could not be sent. Please email officialtyzen@gmail.com directly.';
+          alertEl.textContent = 'Message could not be sent. Please email us directly.';
           alertEl.className   = 'auth-alert error visible';
         } else {
-          alertEl.textContent = 'Message sent. We\'ll reply to ' + email + ' soon.';
+          alertEl.textContent = 'Message sent. We\'ll reply to ' + escapeHtml(email) + ' soon.';
           alertEl.className   = 'auth-alert success visible';
           contactForm.reset();
         }

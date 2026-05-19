@@ -79,7 +79,7 @@
           <div class="privacy-section">
             <h2 class="privacy-heading">3. Infrastructure</h2>
             <p>Account credentials and contact messages are stored in a Supabase-managed Postgres database on AWS servers located in the US East region by default. Supabase is a third-party infrastructure provider; this site does not operate its own servers. The frontend code is served statically from GitHub Pages and communicates with Supabase via its public client library.</p>
-            <p>Authentication and data storage are only active once the backend has been configured. Until that point, no data is transmitted to any server when you use the login, register, or contact forms on this site.</p>
+            <p>Account credentials and contact messages are actively stored in the Supabase database. The frontend communicates with Supabase via its public client library using Row Level Security to restrict data access.</p>
           </div>
 
           <!-- 4 -->
