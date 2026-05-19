@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard.html
+Disallow: /dashboard-elijah.html
+Disallow: /login.html
+Disallow: /register.html
+
+Sitemap: https://wyrmm999.github.io/und-industries-website/sitemap.xml
