@@ -15,9 +15,7 @@
       <div class="auth-logo">U.N.D <span>Industries</span></div>
       <h1 class="auth-title">Create account</h1>
       <p class="auth-sub">Set up your U.N.D Industries access.</p>
-      <div class="auth-offline-banner" role="alert" aria-live="polite">
-        <strong>Authentication is currently offline.</strong> This feature activates once the backend is connected. No data is stored or transmitted right now.
-      </div>
+      <div id="auth-status-banner"></div>
       <div id="reg-alert" class="auth-alert" role="alert"></div>
       <form id="register-form" class="form" novalidate>
         <div class="form-group">
@@ -42,11 +40,11 @@
             I agree to the <a href="terms.html" target="_blank">Terms of Use</a> and <a href="privacy.html" target="_blank">Privacy Policy</a>
           </label>
         </div>
-        <button type="submit" class="btn btn-primary" style="width:100%;margin-top:8px;">Create Account</button>
+        <button type="submit" class="btn btn-primary btn-full mt-8">Create Account</button>
       </form>
       <p class="auth-switch">Already have an account? <a href="login.html">Log in</a>.</p>
-      <p class="auth-footer-text" style="margin-top:8px;"><a href="index.html" style="color:var(--text-muted);">← Back to site</a></p>
-      <p class="auth-footer-text" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);"><a href="privacy.html" style="color:var(--text-muted);font-size:0.8rem;">Privacy Policy</a></p>
+      <p class="auth-footer-text mt-8"><a href="index.html" class="auth-link-muted">← Back to site</a></p>
+      <p class="auth-footer-text auth-footer-legal"><a href="privacy.html" class="auth-link-muted">Privacy Policy</a></p>
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

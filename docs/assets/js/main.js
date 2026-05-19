@@ -56,11 +56,14 @@
     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   }
 
-  // Hide offline banners now that backend is connected
-  if (supabase) {
-    document.querySelectorAll('.auth-offline-banner').forEach(function (el) {
-      el.hidden = true;
-    });
+  // Inject offline banner only when backend is unavailable
+  if (!supabase) {
+    var _banner = document.getElementById('auth-status-banner');
+    if (_banner) {
+      _banner.className   = 'auth-offline-banner';
+      _banner.setAttribute('role', 'alert');
+      _banner.innerHTML   = '<strong>Authentication is currently offline.</strong> This feature activates once the backend is connected. No data is stored or transmitted right now.';
+    }
   }
 
   // ── Auth ─────────────────────────────────────────────────
