@@ -1,5 +1,9 @@
 // U.N.D Industries — Main JS
-// UI behavior only. No API keys. No secrets. No internal data.
+// Real auth via Supabase. The anon key is public by design — Row Level Security
+// on the database handles access control. Passwords are hashed server-side.
+//
+// SETUP: Replace SUPABASE_URL and SUPABASE_ANON_KEY with your project values.
+// Dashboard → Project Settings → API → "Project URL" + "anon public" key.
 
 (function () {
   'use strict';
@@ -43,155 +47,230 @@
     });
   }
 
-  var body = document.body;
+  // ── Supabase ──────────────────────────────────────────────
+  var SUPABASE_URL      = 'YOUR_SUPABASE_URL';
+  var SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+
+  var supabase = null;
+  if (SUPABASE_URL !== 'YOUR_SUPABASE_URL' && window.supabase) {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
 
   // ── Auth ─────────────────────────────────────────────────
-  //
-  // IMPORTANT — FRONT-END DEMO ONLY.
-  //
-  // This authentication system is NOT production-safe and is NOT suitable
-  // for storing real user credentials or sensitive data of any kind.
-  //
-  // What it does:
-  //   - Stores a single user object { name, email, password } as plaintext
-  //     JSON in the browser's localStorage under the key 'und_auth_user'.
-  //   - Stores a randomly generated session token in localStorage under
-  //     the key 'und_auth_token'.
-  //
-  // What it does NOT do:
-  //   - No server-side validation.
-  //   - No password hashing or encryption of any kind.
-  //   - No secure session management.
-  //   - No protection against local device access.
-  //
-  // This system exists solely to demonstrate gated UI flows (dashboard
-  // access, route guards). It must not be used to protect real sensitive
-  // content or real user accounts.
-  //
-  var AUTH_KEY  = 'und_auth_user';
-  var TOKEN_KEY = 'und_auth_token';
-
   var Auth = {
-    register: function (name, email, password) {
-      // Stores plaintext credentials in localStorage — demo only.
-      if (!name || !email || !password) return { ok: false, msg: 'All fields are required.' };
-      if (password.length < 8)          return { ok: false, msg: 'Password must be at least 8 characters.' };
-      var existing = localStorage.getItem(AUTH_KEY);
-      if (existing && JSON.parse(existing).email === email)
-        return { ok: false, msg: 'An account with this email already exists.' };
-      localStorage.setItem(AUTH_KEY, JSON.stringify({ name: name, email: email, password: password }));
+    register: async function (email, password, displayName) {
+      if (!supabase) return { ok: false, msg: 'Registration not yet open. Email officialtyzen@gmail.com to register interest.' };
+      var res = await supabase.auth.signUp({
+        email: email,
+        password: password,
+        options: { data: { display_name: displayName } }
+      });
+      if (res.error) return { ok: false, msg: res.error.message };
+      return { ok: true, needsVerification: !res.data.session };
+    },
+
+    login: async function (email, password) {
+      if (!supabase) return { ok: false, msg: 'Login not yet available. Check back soon.' };
+      var res = await supabase.auth.signInWithPassword({ email: email, password: password });
+      if (res.error) return { ok: false, msg: res.error.message };
       return { ok: true };
     },
 
-    login: function (email, password) {
-      // Compares plaintext values — demo only. Not suitable for real passwords.
-      var stored = localStorage.getItem(AUTH_KEY);
-      if (!stored)                          return { ok: false, msg: 'No account found. Please register first.' };
-      var user = JSON.parse(stored);
-      if (user.email !== email || user.password !== password)
-        return { ok: false, msg: 'Incorrect email or password.' };
-      localStorage.setItem(TOKEN_KEY, 'und_' + Math.random().toString(36).slice(2) + Date.now());
-      return { ok: true };
+    logout: async function () {
+      if (supabase) await supabase.auth.signOut();
+      window.location.href = 'index.html';
     },
 
-    logout:    function () { localStorage.removeItem(TOKEN_KEY); },
-    isLoggedIn:function () { return !!localStorage.getItem(TOKEN_KEY); },
-    getUser:   function () { var s = localStorage.getItem(AUTH_KEY); return s ? JSON.parse(s) : null; }
+    isLoggedIn: async function () {
+      if (!supabase) return false;
+      var res = await supabase.auth.getSession();
+      return !!res.data.session;
+    },
+
+    getUser: async function () {
+      if (!supabase) return null;
+      var res = await supabase.auth.getSession();
+      return res.data.session ? res.data.session.user : null;
+    },
+
+    getProfile: async function () {
+      if (!supabase) return null;
+      var sessionRes = await supabase.auth.getSession();
+      if (!sessionRes.data.session) return null;
+      var uid = sessionRes.data.session.user.id;
+      var res = await supabase.from('profiles').select('*').eq('id', uid).single();
+      return res.error ? null : res.data;
+    }
   };
 
   window.UNDAuth = Auth;
 
   // ── Route guards ──────────────────────────────────────────
-  if (body.dataset.protected === 'true' && !Auth.isLoggedIn()) {
-    window.location.href = 'login.html';
+  // auth-loading hides page content during async session check (prevents flash).
+  var body        = document.body;
+  var isProtected = body.dataset.protected === 'true';
+  var isAuthPage  = body.dataset.authPage  === 'true';
+
+  if (isProtected || isAuthPage) {
+    body.classList.add('auth-loading');
   }
 
-  if (body.dataset.authPage === 'true' && Auth.isLoggedIn()) {
-    window.location.href = 'dashboard.html';
+  async function runRouteGuard() {
+    var loggedIn = await Auth.isLoggedIn();
+
+    if (isProtected && !loggedIn) {
+      window.location.href = 'login.html';
+      return;
+    }
+    if (isAuthPage && loggedIn) {
+      window.location.href = 'dashboard.html';
+      return;
+    }
+
+    body.classList.remove('auth-loading');
+    initPage();
   }
 
-  // ── Login form ────────────────────────────────────────────
-  var loginForm = document.getElementById('login-form');
-  if (loginForm) {
-    loginForm.addEventListener('submit', function (e) {
-      e.preventDefault();
-      var alert  = document.getElementById('login-alert');
-      var result = Auth.login(
-        document.getElementById('login-email').value.trim(),
-        document.getElementById('login-password').value
-      );
-      if (result.ok) {
-        window.location.href = 'dashboard.html';
-      } else {
-        alert.textContent = result.msg;
-        alert.className   = 'auth-alert error visible';
-      }
+  function initPage() {
+
+    // ── Login form ──────────────────────────────────────────
+    var loginForm = document.getElementById('login-form');
+    if (loginForm) {
+      loginForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        var alertEl = document.getElementById('login-alert');
+        var btn     = loginForm.querySelector('[type="submit"]');
+        btn.disabled    = true;
+        btn.textContent = 'Signing in…';
+
+        var result = await Auth.login(
+          document.getElementById('login-email').value.trim(),
+          document.getElementById('login-password').value
+        );
+
+        btn.disabled    = false;
+        btn.textContent = 'Sign In';
+
+        if (result.ok) {
+          window.location.href = 'dashboard.html';
+        } else {
+          alertEl.textContent = result.msg;
+          alertEl.className   = 'auth-alert error visible';
+        }
+      });
+    }
+
+    // ── Register form ───────────────────────────────────────
+    var registerForm = document.getElementById('register-form');
+    if (registerForm) {
+      registerForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        var alertEl  = document.getElementById('reg-alert');
+        var btn      = registerForm.querySelector('[type="submit"]');
+        var password = document.getElementById('reg-password').value;
+        var confirm  = document.getElementById('reg-confirm').value;
+        var termsBox = document.getElementById('agree-terms');
+
+        if (termsBox && !termsBox.checked) {
+          alertEl.textContent = 'You must agree to the Terms of Use and Privacy Policy.';
+          alertEl.className   = 'auth-alert error visible';
+          return;
+        }
+
+        if (password !== confirm) {
+          alertEl.textContent = 'Passwords do not match.';
+          alertEl.className   = 'auth-alert error visible';
+          return;
+        }
+
+        btn.disabled    = true;
+        btn.textContent = 'Creating account…';
+
+        var result = await Auth.register(
+          document.getElementById('reg-email').value.trim(),
+          password,
+          document.getElementById('reg-name').value.trim()
+        );
+
+        btn.disabled    = false;
+        btn.textContent = 'Create Account';
+
+        if (result.ok) {
+          if (result.needsVerification) {
+            alertEl.textContent = 'Account created! Check your email to verify your address, then log in.';
+          } else {
+            alertEl.textContent = 'Account created. Redirecting…';
+            setTimeout(function () { window.location.href = 'dashboard.html'; }, 1400);
+          }
+          alertEl.className = 'auth-alert success visible';
+        } else {
+          alertEl.textContent = result.msg;
+          alertEl.className   = 'auth-alert error visible';
+        }
+      });
+    }
+
+    // ── Logout ──────────────────────────────────────────────
+    document.querySelectorAll('[data-action="logout"]').forEach(function (btn) {
+      btn.addEventListener('click', function () { Auth.logout(); });
     });
+
+    // ── Dashboard profile + admin ────────────────────────────
+    var userNameEl   = document.getElementById('dashboard-user-name');
+    var adminSection = document.getElementById('admin-section');
+
+    if (userNameEl || adminSection) {
+      Auth.getProfile().then(function (profile) {
+        if (profile) {
+          if (userNameEl) userNameEl.textContent = profile.display_name || 'Studio';
+          if (adminSection && profile.role === 'owner') {
+            adminSection.removeAttribute('hidden');
+          }
+        }
+      });
+    }
+
+    // ── Contact form ─────────────────────────────────────────
+    var contactForm = document.getElementById('contact-form');
+    if (contactForm) {
+      contactForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        var alertEl = document.getElementById('contact-alert');
+        var btn     = contactForm.querySelector('[type="submit"]');
+        btn.disabled    = true;
+        btn.textContent = 'Sending…';
+
+        var email   = document.getElementById('c-email').value.trim();
+        var subject = document.getElementById('c-subject').value.trim();
+        var message = document.getElementById('c-message').value.trim();
+
+        if (supabase) {
+          var user   = await Auth.getUser();
+          var insert = await supabase.from('contact_messages').insert({
+            user_id: user ? user.id : null,
+            email:   email,
+            subject: subject,
+            message: message
+          });
+          if (insert.error) {
+            alertEl.textContent = 'Message could not be sent. Email officialtyzen@gmail.com directly.';
+            alertEl.className   = 'auth-alert error visible';
+          } else {
+            alertEl.textContent = 'Message sent. We’ll reply to ' + email + '.';
+            alertEl.className   = 'auth-alert success visible';
+            contactForm.reset();
+          }
+        } else {
+          alertEl.textContent = 'For a guaranteed response, email officialtyzen@gmail.com directly.';
+          alertEl.className   = 'auth-alert success visible';
+        }
+
+        btn.disabled    = false;
+        btn.textContent = 'Send Message';
+      });
+    }
   }
 
-  // ── Register form ─────────────────────────────────────────
-  var registerForm = document.getElementById('register-form');
-  if (registerForm) {
-    registerForm.addEventListener('submit', function (e) {
-      e.preventDefault();
-      var alert    = document.getElementById('reg-alert');
-      var password = document.getElementById('reg-password').value;
-      var confirm  = document.getElementById('reg-confirm').value;
-      var termsBox = document.getElementById('agree-terms');
-
-      if (termsBox && !termsBox.checked) {
-        alert.textContent = 'You must agree to the Terms of Use and Privacy Policy to create an account.';
-        alert.className   = 'auth-alert error visible';
-        return;
-      }
-
-      if (password !== confirm) {
-        alert.textContent = 'Passwords do not match.';
-        alert.className   = 'auth-alert error visible';
-        return;
-      }
-
-      var result = Auth.register(
-        document.getElementById('reg-name').value.trim(),
-        document.getElementById('reg-email').value.trim(),
-        password
-      );
-
-      if (result.ok) {
-        alert.textContent = 'Account created. Redirecting to login…';
-        alert.className   = 'auth-alert success visible';
-        setTimeout(function () { window.location.href = 'login.html'; }, 1400);
-      } else {
-        alert.textContent = result.msg;
-        alert.className   = 'auth-alert error visible';
-      }
-    });
-  }
-
-  // ── Logout (handles sidebar + mobile bar buttons) ─────────
-  document.querySelectorAll('[data-action="logout"]').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      Auth.logout();
-      window.location.href = 'index.html';
-    });
-  });
-
-  // ── Dashboard user name ───────────────────────────────────
-  var userNameEl = document.getElementById('dashboard-user-name');
-  if (userNameEl) {
-    var u = Auth.getUser();
-    if (u) userNameEl.textContent = u.name;
-  }
-
-  // ── Contact form (static — no backend) ───────────────────
-  var contactForm = document.getElementById('contact-form');
-  if (contactForm) {
-    contactForm.addEventListener('submit', function (e) {
-      e.preventDefault();
-      var alert = document.getElementById('contact-alert');
-      alert.textContent = 'Demo only — this form does not send messages. Email officialtyzen@gmail.com directly for a response.';
-      alert.className   = 'auth-alert success visible';
-    });
-  }
+  runRouteGuard();
 
 })();

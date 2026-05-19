@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0d0d0f">
-  <meta name="description" content="Cookie Policy for UND Industries. This site does not use cookies. localStorage demo only.">
+  <meta name="description" content="Cookie Policy for UND Industries. This site does not use cookies. Supabase session token stored in localStorage only.">
   <meta property="og:type"  content="website">
   <meta property="og:title" content="Cookie Policy | UND Tyzen">
   <meta property="og:url"   content="https://wyrmm999.github.io/und-industries-website/cookie.html">
@@ -44,9 +44,9 @@
     <section class="section pt-nav" data-section="hero">
       <div class="container">
         <p class="section-label">Legal</p>
-        <h1 style="max-width:700px;">Cookie <span style="color:var(--accent-light);">Policy</span></h1>
+        <h1 class="legal-title">Cookie <span class="accent">Policy</span></h1>
         <div class="divider"></div>
-        <p style="max-width:600px;margin-top:20px;color:var(--text-muted);font-size:0.95rem;">Effective date: May 19, 2026</p>
+        <p class="legal-date">Effective date: May 19, 2026</p>
       </div>
     </section>
 
@@ -68,13 +68,14 @@
 
           <!-- 3 -->
           <div class="privacy-section">
-            <h2 class="privacy-heading">3. localStorage Only</h2>
-            <p style="margin-bottom:16px;">The only data stored on your device by this site is placed in your browser's <strong style="color:var(--text);font-weight:600;">localStorage</strong> — not in cookies. This data is limited to:</p>
+            <h2 class="privacy-heading">3. localStorage &amp; Session Token</h2>
+            <p>The only data stored on your device by this site is placed in your browser's <strong class="text-strong">localStorage</strong> — not in cookies. If you are signed in, the Supabase client library stores a session token locally to maintain your login state. This token:</p>
             <ul class="privacy-list">
-              <li><code style="font-size:0.85rem;color:var(--accent-light);background:rgba(124,58,237,0.1);padding:2px 6px;border-radius:4px;">und_auth_user</code> — a demo account object stored if you register (name, email, plaintext password).</li>
-              <li><code style="font-size:0.85rem;color:var(--accent-light);background:rgba(124,58,237,0.1);padding:2px 6px;border-radius:4px;">und_auth_token</code> — a randomly generated demo session token stored if you log in.</li>
+              <li>Contains a signed JWT issued by Supabase — it does not contain your password.</li>
+              <li>Is used solely to authenticate subsequent requests to Supabase on your behalf.</li>
+              <li>Can be cleared at any time by signing out, or by clearing site data in your browser settings (Settings → Privacy → Site Data or similar).</li>
             </ul>
-            <p style="margin-top:16px;">These values remain on your device only. They are not transmitted to any server and are part of the demo authentication system described in the <a href="security.html" style="color:var(--accent-light);">Security Disclaimer</a>.</p>
+            <p class="mt-16">No other data is stored locally on your device by this site. For full details on authentication, see the <a href="security.html" style="color:var(--accent-light);">Security Disclaimer</a>.</p>
           </div>
 
           <!-- 4 -->
@@ -84,9 +85,9 @@
           </div>
 
           <!-- 5 -->
-          <div class="privacy-section" style="margin-bottom:0;">
+          <div class="privacy-section">
             <h2 class="privacy-heading">5. Changes</h2>
-            <p>If cookies are ever introduced in a future version of this site, this Cookie Policy will be updated accordingly and a consent mechanism will be added where required by law. The most current version will always be available at this page (<code style="font-size:0.85rem;color:var(--accent-light);background:rgba(124,58,237,0.1);padding:2px 6px;border-radius:4px;">/cookie.html</code>).</p>
+            <p>If cookies are ever introduced in a future version of this site, this Cookie Policy will be updated accordingly and a consent mechanism will be added where required by law. The most current version will always be available at this page (<code>/cookie.html</code>).</p>
           </div>
 
         </div>

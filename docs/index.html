@@ -44,71 +44,48 @@
 
     <section class="hero">
       <div class="container">
-        <div class="hero-inner">
+        <div class="hero-grid">
+
           <div class="hero-content">
-            <div class="hero-badge hero-animate" style="--delay:0s">
+            <div class="hero-badge hero-animate hero-delay-0">
               <span class="hero-badge-dot"></span>
-              Building Something Real
+              UND Tyzen
             </div>
-            <h1 class="hero-animate" style="--delay:0.1s">Universal Network<br><span class="accent">Development</span><br>Industries</h1>
-            <p class="hero-sub hero-animate" style="--delay:0.22s">
-              A multidisciplinary creative and technology organization.
-              Music, vision, and innovation — built from the ground up.
+            <h1 class="hero-title hero-animate hero-delay-1">Music for the<br><span class="accent">wired future.</span></h1>
+            <p class="hero-sub hero-animate hero-delay-2">
+              Original sound from U.N.D Industries. Streaming on all major platforms — built from the ground up.
             </p>
-            <div class="hero-actions hero-animate" style="--delay:0.34s">
-              <a href="music.html" class="btn btn-primary btn-lg">Hear the Music</a>
-              <a href="about.html" class="btn btn-secondary btn-lg">About the Studio</a>
+            <div class="hero-actions hero-animate hero-delay-3">
+              <a href="music.html" class="btn btn-primary btn-lg">Listen Now</a>
+              <a href="contact.html" class="btn btn-secondary btn-lg">Book UND Tyzen</a>
             </div>
           </div>
-          <div class="hero-visual" aria-hidden="true">
-            <svg viewBox="0 0 480 480" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <linearGradient id="hv-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#a78bfa"/>
-                  <stop offset="100%" stop-color="#7c3aed"/>
-                </linearGradient>
-                <filter id="hv-glow" x="-30%" y="-30%" width="160%" height="160%">
-                  <feGaussianBlur stdDeviation="10" result="blur"/>
-                  <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                </filter>
-              </defs>
-              <!-- Outer hex: center(240,240) r=180 -->
-              <polygon points="240,60 395.9,150 395.9,330 240,420 84.1,330 84.1,150"
-                fill="none" stroke="rgba(124,58,237,0.25)" stroke-width="1.5"/>
-              <!-- Mid hex: center(240,240) r=112 -->
-              <polygon points="240,128 337,184 337,296 240,352 143,296 143,184"
-                fill="none" stroke="rgba(167,139,250,0.18)" stroke-width="1.5"/>
-              <!-- Inner hex: center(240,240) r=64 -->
-              <polygon points="240,176 295.4,208 295.4,272 240,304 184.6,272 184.6,208"
-                fill="rgba(124,58,237,0.08)" stroke="rgba(167,139,250,0.45)" stroke-width="1.5"/>
-              <!-- Orbital ring -->
-              <circle cx="240" cy="240" r="148" fill="none"
-                stroke="rgba(124,58,237,0.1)" stroke-width="1" stroke-dasharray="6,10"/>
-              <!-- Vertex dots outer -->
-              <circle cx="240" cy="60"    r="5" fill="rgba(167,139,250,0.75)"/>
-              <circle cx="395.9" cy="150" r="4" fill="rgba(124,58,237,0.7)"/>
-              <circle cx="395.9" cy="330" r="3.5" fill="rgba(167,139,250,0.5)"/>
-              <circle cx="240" cy="420"   r="4" fill="rgba(124,58,237,0.65)"/>
-              <circle cx="84.1" cy="330"  r="3.5" fill="rgba(167,139,250,0.5)"/>
-              <circle cx="84.1" cy="150"  r="4" fill="rgba(124,58,237,0.7)"/>
-              <!-- Cyan mid-vertex accents -->
-              <circle cx="337" cy="184"  r="3" fill="rgba(6,182,212,0.55)"/>
-              <circle cx="337" cy="296"  r="3" fill="rgba(6,182,212,0.55)"/>
-              <circle cx="143" cy="296"  r="3" fill="rgba(6,182,212,0.55)"/>
-              <circle cx="143" cy="184"  r="3" fill="rgba(6,182,212,0.55)"/>
-              <!-- Connector dashes outer→mid -->
-              <line x1="240" y1="60" x2="240" y2="128" stroke="rgba(124,58,237,0.28)" stroke-width="1" stroke-dasharray="4,5"/>
-              <line x1="395.9" y1="150" x2="337" y2="184" stroke="rgba(124,58,237,0.28)" stroke-width="1" stroke-dasharray="4,5"/>
-              <line x1="395.9" y1="330" x2="337" y2="296" stroke="rgba(124,58,237,0.28)" stroke-width="1" stroke-dasharray="4,5"/>
-              <line x1="240" y1="420" x2="240" y2="352" stroke="rgba(124,58,237,0.28)" stroke-width="1" stroke-dasharray="4,5"/>
-              <line x1="84.1" y1="330" x2="143" y2="296" stroke="rgba(124,58,237,0.28)" stroke-width="1" stroke-dasharray="4,5"/>
-              <line x1="84.1" y1="150" x2="143" y2="184" stroke="rgba(124,58,237,0.28)" stroke-width="1" stroke-dasharray="4,5"/>
-              <!-- Center U -->
-              <text x="240" y="258" font-family="Space Grotesk, system-ui, sans-serif"
-                font-size="88" font-weight="800" fill="url(#hv-grad)"
-                text-anchor="middle" dominant-baseline="middle" filter="url(#hv-glow)" opacity="0.92">U</text>
-            </svg>
+
+          <div class="hero-now-playing hero-animate hero-delay-4" aria-label="Stream UND Tyzen">
+            <div class="now-playing-label">
+              <span class="now-playing-dot"></span>
+              Now Streaming
+            </div>
+            <div class="now-playing-track">
+              <div class="now-playing-art" aria-hidden="true">
+                <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="64" height="64" rx="8" fill="rgba(124,58,237,0.2)"/>
+                  <text x="32" y="44" font-family="Space Grotesk,sans-serif" font-size="32" font-weight="800" fill="#a855f7" text-anchor="middle">U</text>
+                </svg>
+              </div>
+              <div class="now-playing-meta">
+                <p class="now-playing-title">Latest Release</p>
+                <p class="now-playing-artist">UND Tyzen</p>
+              </div>
+            </div>
+            <div class="platform-pills">
+              <a href="https://open.spotify.com/artist/09cvXQPxvhR6oRSv964gAh" target="_blank" rel="noopener noreferrer" class="platform-pill">Spotify</a>
+              <a href="https://music.apple.com/us/artist/und-tyzen/1826707894" target="_blank" rel="noopener noreferrer" class="platform-pill">Apple Music</a>
+              <a href="https://www.youtube.com/@UNDTyzen" target="_blank" rel="noopener noreferrer" class="platform-pill">YouTube</a>
+              <a href="https://www.bandlab.com/und_tyzen" target="_blank" rel="noopener noreferrer" class="platform-pill">BandLab</a>
+            </div>
           </div>
+
         </div>
       </div>
     </section>
@@ -128,7 +105,7 @@
             </div>
             <h3>Music</h3>
             <p>Original releases, features, and collaborations from UND Tyzen — available across all major streaming platforms.</p>
-            <a href="music.html" class="btn btn-outline btn-sm mt-24" style="width:fit-content;">Listen Now</a>
+            <a href="music.html" class="btn btn-outline btn-sm mt-24 btn-fit">Listen Now</a>
           </div>
           <div class="pillar-card">
             <div class="pillar-icon">
@@ -168,10 +145,10 @@
 
     <section class="section-sm" data-section="cta">
       <div class="container">
-        <div class="card card-accent" style="text-align:center;padding:56px 40px;">
+        <div class="card card-accent card-cta">
           <p class="section-label">Work Together</p>
-          <h2 style="margin-bottom:16px;color:var(--text);">Open for Collaborations</h2>
-          <p style="max-width:480px;margin:0 auto 32px;">Features, bookings, and select creative projects. Reach out and let's build something together.</p>
+          <h2 class="cta-heading">Open for Collaborations</h2>
+          <p class="cta-desc">Features, bookings, and select creative projects. Reach out and let's build something together.</p>
           <a href="contact.html" class="btn btn-primary btn-lg">Get in Touch</a>
         </div>
       </div>

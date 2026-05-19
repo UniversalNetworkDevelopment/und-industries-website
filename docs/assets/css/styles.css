@@ -101,8 +101,8 @@ p  { color: var(--text-soft); line-height: 1.75; }
   display: flex;
   align-items: center;
   background: rgba(4,4,15,0.85);
-  backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
   transition: box-shadow var(--transition);
 }
@@ -308,6 +308,8 @@ p  { color: var(--text-soft); line-height: 1.75; }
 
 .hero h1 { margin-bottom: 24px; }
 .hero h1 .accent { color: var(--accent-light); }
+.accent           { color: var(--accent-light); }
+.hero-desc        { max-width: 520px; margin-top: 20px; }
 
 .hero-sub {
   font-size: clamp(1rem,2vw,1.25rem);
@@ -594,6 +596,7 @@ textarea.form-input { min-height: 140px; resize: vertical; }
   background: rgba(4,4,15,0.8);
   position: sticky;
   top: 0;
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   z-index: 10;
 }
@@ -755,6 +758,14 @@ textarea.form-input { min-height: 140px; resize: vertical; }
 .pt-nav { padding-top: var(--nav-h); }
 .mt-24  { margin-top: 24px; }
 .mt-32  { margin-top: 32px; }
+.mb-8   { margin-bottom: 8px; }
+.mb-24  { margin-bottom: 24px; }
+.mb-32  { margin-bottom: 32px; }
+
+/* ── Music page physical card ────────────────────────────── */
+.card-physical { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 24px; }
+.card-physical h3 { margin-bottom: 8px; }
+.card-physical p  { font-size: 0.9rem; }
 
 /* ── Responsive ── */
 @media (max-width: 1024px) {
@@ -775,6 +786,7 @@ textarea.form-input { min-height: 140px; resize: vertical; }
     top: var(--nav-h);
     left: 0; right: 0;
     background: rgba(4,4,15,0.98);
+    -webkit-backdrop-filter: blur(20px);
     backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--border);
     padding: 16px 0 24px;
@@ -927,6 +939,28 @@ textarea.form-input { min-height: 140px; resize: vertical; }
   margin-bottom: 48px;
 }
 
+.privacy-section:last-child { margin-bottom: 0; }
+
+.privacy-section > p { margin-bottom: 16px; }
+.privacy-section > p:last-child { margin-bottom: 0; }
+.privacy-section > ul + p,
+.privacy-section > ol + p { margin-top: 16px; }
+
+.privacy-body code {
+  font-size: 0.85rem;
+  color: var(--accent-light);
+  background: rgba(124,58,237,0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* ── Legal page hero helpers ─────────────────────────────── */
+.legal-title { max-width: 700px; }
+.legal-date  { max-width: 600px; margin-top: 20px; color: var(--text-muted); font-size: 0.95rem; }
+
+/* ── Text utilities ───────────────────────────────────────── */
+.text-strong { color: var(--text); font-weight: 600; }
+
 .privacy-heading {
   font-family: var(--font-head);
   font-size: 1.3rem;
@@ -1072,3 +1106,188 @@ a.footer-copy:hover,
   color: var(--accent);
   text-decoration: underline;
 }
+
+/* ── Brand token extensions ──────────────────────────────── */
+:root {
+  --accent-light:  #a855f7;
+  --accent-cyan:   #22d3ee;
+  --bg:            #0b0b10;
+  --bg-elevated:   #111827;
+  --error:         #ef4444;
+  --radius-md:     10px;
+  --warning:       #f97316;
+}
+
+/* ── Auth loading state (prevents flash of protected content) */
+body.auth-loading .dashboard-layout,
+body.auth-loading .auth-page { opacity: 0; }
+
+/* ── Hero grid (music-focused layout) ────────────────────── */
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: center;
+  min-height: calc(100vh - var(--nav-h));
+  padding: 80px 0;
+}
+
+@media (max-width: 900px) {
+  .hero-grid { grid-template-columns: 1fr; gap: 48px; padding: 60px 0 40px; }
+}
+
+.hero-title { font-size: clamp(2.4rem,6vw,4rem); margin-bottom: 24px; }
+
+/* ── Now Playing card ────────────────────────────────────── */
+.hero-now-playing {
+  background: var(--bg-card);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius);
+  padding: 32px;
+  box-shadow: var(--glow);
+}
+
+.now-playing-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent-light);
+  margin-bottom: 24px;
+}
+
+.now-playing-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-light);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+.now-playing-track {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.now-playing-art {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.now-playing-art svg { width: 100%; height: 100%; display: block; }
+
+.now-playing-meta { flex: 1; min-width: 0; }
+
+.now-playing-title {
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 4px;
+}
+
+.now-playing-artist { font-size: 0.85rem; color: var(--text-muted); }
+
+/* ── Platform pills ──────────────────────────────────────── */
+.platform-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.platform-pill {
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 500;
+  background: rgba(124,58,237,0.12);
+  border: 1px solid rgba(124,58,237,0.3);
+  color: var(--accent-light);
+  transition: background var(--transition), border-color var(--transition);
+}
+
+.platform-pill:hover {
+  background: rgba(124,58,237,0.22);
+  border-color: var(--accent);
+}
+
+/* ── Featured release block ──────────────────────────────── */
+.featured-release { display: flex; gap: 40px; align-items: flex-start; flex-wrap: wrap; }
+.featured-release-info { flex: 1; min-width: 260px; }
+
+/* ── Music grid ──────────────────────────────────────────── */
+.music-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 24px;
+}
+
+.music-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: border-color var(--transition), transform var(--transition);
+}
+
+.music-card:hover { border-color: var(--border-accent); transform: translateY(-2px); }
+
+.music-card-art { aspect-ratio: 1; overflow: hidden; }
+.music-card-art svg { width: 100%; height: 100%; display: block; }
+.music-card-body { padding: 20px; }
+
+.music-card-type {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-light);
+  margin-bottom: 6px;
+}
+
+.music-card-title {
+  font-family: var(--font-head);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0;
+}
+
+/* ── Dashboard utilities ─────────────────────────────────── */
+.btn-full { width: 100%; }
+.sidebar-privacy { margin-top: 14px; font-size: 0.75rem; text-align: center; }
+.sidebar-privacy a { color: var(--text-muted); transition: color var(--transition); }
+.topbar-brand { font-size: 0.8rem; color: var(--text-muted); }
+.stat-value-live { font-size: 1.25rem; color: var(--success); }
+.stat-value-accent { font-size: 1.1rem; color: var(--accent-light); }
+.quick-links { display: flex; flex-direction: column; gap: 10px; }
+.studio-open-btn { width: fit-content; }
+.platform-link-start { justify-content: flex-start; gap: 12px; }
+
+/* ── Hero animation delay helpers ───────────────────────── */
+.hero-delay-0 { --delay: 0s; }
+.hero-delay-1 { --delay: 0.1s; }
+.hero-delay-2 { --delay: 0.22s; }
+.hero-delay-3 { --delay: 0.34s; }
+.hero-delay-4 { --delay: 0.46s; }
+
+/* ── CTA section ─────────────────────────────────────────── */
+.card-cta { text-align: center; padding: 56px 40px; }
+.cta-heading { margin-bottom: 16px; color: var(--text); }
+.cta-desc { max-width: 480px; margin: 0 auto 32px; }
+
+/* ── Utility ─────────────────────────────────────────────── */
+.btn-fit { width: fit-content; }
+
+/* ── Admin panel ─────────────────────────────────────────── */
+.admin-panel-wrap { padding: 0 32px 32px; }
+.admin-panel-wrap .card h4 { margin-bottom: 8px; }
+.admin-panel-wrap .card p  { font-size: 0.875rem; }
+.admin-panel-wrap .card a  { color: var(--accent-light); }

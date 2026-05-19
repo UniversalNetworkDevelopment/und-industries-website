@@ -44,9 +44,9 @@
     <section class="section pt-nav" data-section="hero">
       <div class="container">
         <p class="section-label">Legal</p>
-        <h1 style="max-width:700px;">Terms of <span style="color:var(--accent-light);">Use</span></h1>
+        <h1 class="legal-title">Terms of <span class="accent">Use</span></h1>
         <div class="divider"></div>
-        <p style="max-width:600px;margin-top:20px;color:var(--text-muted);font-size:0.95rem;">Effective date: May 19, 2026</p>
+        <p class="legal-date">Effective date: May 19, 2026</p>
       </div>
     </section>
 
@@ -56,22 +56,22 @@
 
           <!-- 1 -->
           <div class="privacy-section">
-            <h2 class="privacy-heading">1. Demo Environment Only</h2>
-            <p style="margin-bottom:16px;">This website is a static, front-end demo experience hosted on GitHub Pages. There is no backend server, no database, no API, and no server-side processing of any kind. Features including account creation, login, and contact forms are included solely to demonstrate user interface flows and design.</p>
-            <p>Nothing on this site constitutes a production-grade service. U.N.D Industries makes no guarantee that any feature will be available, functional, or maintained.</p>
+            <h2 class="privacy-heading">1. About This Platform</h2>
+            <p>This website is a static front-end hosted on GitHub Pages, backed by Supabase for account authentication and contact message storage. Account creation, login, and the contact form are functional features — they connect to a real database managed by Supabase.</p>
+            <p>This platform is an artist fan and community site, not a financial, medical, or high-security service. U.N.D Industries makes no guarantee of uptime, data persistence, or feature availability beyond reasonable effort.</p>
           </div>
 
           <!-- 2 -->
           <div class="privacy-section">
             <div class="privacy-warning">
-              <h2 class="privacy-heading" style="margin-bottom:16px;">2. No Security Guarantees</h2>
-              <p style="margin-bottom:16px;"><strong style="color:var(--text);font-weight:600;">The authentication system on this site is a demo only and is not production-safe.</strong> Credentials are stored as plaintext in your browser's localStorage. There is no password hashing, no encryption, and no server-side protection of any kind.</p>
+              <h2 class="privacy-heading">2. Security Scope &amp; Limitations</h2>
+              <p><strong class="text-strong">Authentication is powered by Supabase — passwords are hashed server-side and never stored in plaintext.</strong> However, this site is an artist platform, not a service designed to protect sensitive personal data.</p>
               <ul class="privacy-list">
-                <li>Do not use a real password from another service on this site.</li>
-                <li>Do not enter financial information, government IDs, medical data, or any sensitive personal information.</li>
-                <li>Data stored in localStorage exists on your device only and can be viewed or deleted at any time through your browser settings.</li>
+                <li>Do not use this account to store sensitive data, financial credentials, or anything requiring high-security protection.</li>
+                <li>Do not enter financial information, government IDs, medical data, or any sensitive personal information anywhere on this site.</li>
+                <li>Use a unique password not shared with other services — standard practice for any online account.</li>
               </ul>
-              <p style="margin-top:16px;"><strong style="color:var(--text);font-weight:600;">U.N.D Industries is not responsible for any consequences arising from a user entering sensitive data on this site.</strong></p>
+              <p class="mt-16"><strong class="text-strong">U.N.D Industries is not responsible for any consequences arising from a user entering sensitive data on this site.</strong></p>
             </div>
           </div>
 
@@ -84,32 +84,32 @@
           <!-- 4 -->
           <div class="privacy-section">
             <h2 class="privacy-heading">4. User Responsibility</h2>
-            <p style="margin-bottom:16px;">You are solely responsible for what you choose to enter on this site. Do not submit:</p>
+            <p>You are solely responsible for what you choose to enter on this site. Do not submit:</p>
             <ul class="privacy-list">
               <li>Passwords or credentials used on other services.</li>
               <li>Financial information of any kind.</li>
               <li>Government-issued identification numbers.</li>
               <li>Medical or health information.</li>
-              <li>Any content you would not want stored on your own device.</li>
+              <li>Any content you would not want stored in a database or seen by site administrators.</li>
             </ul>
           </div>
 
           <!-- 5 -->
           <div class="privacy-section">
             <h2 class="privacy-heading">5. Intellectual Property</h2>
-            <p style="margin-bottom:16px;">All original music, recordings, lyrics, artwork, branding, logos, and written content associated with UND Tyzen and U.N.D Industries are the exclusive property of their respective owners. This includes but is not limited to:</p>
+            <p>All original music, recordings, lyrics, artwork, branding, logos, and written content associated with UND Tyzen and U.N.D Industries are the exclusive property of their respective owners. This includes but is not limited to:</p>
             <ul class="privacy-list">
               <li>All released and unreleased music by UND Tyzen.</li>
               <li>The U.N.D Industries name, logo, and brand identity.</li>
               <li>All visual design, imagery, and creative content on this site.</li>
             </ul>
-            <p style="margin-top:16px;">You may not copy, redistribute, reproduce, repost, or reuse any content from this site without explicit written permission from U.N.D Industries.</p>
+            <p class="mt-16">You may not copy, redistribute, reproduce, repost, or reuse any content from this site without explicit written permission from U.N.D Industries.</p>
           </div>
 
           <!-- 6 -->
           <div class="privacy-section">
             <h2 class="privacy-heading">6. Third-Party Services</h2>
-            <p style="margin-bottom:16px;">This site may embed or link to third-party services including Spotify, Apple Music, YouTube, BandLab, Instagram, and TikTok. These services are independently operated and governed by their own terms of service and privacy policies.</p>
+            <p>This site may embed or link to third-party services including Spotify, Apple Music, YouTube, BandLab, Instagram, and TikTok. These services are independently operated and governed by their own terms of service and privacy policies.</p>
             <p>U.N.D Industries has no control over and accepts no responsibility for the content, terms, or data practices of any third-party platform. Your use of those services is subject to their own rules, not these Terms.</p>
           </div>
 
@@ -120,9 +120,9 @@
           </div>
 
           <!-- 8 -->
-          <div class="privacy-section" style="margin-bottom:0;">
+          <div class="privacy-section">
             <h2 class="privacy-heading">8. Changes to These Terms</h2>
-            <p>U.N.D Industries may update these Terms of Use at any time without prior notice. The most current version will always be available at this page (<code style="font-size:0.85rem;color:var(--accent-light);background:rgba(124,58,237,0.1);padding:2px 6px;border-radius:4px;">/terms.html</code>). Continued use of the site after an update constitutes acceptance of the revised terms.</p>
+            <p>U.N.D Industries may update these Terms of Use at any time without prior notice. The most current version will always be available at this page (<code>/terms.html</code>). Continued use of the site after an update constitutes acceptance of the revised terms.</p>
           </div>
 
         </div>

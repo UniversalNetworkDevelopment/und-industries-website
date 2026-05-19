@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0d0d0f">
-  <meta name="description" content="Privacy Policy for the UND Industries website. Static demo — no data collection, no tracking.">
+  <meta name="description" content="Privacy Policy for the UND Industries website. Supabase-backed auth — no tracking, no ads.">
   <meta property="og:type"  content="website">
   <meta property="og:title" content="Privacy Policy | UND Tyzen">
   <meta property="og:url"   content="https://wyrmm999.github.io/und-industries-website/privacy.html">
@@ -44,9 +44,9 @@
     <section class="section pt-nav" data-section="hero">
       <div class="container">
         <p class="section-label">Legal</p>
-        <h1 style="max-width:700px;">Privacy <span style="color:var(--accent-light);">Policy</span></h1>
+        <h1 class="legal-title">Privacy <span class="accent">Policy</span></h1>
         <div class="divider"></div>
-        <p style="max-width:600px;margin-top:20px;color:var(--text-muted);font-size:0.95rem;">Effective date: May 19, 2026</p>
+        <p class="legal-date">Effective date: May 19, 2026</p>
       </div>
     </section>
 
@@ -57,38 +57,37 @@
           <!-- 1 -->
           <div class="privacy-section">
             <h2 class="privacy-heading">1. About This Site</h2>
-            <p style="margin-bottom:16px;">U.N.D Industries operates this website as a static, front-end-only website. There is no backend server, no database, and no server-side processing of any kind. All functionality — including any account or login features — runs entirely within your web browser.</p>
-            <p>U.N.D Industries does not operate any server that receives, processes, or retains data submitted on this site.</p>
+            <p>U.N.D Industries operates this website as a static front-end hosted on GitHub Pages, backed by <strong class="text-strong">Supabase</strong> for account authentication and contact message storage. The frontend code runs in your browser; account data and contact messages are stored on Supabase-managed servers.</p>
+            <p>Supabase is a third-party infrastructure provider. See the <a href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer" style="color:var(--accent-light);">Supabase Privacy Policy</a> for details on how they handle infrastructure-level data.</p>
           </div>
 
           <!-- 2 -->
           <div class="privacy-section">
             <h2 class="privacy-heading">2. Information We Collect</h2>
-            <p style="margin-bottom:16px;">We do not automatically collect any personal information. The only data associated with your use of this site is data you voluntarily enter into forms or input fields, which may include:</p>
+            <p>We do not automatically collect any personal information. The only data stored is data you voluntarily provide:</p>
             <ul class="privacy-list">
-              <li>A display name and email address if you register for an account on this site.</li>
-              <li>Messages or content you post in the member discussion area, if that feature is used.</li>
-              <li>Information voluntarily submitted through the contact form.</li>
+              <li>A display name and email address if you register for an account.</li>
+              <li>Your email, subject, and message if you submit the contact form.</li>
             </ul>
-            <p style="margin-top:16px;">The contact form on this site does not transmit data to any server. A submission acknowledgement is displayed in the browser only. No data from the contact form is stored or forwarded to any destination.</p>
+            <p class="mt-16">Contact form submissions are stored in our Supabase database and are accessible only to site administrators (U.N.D Industries). They are used solely to respond to your inquiry.</p>
           </div>
 
           <!-- 3 -->
           <div class="privacy-section">
             <h2 class="privacy-heading">3. How and Where Data Is Stored</h2>
-            <p style="margin-bottom:16px;">Any data you enter on this site is stored locally in your browser using <strong style="color:var(--text);font-weight:600;">localStorage</strong> — a standard browser feature that keeps data on your own device. This data:</p>
+            <p>Account credentials and contact messages are stored in a <strong class="text-strong">Supabase Postgres database</strong>. This means:</p>
             <ul class="privacy-list">
-              <li>Does not leave your device.</li>
-              <li>Is not transmitted to U.N.D Industries or any third party.</li>
-              <li>Is not backed up, synchronized, or recoverable if deleted or lost.</li>
-              <li>Is accessible only within the browser on the specific device where it was created.</li>
+              <li>Your password is hashed using bcrypt before storage — it is never stored in plaintext.</li>
+              <li>Data is stored on Supabase-managed servers and is accessible from any device after you log in.</li>
+              <li>Row Level Security (RLS) policies ensure each user can only access their own data.</li>
+              <li>Contact messages are visible only to site administrators.</li>
             </ul>
           </div>
 
           <!-- 4 -->
           <div class="privacy-section">
             <h2 class="privacy-heading">4. What We Do Not Collect</h2>
-            <p style="margin-bottom:16px;">U.N.D Industries does not collect, use, or integrate any of the following:</p>
+            <p>U.N.D Industries does not collect, use, or integrate any of the following:</p>
             <ul class="privacy-list">
               <li>Behavioral analytics or usage tracking of any kind.</li>
               <li>Third-party advertising networks or ad-targeting technologies.</li>
@@ -102,8 +101,8 @@
           <!-- 5 — warning card -->
           <div class="privacy-section">
             <div class="privacy-warning">
-              <h2 class="privacy-heading" style="margin-bottom:16px;">5. Sensitive Data Warning</h2>
-              <p style="margin-bottom:16px;"><strong style="color:var(--text);font-weight:600;">This site is not a secure data storage platform.</strong> You must not enter sensitive personal information, including but not limited to:</p>
+              <h2 class="privacy-heading">5. Sensitive Data Warning</h2>
+              <p><strong class="text-strong">This site is not a secure data storage platform.</strong> You must not enter sensitive personal information, including but not limited to:</p>
               <ul class="privacy-list">
                 <li>Passwords used on other services or platforms.</li>
                 <li>Financial information (credit card numbers, bank account details, etc.).</li>
@@ -111,44 +110,44 @@
                 <li>Medical or health information.</li>
                 <li>Any information you consider private or confidential.</li>
               </ul>
-              <p style="margin-top:20px;"><strong style="color:var(--text);font-weight:600;">U.N.D Industries is not responsible for any consequences arising from a user entering sensitive data on this site contrary to this warning.</strong></p>
+              <p class="mt-20"><strong class="text-strong">U.N.D Industries is not responsible for any consequences arising from a user entering sensitive data on this site contrary to this warning.</strong></p>
             </div>
           </div>
 
           <!-- 6 -->
           <div class="privacy-section">
             <h2 class="privacy-heading">6. Your Control &amp; Data Deletion</h2>
-            <p style="margin-bottom:16px;">Because all data is stored in your browser's localStorage, you have full and immediate control over it. You can delete all stored data at any time by:</p>
+            <p>Because account data and contact messages are stored in a Supabase-managed database, you may request deletion by contacting us directly. To request removal of your account or any submitted contact message:</p>
             <ul class="privacy-list">
-              <li>Using any "Clear my data" or equivalent feature provided within the site's dashboard, if available.</li>
-              <li>Clearing your browser's site data or localStorage directly through your browser's settings (typically found under Settings → Privacy → Site Data or similar).</li>
+              <li>Email <a href="mailto:officialtyzen@gmail.com" style="color:var(--accent-light);">officialtyzen@gmail.com</a> with the subject "Data Deletion Request" and the email address associated with your account.</li>
+              <li>Your account and all associated data will be permanently deleted within a reasonable time.</li>
             </ul>
-            <p style="margin-top:16px;">Clearing localStorage will permanently remove all locally stored information, including any account credentials, preferences, and discussion content associated with this site.</p>
+            <p class="mt-16">The Supabase client may also store a session token in your browser's localStorage to maintain your login state. You can clear this at any time through your browser's site data settings (Settings → Privacy → Site Data or similar), which will sign you out locally.</p>
           </div>
 
           <!-- 7 -->
           <div class="privacy-section">
             <h2 class="privacy-heading">7. Data Sharing</h2>
-            <p>U.N.D Industries does not sell, rent, trade, or otherwise share your data with any third party. No data you enter on this site is transmitted to any external service operated by U.N.D Industries or its affiliates.</p>
+            <p>U.N.D Industries does not sell, rent, or trade your data. Account credentials and contact form submissions are transmitted to and stored by <strong class="text-strong">Supabase</strong>, which acts solely as our infrastructure provider. Supabase does not use your data for advertising, profiling, or any purpose beyond providing database services to this site. No data is shared with any other third party.</p>
           </div>
 
           <!-- 8 -->
           <div class="privacy-section">
             <h2 class="privacy-heading">8. External Links</h2>
-            <p style="margin-bottom:16px;">This site contains links to third-party platforms including Spotify, Apple Music, YouTube, BandLab, Instagram, and TikTok. These are independently operated services with their own privacy policies and data practices.</p>
+            <p>This site contains links to third-party platforms including Spotify, Apple Music, YouTube, BandLab, Instagram, and TikTok. These are independently operated services with their own privacy policies and data practices.</p>
             <p>U.N.D Industries has no control over, and accepts no responsibility for, the privacy practices or content of any third-party service. Clicking a link to a third-party platform means leaving this site and entering a service governed by that platform's own terms and privacy policy.</p>
           </div>
 
           <!-- 9 -->
           <div class="privacy-section">
             <h2 class="privacy-heading">9. Changes to This Policy</h2>
-            <p>U.N.D Industries may update this Privacy Policy at any time without prior notice. The most current version will always be available at this page (<code style="font-size:0.85rem;color:var(--accent-light);background:rgba(124,58,237,0.1);padding:2px 6px;border-radius:4px;">/privacy.html</code>). Continued use of the site after a policy update constitutes acceptance of the revised policy.</p>
+            <p>U.N.D Industries may update this Privacy Policy at any time without prior notice. The most current version will always be available at this page (<code>/privacy.html</code>). Continued use of the site after a policy update constitutes acceptance of the revised policy.</p>
           </div>
 
           <!-- 10 -->
-          <div class="privacy-section" style="margin-bottom:0;">
+          <div class="privacy-section">
             <h2 class="privacy-heading">10. Contact</h2>
-            <p style="margin-bottom:16px;">If you have questions or concerns about this Privacy Policy, you may contact us at:</p>
+            <p>If you have questions or concerns about this Privacy Policy, you may contact us at:</p>
             <a href="mailto:officialtyzen@gmail.com" class="privacy-contact-link">officialtyzen@gmail.com</a>
           </div>
 

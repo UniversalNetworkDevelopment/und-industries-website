@@ -23,25 +23,25 @@
         <a href="dashboard-alt.html" class="sidebar-link"><span class="sidebar-link-icon">⬡</span> Studio Panel</a>
       </nav>
       <div class="sidebar-footer">
-        <button data-action="logout" class="btn btn-secondary btn-sm" style="width:100%;">Sign Out</button>
-        <p style="margin-top:14px;font-size:0.75rem;text-align:center;"><a href="privacy.html" style="color:var(--text-muted);transition:color 0.22s ease;">Privacy Policy</a></p>
+        <button type="button" data-action="logout" class="btn btn-secondary btn-sm btn-full">Sign Out</button>
+        <p class="sidebar-privacy"><a href="privacy.html">Privacy Policy</a></p>
       </div>
     </aside>
 
     <div class="dashboard-main">
       <div class="dash-mobile-bar">
         <div class="dash-mobile-logo">U.N.D <span>Industries</span></div>
-        <button data-action="logout" class="btn btn-secondary btn-sm">Sign Out</button>
+        <button type="button" data-action="logout" class="btn btn-secondary btn-sm">Sign Out</button>
       </div>
       <div class="dashboard-topbar">
         <div class="dashboard-topbar-title">Dashboard — Welcome, <span id="dashboard-user-name">—</span></div>
-        <span style="font-size:0.8rem;color:var(--text-muted);">U.N.D Industries</span>
+        <span class="topbar-brand">U.N.D Industries</span>
       </div>
       <div class="dashboard-content" id="dashboard-content-area">
         <div class="stat-grid">
           <div class="stat-card">
             <div class="stat-label">Platform Status</div>
-            <div class="stat-value" style="font-size:1.25rem;color:var(--success);">Live</div>
+            <div class="stat-value stat-value-live">Live</div>
             <div class="stat-sub">Site online</div>
           </div>
           <div class="stat-card">
@@ -51,7 +51,7 @@
           </div>
           <div class="stat-card">
             <div class="stat-label">Studio Tools</div>
-            <div class="stat-value" style="font-size:1.1rem;color:var(--accent-light);">Internal</div>
+            <div class="stat-value stat-value-accent">Internal</div>
             <div class="stat-sub">Studio only</div>
           </div>
           <div class="stat-card">
@@ -63,11 +63,11 @@
         <div class="dashboard-grid">
           <div class="card">
             <h4 style="margin-bottom:16px;">Quick Links</h4>
-            <div style="display:flex;flex-direction:column;gap:10px;">
-              <a href="index.html" class="platform-link" style="justify-content:flex-start;gap:12px;"><span>🏠</span> Home</a>
-              <a href="music.html" class="platform-link" style="justify-content:flex-start;gap:12px;"><span>🎵</span> Music</a>
-              <a href="about.html" class="platform-link" style="justify-content:flex-start;gap:12px;"><span>📋</span> About</a>
-              <a href="contact.html" class="platform-link" style="justify-content:flex-start;gap:12px;"><span>✉</span> Contact</a>
+            <div class="quick-links">
+              <a href="index.html" class="platform-link platform-link-start"><span>🏠</span> Home</a>
+              <a href="music.html" class="platform-link platform-link-start"><span>🎵</span> Music</a>
+              <a href="about.html" class="platform-link platform-link-start"><span>📋</span> About</a>
+              <a href="contact.html" class="platform-link platform-link-start"><span>✉</span> Contact</a>
             </div>
           </div>
           <div class="studio-panel">
@@ -77,10 +77,18 @@
               <span class="studio-status-badge">Internal Only</span>
             </div>
             <p style="font-size:0.875rem;margin-bottom:20px;">An internal studio tool used in the U.N.D Industries workflow.</p>
-            <a href="dashboard-alt.html" class="btn btn-outline btn-sm" style="width:fit-content;">Open Panel →</a>
+            <a href="dashboard-alt.html" class="btn btn-outline btn-sm studio-open-btn">Open Panel →</a>
           </div>
         </div>
       </div>
+      <!-- Admin section — only shown to role='owner' via main.js -->
+      <div id="admin-section" class="admin-panel-wrap" hidden>
+        <div class="card">
+          <h4>Owner Panel</h4>
+          <p>You are signed in as owner. View contact messages and manage profiles in the <a href="https://supabase.com/dashboard" target="_blank" rel="noopener noreferrer">Supabase dashboard</a>.</p>
+        </div>
+      </div>
+
       <footer class="dash-legal-footer">
         <span>&copy; <span data-year>2026</span> U.N.D Industries</span>
         <a href="privacy.html">Privacy Policy</a>
@@ -88,6 +96,8 @@
     </div>
 
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/main.js"></script>
 </body>
 </html>

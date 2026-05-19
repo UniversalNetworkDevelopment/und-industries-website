@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0d0d0f">
-  <meta name="description" content="Security Disclaimer for UND Industries. Demo-only auth — do not use real passwords on this site.">
+  <meta name="description" content="Security Disclaimer for UND Industries. Supabase auth — passwords hashed, not plaintext. Artist platform, not a secure data service.">
   <meta property="og:type"  content="website">
   <meta property="og:title" content="Security Disclaimer | UND Tyzen">
   <meta property="og:url"   content="https://wyrmm999.github.io/und-industries-website/security.html">
@@ -44,9 +44,9 @@
     <section class="section pt-nav" data-section="hero">
       <div class="container">
         <p class="section-label">Legal</p>
-        <h1 style="max-width:700px;">Security <span style="color:var(--accent-light);">Disclaimer</span></h1>
+        <h1 class="legal-title">Security <span class="accent">Disclaimer</span></h1>
         <div class="divider"></div>
-        <p style="max-width:600px;margin-top:20px;color:var(--text-muted);font-size:0.95rem;">Effective date: May 19, 2026</p>
+        <p class="legal-date">Effective date: May 19, 2026</p>
       </div>
     </section>
 
@@ -57,46 +57,52 @@
           <!-- 1 -->
           <div class="privacy-section">
             <div class="privacy-warning">
-              <h2 class="privacy-heading" style="margin-bottom:16px;">1. No Real Security</h2>
-              <p style="margin-bottom:16px;"><strong style="color:var(--text);font-weight:600;">This site does not provide secure authentication, encryption, or protected data storage of any kind.</strong> All login and registration features are demo-only and exist solely to demonstrate user interface flows.</p>
-              <p>This site is not suitable for storing real credentials, sensitive personal data, financial information, or any content requiring security protection.</p>
+              <h2 class="privacy-heading">1. Authentication Scope</h2>
+              <p><strong class="text-strong">This site uses Supabase for account authentication.</strong> Passwords are hashed server-side using bcrypt — they are never stored in plaintext. However, this is an artist fan site, not a financial, medical, or enterprise security platform.</p>
+              <p>While authentication is real and passwords are protected, this site is not designed or audited as a high-security service. Do not use it to store sensitive personal data, financial credentials, or anything requiring bank-grade security protection.</p>
             </div>
           </div>
 
           <!-- 2 -->
           <div class="privacy-section">
-            <h2 class="privacy-heading">2. Plaintext Storage</h2>
-            <p style="margin-bottom:16px;">Any credentials entered on this site — including email addresses and passwords — are stored as plaintext (unencrypted) in your browser's localStorage. There is no hashing, no salting, and no encryption applied to these values at any point.</p>
-            <p><strong style="color:var(--text);font-weight:600;">Do not use a real password from another service on this site.</strong></p>
+            <h2 class="privacy-heading">2. Password Security</h2>
+            <p>Your password is hashed using bcrypt before being stored in Supabase's database. This means:</p>
+            <ul class="privacy-list">
+              <li>Your plaintext password is never stored or logged anywhere.</li>
+              <li>Supabase's authentication system handles the hashing and verification process.</li>
+              <li>Row Level Security (RLS) ensures users can only access their own data.</li>
+            </ul>
+            <p class="mt-16"><strong class="text-strong">Still, use a unique password not shared with other services</strong> — standard practice for any online account.</p>
           </div>
 
           <!-- 3 -->
           <div class="privacy-section">
-            <h2 class="privacy-heading">3. No Backend</h2>
-            <p>There is no server, no database, and no protected session management system behind this site. All data remains on your device in your browser's localStorage. It is not transmitted to any server, synchronized, or backed up. Data can be lost or accessed if your browser storage is cleared or your device is accessed by others.</p>
+            <h2 class="privacy-heading">3. Infrastructure</h2>
+            <p>Account credentials and contact messages are stored in a Supabase-managed Postgres database. Supabase is a third-party infrastructure provider; this site does not operate its own servers. The frontend code is served statically from GitHub Pages and communicates with Supabase via its public client library.</p>
+            <p class="mt-16">See the <a href="https://supabase.com/security" target="_blank" rel="noopener noreferrer" style="color:var(--accent-light);">Supabase Security page</a> for details on how they secure infrastructure-level data.</p>
           </div>
 
           <!-- 4 -->
           <div class="privacy-section">
             <h2 class="privacy-heading">4. User Responsibility</h2>
-            <p style="margin-bottom:12px;">By using this site's account or login features, you acknowledge that:</p>
+            <p>By using this site's account or contact features, you acknowledge that:</p>
             <ul class="privacy-list">
-              <li>You will not enter real passwords, financial details, or sensitive personal information.</li>
-              <li>You understand credentials are stored in plaintext locally on your device.</li>
-              <li>You are solely responsible for the information you choose to enter.</li>
+              <li>You will not enter financial information, government IDs, medical data, or other sensitive personal information.</li>
+              <li>You will use a unique password not shared with other services.</li>
+              <li>You are solely responsible for the information you choose to submit.</li>
             </ul>
           </div>
 
           <!-- 5 -->
           <div class="privacy-section">
             <h2 class="privacy-heading">5. No Liability</h2>
-            <p>U.N.D Industries is not responsible for any damages, data loss, or consequences resulting from misuse of this demo authentication system. The site is provided as-is for demonstration and portfolio purposes only.</p>
+            <p>U.N.D Industries is not responsible for any damages, data loss, or consequences resulting from a user entering sensitive data on this site contrary to the warnings stated here. This site is an artist platform and is provided as-is with reasonable effort but no security guarantees beyond those described above.</p>
           </div>
 
           <!-- 6 -->
-          <div class="privacy-section" style="margin-bottom:0;">
+          <div class="privacy-section">
             <h2 class="privacy-heading">6. Intended Use</h2>
-            <p>This site and its interactive features are intended for demonstration, entertainment, and portfolio viewing purposes only. No production-grade security, reliability, or data protection is implied or guaranteed.</p>
+            <p>This site is an artist fan and community platform. Its account system exists to support community features, not to protect highly sensitive data. No financial, medical, legal, or enterprise-grade security is implied or guaranteed.</p>
           </div>
 
         </div>

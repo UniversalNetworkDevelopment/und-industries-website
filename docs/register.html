@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0d0d0f">
   <meta name="robots" content="noindex, nofollow">
-  <title>Register — U.N.D Industries</title>
+  <title>Create Account — U.N.D Industries</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/css/styles.css">
 </head>
@@ -16,7 +16,7 @@
       <h1 class="auth-title">Create account</h1>
       <p class="auth-sub">Set up your U.N.D Industries access.</p>
       <div class="auth-demo-notice" role="note">
-        <strong>Demo system only.</strong> Your credentials will be stored in plaintext in your browser's localStorage. Do not use a real password from another service.
+        <strong>Powered by Supabase.</strong> Your password is hashed — never stored in plaintext. A verification email will be sent to confirm your address. Use a unique password; this is an artist fan platform.
       </div>
       <div id="reg-alert" class="auth-alert" role="alert"></div>
       <form id="register-form" class="form" novalidate>
@@ -49,6 +49,7 @@
       <p class="auth-footer-text" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);"><a href="privacy.html" style="color:var(--text-muted);font-size:0.8rem;">Privacy Policy</a></p>
     </div>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/main.js"></script>
 </body>
 </html>
