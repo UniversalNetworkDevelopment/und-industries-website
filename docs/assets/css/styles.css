@@ -917,3 +917,81 @@ textarea.form-input { min-height: 140px; resize: vertical; }
   .about-studio-grid { grid-template-columns: 1fr; gap: 32px; }
   .dash-mobile-bar   { display: flex; }
 }
+
+/* ── Privacy Policy page ────────────────────────────────── */
+.privacy-body {
+  max-width: 760px;
+}
+
+.privacy-section {
+  margin-bottom: 48px;
+}
+
+.privacy-heading {
+  font-family: var(--font-head);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.privacy-list {
+  list-style: disc;
+  padding-left: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.privacy-list li {
+  color: var(--text-soft);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.privacy-warning {
+  padding: 28px 32px;
+  background: rgba(239,68,68,0.05);
+  border: 1px solid rgba(239,68,68,0.2);
+  border-radius: var(--radius);
+}
+
+.privacy-contact-link {
+  display: inline-block;
+  color: var(--accent-light);
+  font-weight: 600;
+  font-size: 1rem;
+  transition: color var(--transition);
+}
+.privacy-contact-link:hover { color: var(--text); }
+
+/* ── Footer legal link ──────────────────────────────────── */
+a.footer-copy,
+.footer-legal-link {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  transition: color var(--transition);
+}
+a.footer-copy:hover,
+.footer-legal-link:hover { color: var(--text-soft); }
+
+/* ── Dashboard legal footer (public + mobile) ───────────── */
+.dash-legal-footer {
+  padding: 16px 32px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.dash-legal-footer a {
+  color: var(--text-muted);
+  transition: color var(--transition);
+}
+.dash-legal-footer a:hover { color: var(--text-soft); }
