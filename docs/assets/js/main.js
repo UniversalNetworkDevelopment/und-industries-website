@@ -43,25 +43,7 @@
     });
   }
 
-  // ── Elijah Context System ─────────────────────────────────
-  // Tracks page and section for future internal integration only.
-  // No AI logic exposed here.
-  var _ctx = { pageId: null, sectionId: null };
-
-  window.setContext = function (pageId, sectionId) {
-    _ctx.pageId    = pageId    || null;
-    _ctx.sectionId = sectionId || null;
-    window.dispatchEvent(new CustomEvent('und:context', {
-      detail: { page: _ctx.pageId, section: _ctx.sectionId }
-    }));
-  };
-
-  window.getContext = function () { return Object.assign({}, _ctx); };
-
   var body = document.body;
-  if (body.dataset.page) {
-    window.setContext(body.dataset.page, body.dataset.section || null);
-  }
 
   // ── Auth ─────────────────────────────────────────────────
   //
@@ -207,7 +189,7 @@
     contactForm.addEventListener('submit', function (e) {
       e.preventDefault();
       var alert = document.getElementById('contact-alert');
-      alert.textContent = 'Message received. For fastest response, email directly using the address above.';
+      alert.textContent = 'Demo only — this form does not send messages. Email officialtyzen@gmail.com directly for a response.';
       alert.className   = 'auth-alert success visible';
     });
   }
