@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -15,11 +15,14 @@
     <aside class="sidebar" aria-label="Dashboard navigation">
       <div class="sidebar-logo">U.N.D <span>Industries</span></div>
       <nav class="sidebar-nav">
-        <p class="sidebar-section-label">Main</p>
-        <a href="dashboard.html" class="sidebar-link active"><span class="sidebar-link-icon">⊞</span> Overview</a>
+        <p class="sidebar-section-label">Dashboard</p>
+        <button type="button" class="sidebar-link sidebar-tab-btn active" data-tab="overview"><span class="sidebar-link-icon">⊞</span> Overview</button>
+        <button type="button" class="sidebar-link sidebar-tab-btn" data-tab="chat"><span class="sidebar-link-icon">💬</span> Community</button>
+        <button type="button" class="sidebar-link sidebar-tab-btn" data-tab="settings"><span class="sidebar-link-icon">⚙</span> Settings</button>
+        <button type="button" class="sidebar-link sidebar-tab-btn" data-tab="admin" id="sidebar-tab-admin" hidden><span class="sidebar-link-icon">🔑</span> Admin</button>
+        <p class="sidebar-section-label">Site</p>
         <a href="music.html" class="sidebar-link"><span class="sidebar-link-icon">🎵</span> Music</a>
         <a href="contact.html" class="sidebar-link"><span class="sidebar-link-icon">✉</span> Contact</a>
-        <p class="sidebar-section-label">Studio</p>
         <a href="dashboard-alt.html" class="sidebar-link"><span class="sidebar-link-icon">⬡</span> Studio Panel</a>
       </nav>
       <div class="sidebar-footer">
@@ -29,18 +32,28 @@
     </aside>
 
     <div class="dashboard-main">
+
       <div class="dash-mobile-bar">
         <div class="dash-mobile-logo">U.N.D <span>Industries</span></div>
         <button type="button" data-action="logout" class="btn btn-secondary btn-sm">Sign Out</button>
       </div>
-      <div class="dashboard-topbar">
-        <div class="dashboard-topbar-title">Dashboard — Welcome, <span id="dashboard-user-name">—</span><span id="dashboard-role-badge" class="role-badge" hidden></span></div>
-        <span class="topbar-brand">U.N.D Industries</span>
-      </div>
-      <div class="dashboard-content" id="dashboard-content-area">
-        <div id="backend-status-bar" class="backend-status"></div>
 
-        <!-- Owner stats row — shown only to role='owner' by main.js -->
+      <div class="dashboard-topbar">
+        <div class="dashboard-topbar-title">Welcome, <span id="dashboard-user-name">—</span><span id="dashboard-role-badge" class="role-badge" hidden></span></div>
+        <div id="backend-status-bar" class="topbar-backend-status"></div>
+      </div>
+
+      <div class="dash-tab-nav" role="tablist">
+        <button type="button" class="dash-tab-btn active" data-tab="overview" role="tab" aria-selected="true">Overview</button>
+        <button type="button" class="dash-tab-btn" data-tab="chat" role="tab" aria-selected="false">Community</button>
+        <button type="button" class="dash-tab-btn" data-tab="settings" role="tab" aria-selected="false">Settings</button>
+        <button type="button" class="dash-tab-btn" data-tab="admin" id="mobile-tab-admin" role="tab" aria-selected="false" hidden>Admin</button>
+      </div>
+
+      <!-- TAB: Overview -->
+      <div id="tab-overview" class="dash-tab-content" role="tabpanel">
+
+        <!-- Owner stats — JS reveals for role='owner' only -->
         <div id="owner-stats-row" class="stat-grid" hidden>
           <div class="stat-card">
             <div class="stat-label">Inbox Messages</div>
@@ -48,19 +61,19 @@
             <div class="stat-sub">Contact submissions</div>
           </div>
           <div class="stat-card">
+            <div class="stat-label">Total Members</div>
+            <div class="stat-value" id="owner-stat-users">—</div>
+            <div class="stat-sub">Registered accounts</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Active (10 min)</div>
+            <div class="stat-value stat-value-live" id="owner-stat-active">—</div>
+            <div class="stat-sub">Recently seen online</div>
+          </div>
+          <div class="stat-card">
             <div class="stat-label">Auth Backend</div>
             <div class="stat-value stat-value-live" id="owner-stat-auth">—</div>
             <div class="stat-sub">Supabase connection</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">RLS</div>
-            <div class="stat-value stat-value-live">Active</div>
-            <div class="stat-sub">Row Level Security on</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Your Data Mode</div>
-            <div class="stat-value stat-value-accent" id="owner-stat-mode">—</div>
-            <div class="stat-sub">Collection setting</div>
           </div>
         </div>
 
@@ -86,6 +99,7 @@
             <div class="stat-sub">Coming soon</div>
           </div>
         </div>
+
         <div class="dashboard-grid">
           <div class="card">
             <h4 class="mb-16">Quick Links</h4>
@@ -107,10 +121,14 @@
           </div>
         </div>
 
-        <!-- Community Chat — all logged-in users -->
-        <div id="chat-section" class="card" hidden>
-          <h4 class="mb-8">Community</h4>
-          <p class="text-sm mb-16">Chat with the U.N.D Industries community.</p>
+      </div>
+
+      <!-- TAB: Community Chat -->
+      <div id="tab-chat" class="dash-tab-content" role="tabpanel" hidden>
+        <div class="card">
+          <h4 class="mb-8">Community Chat</h4>
+          <p class="text-sm mb-12">Chat with the U.N.D Industries community.</p>
+          <div class="chat-notice">Messages are visible to all logged-in members. Keep it respectful.</div>
           <div id="chat-messages" class="chat-messages" aria-live="polite" aria-label="Chat messages">
             <p class="chat-empty">No messages yet. Be the first.</p>
           </div>
@@ -121,13 +139,62 @@
           </form>
           <button type="button" id="chat-refresh" class="btn btn-outline btn-sm mt-8">Refresh</button>
         </div>
-
       </div>
-      <!-- Privacy settings — shown to all logged-in users -->
-      <div id="settings-section" class="profile-edit-wrap" hidden>
-        <div class="card">
-          <h4>Privacy &amp; Data Settings</h4>
-          <p class="text-sm mb-16">Choose how this site handles your data beyond what is required for your account.</p>
+
+      <!-- TAB: Settings -->
+      <div id="tab-settings" class="dash-tab-content" role="tabpanel" hidden>
+
+        <div class="card mb-20">
+          <h4 class="mb-16">Account Info</h4>
+          <div class="account-info-grid">
+            <div class="account-info-item">
+              <span class="account-info-label">Email</span>
+              <span class="account-info-value" id="account-email-display">—</span>
+            </div>
+            <div class="account-info-item">
+              <span class="account-info-label">Role</span>
+              <span class="account-info-value" id="account-role-display">—</span>
+            </div>
+            <div class="account-info-item">
+              <span class="account-info-label">Data Mode</span>
+              <span class="account-info-value" id="account-mode-display">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-20" id="profile-edit-wrap">
+          <h4 class="mb-8">Display Name</h4>
+          <p class="text-sm mb-16">Update your public display name.</p>
+          <div id="profile-edit-alert" class="auth-alert" role="alert"></div>
+          <form id="profile-edit-form" class="form" novalidate>
+            <div class="form-group">
+              <label class="form-label" for="profile-display-name">Display Name</label>
+              <input class="form-input" type="text" id="profile-display-name" placeholder="Your name" maxlength="120" autocomplete="name">
+            </div>
+            <button type="submit" class="btn btn-outline btn-sm">Save</button>
+          </form>
+        </div>
+
+        <div class="card mb-20">
+          <h4 class="mb-8">Change Password</h4>
+          <p class="text-sm mb-16">Set a new password for your account.</p>
+          <div id="change-password-alert" class="auth-alert" role="alert"></div>
+          <form id="change-password-form" class="form" novalidate>
+            <div class="form-group">
+              <label class="form-label" for="change-new-password">New Password</label>
+              <input class="form-input" type="password" id="change-new-password" placeholder="At least 8 characters" minlength="8" autocomplete="new-password">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="change-confirm-password">Confirm New Password</label>
+              <input class="form-input" type="password" id="change-confirm-password" placeholder="Repeat new password" autocomplete="new-password">
+            </div>
+            <button type="submit" class="btn btn-outline btn-sm" id="change-password-submit">Update Password</button>
+          </form>
+        </div>
+
+        <div class="card" id="settings-section">
+          <h4 class="mb-8">Privacy &amp; Data</h4>
+          <p class="text-sm mb-16">Choose how this site handles your data.</p>
           <div id="settings-alert" class="auth-alert" role="alert"></div>
           <div class="settings-mode-wrap">
             <button type="button" id="settings-mode-standard" class="settings-mode-btn" data-mode="standard">
@@ -139,31 +206,16 @@
               <span class="settings-mode-desc">Enables optional personalization as features roll out. No third-party trackers, ever.</span>
             </button>
           </div>
-          <p class="settings-mode-note">Your choice is stored in your account. You can change it at any time here. See <a href="privacy.html">Privacy Policy</a>.</p>
+          <p class="settings-mode-note">Current mode: <strong id="settings-current-mode">—</strong>. See <a href="privacy.html">Privacy Policy</a>.</p>
         </div>
+
       </div>
 
-      <!-- Profile edit section — shown once backend is live via main.js -->
-      <div id="profile-edit-wrap" class="profile-edit-wrap" hidden>
-        <div class="card">
-          <h4>Edit Profile</h4>
-          <p>Update your display name. Changes take effect immediately.</p>
-          <div id="profile-edit-alert" class="auth-alert" role="alert"></div>
-          <form id="profile-edit-form" class="form" novalidate>
-            <div class="form-group">
-              <label class="form-label" for="profile-display-name">Display Name</label>
-              <input class="form-input" type="text" id="profile-display-name" placeholder="Your name" maxlength="120" autocomplete="name">
-            </div>
-            <button type="submit" class="btn btn-outline btn-sm">Save</button>
-          </form>
-        </div>
-      </div>
-
-      <!-- Admin section — only shown to role='owner' via main.js -->
-      <div id="admin-section" class="admin-panel-wrap" hidden>
-        <div class="card">
-          <h4>Owner Panel</h4>
-          <p>Contact messages submitted through the site appear below.</p>
+      <!-- TAB: Admin — owner only, tab button hidden for members by main.js -->
+      <div id="tab-admin" class="dash-tab-content" role="tabpanel" hidden>
+        <div id="admin-section" class="card">
+          <h4 class="mb-8">Owner Panel</h4>
+          <p class="text-sm mb-16">Contact messages submitted through the site appear below.</p>
           <div id="admin-inbox" class="inbox-placeholder">
             <p>Loading messages&hellip;</p>
           </div>
@@ -174,8 +226,8 @@
         <span>&copy; <span data-year>2026</span> U.N.D Industries</span>
         <a href="privacy.html">Privacy Policy</a>
       </footer>
-    </div>
 
+    </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/main.js"></script>

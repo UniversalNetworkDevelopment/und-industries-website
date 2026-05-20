@@ -1518,3 +1518,112 @@ body.auth-loading .auth-page { opacity: 0; }
 }
 .chat-input { flex: 1; margin-bottom: 0; }
 .privacy-body a:hover { color: var(--text); }
+
+/* ── Dashboard tab nav (mobile) ─────────────────────────── */
+.dash-tab-nav {
+  display: none;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-alt);
+}
+.dash-tab-nav::-webkit-scrollbar { display: none; }
+
+@media (max-width: 768px) {
+  .dash-tab-nav { display: flex; }
+}
+
+.dash-tab-btn {
+  flex-shrink: 0;
+  padding: 12px 18px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color var(--transition), border-color var(--transition);
+  white-space: nowrap;
+}
+.dash-tab-btn:hover { color: var(--text); }
+.dash-tab-btn.active {
+  color: var(--accent-light);
+  border-bottom-color: var(--accent-light);
+}
+
+/* sidebar tab buttons */
+button.sidebar-link {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* ── Dashboard tab panels ───────────────────────────────── */
+.dash-tab-content { padding: 32px 32px 40px; }
+@media (max-width: 768px) {
+  .dash-tab-content { padding: 20px 16px 32px; }
+}
+
+/* ── Topbar backend status (inline pill) ────────────────── */
+.topbar-backend-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  padding: 4px 12px;
+  background: rgba(245,158,11,0.06);
+  border: 1px solid rgba(245,158,11,0.18);
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+.topbar-backend-status.online {
+  background: rgba(16,185,129,0.06);
+  border-color: rgba(16,185,129,0.2);
+  color: #6ee7b7;
+}
+
+/* ── Account info grid ──────────────────────────────────── */
+.account-info-grid {
+  display: flex;
+  flex-direction: column;
+}
+.account-info-item {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.account-info-item:last-child { border-bottom: none; }
+.account-info-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  min-width: 88px;
+  flex-shrink: 0;
+}
+.account-info-value {
+  font-size: 0.9rem;
+  color: var(--text-soft);
+  word-break: break-all;
+}
+
+/* ── Chat notice banner ─────────────────────────────────── */
+.chat-notice {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  background: rgba(124,58,237,0.06);
+  border: 1px solid rgba(124,58,237,0.15);
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}

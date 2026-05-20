@@ -272,6 +272,32 @@
       : '<a href="login.html" class="btn btn-outline btn-sm">Login</a>';
   }
 
+  // ── Tab switching (dashboard) ─────────────────────────────
+  function initTabs() {
+    var allTabBtns = document.querySelectorAll('.sidebar-tab-btn, .dash-tab-btn');
+    var panels     = document.querySelectorAll('.dash-tab-content');
+    if (!panels.length) return;
+
+    function switchTab(tabName) {
+      panels.forEach(function (p) {
+        p.hidden = (p.id !== 'tab-' + tabName);
+      });
+      allTabBtns.forEach(function (btn) {
+        var active = btn.dataset.tab === tabName;
+        btn.classList.toggle('active', active);
+        if (btn.hasAttribute('aria-selected')) {
+          btn.setAttribute('aria-selected', String(active));
+        }
+      });
+    }
+
+    allTabBtns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        if (!btn.hidden) switchTab(btn.dataset.tab);
+      });
+    });
+  }
+
   // ── HTML escaping ─────────────────────────────────────────
   function escapeHtml(str) {
     if (!str) return '';
@@ -283,24 +309,37 @@
   }
 
   // ── Owner stats ──────────────────────────────────────────
-  function loadOwnerStats(dataMode) {
+  function loadOwnerStats() {
     var statsRow   = document.getElementById('owner-stats-row');
     var statInbox  = document.getElementById('owner-stat-inbox');
     var statAuth   = document.getElementById('owner-stat-auth');
-    var statMode   = document.getElementById('owner-stat-mode');
+    var statUsers  = document.getElementById('owner-stat-users');
+    var statActive = document.getElementById('owner-stat-active');
     if (!statsRow) return;
 
     statsRow.removeAttribute('hidden');
-    if (statAuth)  { statAuth.textContent  = supabase ? 'Connected' : 'Offline'; }
-    if (statMode)  { statMode.textContent  = dataMode === 'advanced' ? 'Advanced' : 'Standard'; }
+    if (statAuth) statAuth.textContent = supabase ? 'Connected' : 'Offline';
+    if (!supabase) return;
 
-    if (supabase && statInbox) {
+    if (statInbox) {
       supabase
         .from('contact_messages')
         .select('id', { count: 'exact', head: true })
         .then(function (res) {
           statInbox.textContent = res.error ? '—' : String(res.count || 0);
         });
+    }
+
+    if (statUsers) {
+      supabase.rpc('count_total_users').then(function (res) {
+        statUsers.textContent = (res.error || res.data === null) ? '—' : String(res.data);
+      });
+    }
+
+    if (statActive) {
+      supabase.rpc('count_active_users', { minutes_ago: 10 }).then(function (res) {
+        statActive.textContent = (res.error || res.data === null) ? '—' : String(res.data);
+      });
     }
   }
 
@@ -591,62 +630,78 @@
       btn.addEventListener('click', function () { Auth.logout(); });
     });
 
-    // ── Dashboard profile + admin ────────────────────────────
+    // ── Dashboard tabs + profile + role-based UI ────────────
+    initTabs();
+
     var userNameEl      = document.getElementById('dashboard-user-name');
     var roleBadgeEl     = document.getElementById('dashboard-role-badge');
-    var adminSection    = document.getElementById('admin-section');
     var profileEditWrap = document.getElementById('profile-edit-wrap');
     var backendStatusEl = document.getElementById('backend-status-bar');
+    var sidebarAdminBtn = document.getElementById('sidebar-tab-admin');
+    var mobileAdminBtn  = document.getElementById('mobile-tab-admin');
 
     if (backendStatusEl) {
       if (supabase) {
-        backendStatusEl.innerHTML = '<span class="backend-dot online"></span> Backend connected';
+        backendStatusEl.innerHTML = '<span class="backend-dot online"></span> Connected';
         backendStatusEl.classList.add('online');
       } else {
-        backendStatusEl.innerHTML = '<span class="backend-dot"></span> Backend offline — authentication and data storage are not yet active';
+        backendStatusEl.innerHTML = '<span class="backend-dot"></span> Offline';
       }
     }
 
-    var settingsSection = document.getElementById('settings-section');
-    var chatSection     = document.getElementById('chat-section');
+    if (userNameEl || profileEditWrap || sidebarAdminBtn) {
+      Auth.getProfile().then(async function (profile) {
+        var user        = await Auth.getUser();
+        var isOwner     = profile && profile.role === 'owner';
+        var displayName = (profile && profile.display_name) || 'Studio';
+        var currentMode = (profile && profile.data_mode) || 'standard';
 
-    if (userNameEl || adminSection || profileEditWrap || settingsSection || chatSection) {
-      Auth.getProfile().then(function (profile) {
-        var isOwner      = profile && profile.role === 'owner';
-        var displayName  = (profile && profile.display_name) || 'Studio';
-        var currentMode  = (profile && profile.data_mode) || 'standard';
-
-        if (profile) {
-          if (userNameEl) userNameEl.textContent = displayName;
-          if (roleBadgeEl) {
-            roleBadgeEl.textContent = isOwner ? 'Owner' : 'Member';
-            roleBadgeEl.className   = 'role-badge ' + (isOwner ? 'role-badge-owner' : 'role-badge-member');
-            roleBadgeEl.removeAttribute('hidden');
-          }
-          if (adminSection && isOwner) {
-            adminSection.removeAttribute('hidden');
-            loadInbox();
-          }
-          if (profileEditWrap) profileEditWrap.removeAttribute('hidden');
-        } else if (profileEditWrap && supabase) {
-          profileEditWrap.removeAttribute('hidden');
+        // Header: name + role badge
+        if (userNameEl) userNameEl.textContent = displayName;
+        if (roleBadgeEl) {
+          roleBadgeEl.textContent = isOwner ? 'Owner' : 'Member';
+          roleBadgeEl.className   = 'role-badge ' + (isOwner ? 'role-badge-owner' : 'role-badge-member');
+          roleBadgeEl.removeAttribute('hidden');
         }
 
-        // Owner stats row
-        if (isOwner) loadOwnerStats(currentMode);
+        // Account info panel (settings tab)
+        var emailEl     = document.getElementById('account-email-display');
+        var roleEl      = document.getElementById('account-role-display');
+        var acctModeEl  = document.getElementById('account-mode-display');
+        if (emailEl)    emailEl.textContent    = (user && user.email) ? user.email : '—';
+        if (roleEl)     roleEl.textContent     = isOwner ? 'Owner' : 'Member';
+        if (acctModeEl) acctModeEl.textContent = currentMode === 'advanced' ? 'Advanced' : 'Standard';
 
-        // Settings section
-        if (settingsSection && supabase) {
-          settingsSection.removeAttribute('hidden');
-          var stdBtn  = document.getElementById('settings-mode-standard');
-          var advBtn  = document.getElementById('settings-mode-advanced');
+        // Pre-fill display name input
+        var nameInput = document.getElementById('profile-display-name');
+        if (nameInput && profile) nameInput.value = profile.display_name || '';
+
+        // Admin tab — owner only
+        if (isOwner) {
+          if (sidebarAdminBtn) sidebarAdminBtn.removeAttribute('hidden');
+          if (mobileAdminBtn)  mobileAdminBtn.removeAttribute('hidden');
+          loadOwnerStats();
+          loadInbox();
+        }
+
+        // Update last_seen
+        if (supabase && user) {
+          supabase.from('profiles').update({ last_seen: new Date().toISOString() }).eq('id', user.id);
+        }
+
+        // Settings: data mode toggle
+        if (supabase) {
+          var stdBtn   = document.getElementById('settings-mode-standard');
+          var advBtn   = document.getElementById('settings-mode-advanced');
           var setAlert = document.getElementById('settings-alert');
 
           function applyModeUI(mode) {
             if (stdBtn) stdBtn.classList.toggle('active', mode === 'standard');
             if (advBtn) advBtn.classList.toggle('active', mode === 'advanced');
-            var modeEl = document.getElementById('owner-stat-mode');
-            if (modeEl) modeEl.textContent = mode === 'advanced' ? 'Advanced' : 'Standard';
+            var curModeEl   = document.getElementById('settings-current-mode');
+            var acctModeEl2 = document.getElementById('account-mode-display');
+            if (curModeEl)   curModeEl.textContent   = mode === 'advanced' ? 'Advanced' : 'Standard';
+            if (acctModeEl2) acctModeEl2.textContent = mode === 'advanced' ? 'Advanced' : 'Standard';
           }
           applyModeUI(currentMode);
 
@@ -675,13 +730,9 @@
           }
           handleModeBtn(stdBtn);
           handleModeBtn(advBtn);
-        }
 
-        // Chat section
-        if (chatSection && supabase) {
-          chatSection.removeAttribute('hidden');
+          // Chat: wire form in its own tab
           Chat.load();
-
           var chatForm    = document.getElementById('chat-form');
           var chatInput   = document.getElementById('chat-input');
           var chatAlert   = document.getElementById('chat-alert');
@@ -744,6 +795,57 @@
         alertEl.className   = 'auth-alert ' + (result.ok ? 'success' : 'error') + ' visible';
 
         if (result.ok && userNameEl) userNameEl.textContent = displayName || 'Studio';
+      });
+    }
+
+    // ── Change password form (dashboard settings tab) ────────
+    var changePasswordForm = document.getElementById('change-password-form');
+    if (changePasswordForm) {
+      changePasswordForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        var alertEl = document.getElementById('change-password-alert');
+        var btn     = document.getElementById('change-password-submit');
+        var newPwd  = document.getElementById('change-new-password').value;
+        var confirm = document.getElementById('change-confirm-password').value;
+
+        if (!supabase) {
+          alertEl.textContent = 'Authentication service is unavailable.';
+          alertEl.className   = 'auth-alert error visible';
+          return;
+        }
+        if (newPwd.length < 8) {
+          alertEl.textContent = 'Password must be at least 8 characters.';
+          alertEl.className   = 'auth-alert error visible';
+          return;
+        }
+        if (newPwd !== confirm) {
+          alertEl.textContent = 'Passwords do not match.';
+          alertEl.className   = 'auth-alert error visible';
+          return;
+        }
+        if (!applyRateLimit('change-password', 30000)) {
+          alertEl.textContent = 'Please wait before trying again.';
+          alertEl.className   = 'auth-alert error visible';
+          return;
+        }
+
+        btn.disabled    = true;
+        btn.textContent = 'Updating…';
+
+        var result = await supabase.auth.updateUser({ password: newPwd });
+
+        btn.disabled    = false;
+        btn.textContent = 'Update Password';
+
+        if (result.error) {
+          alertEl.textContent = result.error.message || 'Could not update password.';
+          alertEl.className   = 'auth-alert error visible';
+        } else {
+          alertEl.textContent = 'Password updated successfully.';
+          alertEl.className   = 'auth-alert success visible';
+          changePasswordForm.reset();
+          setTimeout(function () { alertEl.className = 'auth-alert'; }, 4000);
+        }
       });
     }
 
