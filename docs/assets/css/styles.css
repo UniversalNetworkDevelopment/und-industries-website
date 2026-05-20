@@ -1418,4 +1418,103 @@ body.auth-loading .auth-page { opacity: 0; }
 
 /* ── Legal page inline links ─────────────────────────────── */
 .privacy-body a { color: var(--accent-light); transition: color var(--transition); }
+
+/* ── Settings mode toggle ────────────────────────────────── */
+.settings-mode-wrap {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+@media (max-width: 540px) {
+  .settings-mode-wrap { grid-template-columns: 1fr; }
+}
+.settings-mode-btn {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color var(--transition), background var(--transition);
+}
+.settings-mode-btn:hover {
+  border-color: var(--accent);
+}
+.settings-mode-btn.active {
+  border-color: var(--accent);
+  background: rgba(168, 85, 247, 0.08);
+}
+.settings-mode-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.settings-mode-btn.active .settings-mode-label {
+  color: var(--accent-light);
+}
+.settings-mode-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+.settings-mode-note {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.settings-mode-note a { color: var(--accent-light); }
+
+/* ── Chat panel ──────────────────────────────────────────── */
+.chat-messages {
+  min-height: 160px;
+  max-height: 320px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 0;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.chat-message {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.chat-message-header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.chat-message-name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent-light);
+}
+.chat-message-time {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+.chat-message-text {
+  font-size: 0.88rem;
+  color: var(--text);
+  line-height: 1.5;
+  word-break: break-word;
+}
+.chat-empty {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 24px 0;
+}
+.chat-form {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.chat-input { flex: 1; margin-bottom: 0; }
 .privacy-body a:hover { color: var(--text); }

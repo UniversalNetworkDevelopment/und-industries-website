@@ -187,6 +187,25 @@
       var res = await supabase.from('profiles').update({ display_name: displayName }).eq('id', uid);
       if (res.error) return { ok: false, msg: res.error.message };
       return { ok: true };
+    },
+
+    getDataMode: async function () {
+      if (!supabase) return 'standard';
+      var sessionRes = await supabase.auth.getSession();
+      if (!sessionRes.data.session) return 'standard';
+      var uid = sessionRes.data.session.user.id;
+      var res = await supabase.from('profiles').select('data_mode').eq('id', uid).single();
+      return (res.data && res.data.data_mode) ? res.data.data_mode : 'standard';
+    },
+
+    setDataMode: async function (mode) {
+      if (!supabase) return { ok: false, msg: 'Unavailable.' };
+      var sessionRes = await supabase.auth.getSession();
+      if (!sessionRes.data.session) return { ok: false, msg: 'Not signed in.' };
+      var uid = sessionRes.data.session.user.id;
+      var res = await supabase.from('profiles').update({ data_mode: mode }).eq('id', uid);
+      if (res.error) return { ok: false, msg: res.error.message };
+      return { ok: true };
     }
   };
 
@@ -262,6 +281,85 @@
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;');
   }
+
+  // ── Owner stats ──────────────────────────────────────────
+  function loadOwnerStats(dataMode) {
+    var statsRow   = document.getElementById('owner-stats-row');
+    var statInbox  = document.getElementById('owner-stat-inbox');
+    var statAuth   = document.getElementById('owner-stat-auth');
+    var statMode   = document.getElementById('owner-stat-mode');
+    if (!statsRow) return;
+
+    statsRow.removeAttribute('hidden');
+    if (statAuth)  { statAuth.textContent  = supabase ? 'Connected' : 'Offline'; }
+    if (statMode)  { statMode.textContent  = dataMode === 'advanced' ? 'Advanced' : 'Standard'; }
+
+    if (supabase && statInbox) {
+      supabase
+        .from('contact_messages')
+        .select('id', { count: 'exact', head: true })
+        .then(function (res) {
+          statInbox.textContent = res.error ? '—' : String(res.count || 0);
+        });
+    }
+  }
+
+  // ── Chat ──────────────────────────────────────────────────
+  // Reads/writes public.chat_messages (room='general').
+  // No realtime yet — load on open + manual refresh button.
+  var Chat = {
+    render: function (messages) {
+      var container = document.getElementById('chat-messages');
+      if (!container) return;
+      if (!messages || messages.length === 0) {
+        container.innerHTML = '<p class="chat-empty">No messages yet. Be the first.</p>';
+        return;
+      }
+      container.innerHTML = messages.map(function (msg) {
+        var time = new Date(msg.created_at).toLocaleTimeString('en-US', {
+          hour: 'numeric', minute: '2-digit'
+        });
+        var date = new Date(msg.created_at).toLocaleDateString('en-US', {
+          month: 'short', day: 'numeric'
+        });
+        return '<div class="chat-message">' +
+          '<div class="chat-message-header">' +
+            '<span class="chat-message-name">' + escapeHtml(msg.display_name || 'Anonymous') + '</span>' +
+            '<span class="chat-message-time">' + escapeHtml(date + ' ' + time) + '</span>' +
+          '</div>' +
+          '<div class="chat-message-text">' + escapeHtml(msg.content) + '</div>' +
+        '</div>';
+      }).join('');
+      container.scrollTop = container.scrollHeight;
+    },
+
+    load: function () {
+      if (!supabase) return;
+      supabase
+        .from('chat_messages')
+        .select('id, display_name, content, created_at')
+        .eq('room', 'general')
+        .order('created_at', { ascending: true })
+        .limit(50)
+        .then(function (res) {
+          if (!res.error) Chat.render(res.data);
+        });
+    },
+
+    send: async function (content, displayName) {
+      if (!supabase) return { ok: false, msg: 'Chat unavailable.' };
+      var sessionRes = await supabase.auth.getSession();
+      if (!sessionRes.data.session) return { ok: false, msg: 'Not signed in.' };
+      var res = await supabase.from('chat_messages').insert({
+        user_id:      sessionRes.data.session.user.id,
+        display_name: displayName || 'Anonymous',
+        room:         'general',
+        content:      content
+      });
+      if (res.error) return { ok: false, msg: res.error.message };
+      return { ok: true };
+    }
+  };
 
   // ── Owner contact inbox ───────────────────────────────────
   // Requires RLS SELECT policy for owner on contact_messages:
@@ -509,23 +607,118 @@
       }
     }
 
-    if (userNameEl || adminSection || profileEditWrap) {
+    var settingsSection = document.getElementById('settings-section');
+    var chatSection     = document.getElementById('chat-section');
+
+    if (userNameEl || adminSection || profileEditWrap || settingsSection || chatSection) {
       Auth.getProfile().then(function (profile) {
+        var isOwner      = profile && profile.role === 'owner';
+        var displayName  = (profile && profile.display_name) || 'Studio';
+        var currentMode  = (profile && profile.data_mode) || 'standard';
+
         if (profile) {
-          if (userNameEl) userNameEl.textContent = profile.display_name || 'Studio';
+          if (userNameEl) userNameEl.textContent = displayName;
           if (roleBadgeEl) {
-            roleBadgeEl.textContent = profile.role === 'owner' ? 'Owner' : 'Member';
-            roleBadgeEl.className   = 'role-badge ' + (profile.role === 'owner' ? 'role-badge-owner' : 'role-badge-member');
+            roleBadgeEl.textContent = isOwner ? 'Owner' : 'Member';
+            roleBadgeEl.className   = 'role-badge ' + (isOwner ? 'role-badge-owner' : 'role-badge-member');
             roleBadgeEl.removeAttribute('hidden');
           }
-          if (adminSection && profile.role === 'owner') {
+          if (adminSection && isOwner) {
             adminSection.removeAttribute('hidden');
             loadInbox();
           }
           if (profileEditWrap) profileEditWrap.removeAttribute('hidden');
         } else if (profileEditWrap && supabase) {
-          // Auth is live but profile row is missing (trigger may not have fired).
           profileEditWrap.removeAttribute('hidden');
+        }
+
+        // Owner stats row
+        if (isOwner) loadOwnerStats(currentMode);
+
+        // Settings section
+        if (settingsSection && supabase) {
+          settingsSection.removeAttribute('hidden');
+          var stdBtn  = document.getElementById('settings-mode-standard');
+          var advBtn  = document.getElementById('settings-mode-advanced');
+          var setAlert = document.getElementById('settings-alert');
+
+          function applyModeUI(mode) {
+            if (stdBtn) stdBtn.classList.toggle('active', mode === 'standard');
+            if (advBtn) advBtn.classList.toggle('active', mode === 'advanced');
+            var modeEl = document.getElementById('owner-stat-mode');
+            if (modeEl) modeEl.textContent = mode === 'advanced' ? 'Advanced' : 'Standard';
+          }
+          applyModeUI(currentMode);
+
+          function handleModeBtn(btn) {
+            if (!btn) return;
+            btn.addEventListener('click', async function () {
+              var chosen = btn.dataset.mode;
+              if (btn.classList.contains('active')) return;
+              var result = await Auth.setDataMode(chosen);
+              if (result.ok) {
+                applyModeUI(chosen);
+                if (setAlert) {
+                  setAlert.textContent = chosen === 'advanced'
+                    ? 'Advanced mode enabled.'
+                    : 'Standard mode enabled.';
+                  setAlert.className = 'auth-alert success visible';
+                  setTimeout(function () { setAlert.className = 'auth-alert'; }, 3000);
+                }
+              } else {
+                if (setAlert) {
+                  setAlert.textContent = result.msg || 'Could not save setting.';
+                  setAlert.className = 'auth-alert error visible';
+                }
+              }
+            });
+          }
+          handleModeBtn(stdBtn);
+          handleModeBtn(advBtn);
+        }
+
+        // Chat section
+        if (chatSection && supabase) {
+          chatSection.removeAttribute('hidden');
+          Chat.load();
+
+          var chatForm    = document.getElementById('chat-form');
+          var chatInput   = document.getElementById('chat-input');
+          var chatAlert   = document.getElementById('chat-alert');
+          var chatRefresh = document.getElementById('chat-refresh');
+
+          if (chatRefresh) {
+            chatRefresh.addEventListener('click', function () { Chat.load(); });
+          }
+
+          if (chatForm) {
+            chatForm.addEventListener('submit', async function (e) {
+              e.preventDefault();
+              var content = chatInput ? chatInput.value.trim() : '';
+              if (!content) return;
+
+              if (!applyRateLimit('chat-send', 3000)) {
+                if (chatAlert) {
+                  chatAlert.textContent = 'Slow down — one message at a time.';
+                  chatAlert.className   = 'auth-alert error visible';
+                  setTimeout(function () { chatAlert.className = 'auth-alert'; }, 2000);
+                }
+                return;
+              }
+
+              var result = await Chat.send(content, displayName);
+              if (result.ok) {
+                if (chatInput) chatInput.value = '';
+                if (chatAlert) chatAlert.className = 'auth-alert';
+                Chat.load();
+              } else {
+                if (chatAlert) {
+                  chatAlert.textContent = result.msg || 'Message could not be sent.';
+                  chatAlert.className   = 'auth-alert error visible';
+                }
+              }
+            });
+          }
         }
       });
     }
