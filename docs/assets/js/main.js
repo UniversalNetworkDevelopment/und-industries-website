@@ -360,7 +360,13 @@
         if (result.ok) {
           window.location.href = 'dashboard.html';
         } else {
-          alertEl.textContent = result.msg;
+          var loginMsg = result.msg;
+          if (/invalid login credentials/i.test(loginMsg)) {
+            loginMsg = 'Incorrect email or password. If you just registered, check your email to verify your account first.';
+          } else if (/email not confirmed/i.test(loginMsg)) {
+            loginMsg = 'Please verify your email before signing in. Check your inbox for the confirmation link.';
+          }
+          alertEl.textContent = loginMsg;
           alertEl.className   = 'auth-alert error visible';
         }
       });
