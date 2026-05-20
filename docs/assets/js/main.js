@@ -70,10 +70,14 @@
   var Auth = {
     register: async function (email, password, displayName) {
       if (!supabase) return { ok: false, msg: 'Registration is currently unavailable.' };
+      var base = window.location.origin + (window.location.pathname.includes('und-industries-website') ? '/und-industries-website' : '');
       var res = await supabase.auth.signUp({
         email: email,
         password: password,
-        options: { data: { display_name: displayName } }
+        options: {
+          data: { display_name: displayName },
+          emailRedirectTo: base + '/dashboard.html'
+        }
       });
       if (res.error) return { ok: false, msg: res.error.message };
       return { ok: true, needsVerification: !res.data.session };
