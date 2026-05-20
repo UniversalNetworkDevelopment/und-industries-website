@@ -560,10 +560,20 @@
       .order('sort_order', { ascending: true })
       .limit(6)
       .then(function (res) {
-        if (res.error || !res.data || res.data.length === 0) return;
+        if (res.error) {
+          console.error('[UND promo] query error for "' + pageLocation + '":', res.error.message, res.error);
+          return;
+        }
+        if (!res.data || res.data.length === 0) {
+          console.log('[UND promo] no active promos found for "' + pageLocation + '"');
+          return;
+        }
         var container = document.getElementById(containerId);
         var section   = document.getElementById(sectionId);
-        if (!container) return;
+        if (!container) {
+          console.error('[UND promo] container #' + containerId + ' not found in DOM');
+          return;
+        }
         container.innerHTML = res.data.map(function (p) {
           return '<a href="' + escapeHtml(p.url) + '" class="promo-card" target="_blank" rel="noopener noreferrer">' +
             escapeHtml(p.title) + '</a>';
