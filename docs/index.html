@@ -17,6 +17,22 @@
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <link rel="icon" type="image/png" href="assets/favicon.png">
   <link rel="stylesheet" href="assets/css/styles.css">
+  <script>
+    // If Supabase redirects an auth email link to the homepage (allowlist fallback),
+    // forward the code to the correct handler before any page content renders.
+    (function () {
+      var s = window.location.search, h = window.location.hash;
+      if (s.indexOf('code=') !== -1) {
+        window.location.replace('verified.html' + s + h); return;
+      }
+      if (h.indexOf('type=recovery') !== -1) {
+        window.location.replace('reset-password.html' + h); return;
+      }
+      if (h.indexOf('type=signup') !== -1 || h.indexOf('type=email_change') !== -1) {
+        window.location.replace('verified.html' + h); return;
+      }
+    }());
+  </script>
 </head>
 <body data-page="home">
 

@@ -66,9 +66,16 @@
         var reqWrap = document.getElementById('reset-request-wrap');
         var setWrap = document.getElementById('reset-set-wrap');
         if (reqWrap && setWrap) {
+          // On reset-password.html — show the form directly.
           reqWrap.hidden = true;
           setWrap.removeAttribute('hidden');
           body.classList.remove('auth-loading');
+        } else {
+          // On another page (e.g. verified.html caught a recovery code forwarded
+          // from the homepage). Set a flag so reset-password.html can show the
+          // form on arrival, then navigate there.
+          sessionStorage.setItem('und_pwd_recovery', '1');
+          window.location.replace('reset-password.html');
         }
       }
 
@@ -274,6 +281,21 @@
   }
 
   function initPage() {
+
+    // ── Recovery redirect fallback ───────────────────────────
+    // Set when PASSWORD_RECOVERY fires on a non-reset page (e.g. verified.html
+    // received a recovery code forwarded from the homepage). The recovery session
+    // is already established in localStorage so updateUser() will succeed.
+    var recoveryFlag = sessionStorage.getItem('und_pwd_recovery');
+    if (recoveryFlag) {
+      sessionStorage.removeItem('und_pwd_recovery');
+      var recReq = document.getElementById('reset-request-wrap');
+      var recSet = document.getElementById('reset-set-wrap');
+      if (recReq && recSet) {
+        recReq.hidden = true;
+        recSet.removeAttribute('hidden');
+      }
+    }
 
     // ── Verified page fallback (no session in this browser) ──
     var pendingEl  = document.getElementById('verified-pending');
