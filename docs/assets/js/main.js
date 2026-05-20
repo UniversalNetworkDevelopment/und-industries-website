@@ -83,8 +83,10 @@
         }
       }
 
-      // Email verification: resolve the verified.html state display.
+      // A normal sign-in clears any stale recovery flag so a user who
+      // previously abandoned a reset flow can log in and navigate freely.
       if (event === 'SIGNED_IN') {
+        sessionStorage.removeItem('und_recovery_pending');
         var pendingEl = document.getElementById('verified-pending');
         var successEl = document.getElementById('verified-success');
         if (pendingEl && successEl) {
