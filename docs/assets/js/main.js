@@ -8,6 +8,8 @@
 (function () {
   'use strict';
 
+  var _lastError = null;
+
   // ── Year ──────────────────────────────────────────────────
   document.querySelectorAll('[data-year]').forEach(function (el) {
     el.textContent = new Date().getFullYear();
@@ -419,6 +421,7 @@
       .limit(50)
       .then(function (res) {
         if (res.error) {
+          _trackError('Inbox load: ' + res.error.message);
           inboxEl.innerHTML = '<p class="inbox-empty">Messages could not be loaded. Ensure the owner SELECT policy is configured in Supabase.</p>';
           inboxEl.className = 'inbox-placeholder';
           return;
@@ -444,6 +447,342 @@
         }).join('');
         inboxEl.innerHTML = html;
         inboxEl.className = 'inbox-list';
+      });
+  }
+
+  function _trackError(msg) {
+    _lastError = msg;
+    var errEl = document.getElementById('op-stat-error');
+    if (errEl) errEl.textContent = msg || 'None';
+  }
+
+  // ── Owner chat moderation ─────────────────────────────────
+  function loadOwnerChatMod() {
+    var listEl = document.getElementById('owner-chat-mod');
+    if (!listEl || !supabase) return;
+    listEl.innerHTML = '<p class="inbox-empty">Loading…</p>';
+
+    supabase
+      .from('chat_messages')
+      .select('id, display_name, content, created_at, user_id')
+      .order('created_at', { ascending: false })
+      .limit(50)
+      .then(function (res) {
+        if (res.error) {
+          _trackError('Chat load: ' + res.error.message);
+          listEl.innerHTML = '<p class="inbox-empty">Could not load messages.</p>';
+          return;
+        }
+        if (!res.data || res.data.length === 0) {
+          listEl.innerHTML = '<p class="inbox-empty">No messages.</p>';
+          return;
+        }
+        listEl.innerHTML = '';
+        res.data.forEach(function (msg) {
+          var time = new Date(msg.created_at).toLocaleString('en-US', {
+            month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+          });
+          var row = document.createElement('div');
+          row.className = 'owner-chat-row';
+          row.dataset.id = msg.id;
+          row.innerHTML =
+            '<div class="owner-chat-meta">' +
+              '<span class="owner-chat-name">' + escapeHtml(msg.display_name || 'Anonymous') + '</span>' +
+              '<span class="owner-chat-time">' + time + '</span>' +
+            '</div>' +
+            '<div class="owner-chat-body">' + escapeHtml(msg.content) + '</div>' +
+            '<button type="button" class="btn-danger-sm op-delete-chat">Delete</button>';
+          row.querySelector('.op-delete-chat').addEventListener('click', function () {
+            deleteOwnerChat(msg.id, row);
+          });
+          listEl.appendChild(row);
+        });
+      });
+  }
+
+  function deleteOwnerChat(msgId, rowEl) {
+    if (!supabase) return;
+    if (!confirm('Delete this message permanently?')) return;
+    supabase
+      .from('chat_messages')
+      .delete()
+      .eq('id', msgId)
+      .then(function (res) {
+        if (res.error) {
+          _trackError('Delete: ' + res.error.message);
+          if (rowEl && rowEl.parentNode) {
+            var errMsg = document.createElement('p');
+            errMsg.className = 'owner-row-error';
+            errMsg.textContent = 'Delete failed.';
+            rowEl.parentNode.insertBefore(errMsg, rowEl.nextSibling);
+            setTimeout(function () { if (errMsg.parentNode) errMsg.remove(); }, 4000);
+          }
+          return;
+        }
+        if (rowEl && rowEl.parentNode) rowEl.remove();
+      });
+  }
+
+  // ── Owner system status ───────────────────────────────────
+  function loadSystemStatus() {
+    var backendEl = document.getElementById('op-stat-backend');
+    var dbEl      = document.getElementById('op-stat-db');
+    var errEl     = document.getElementById('op-stat-error');
+    if (errEl) errEl.textContent = _lastError || 'None';
+    if (!supabase) {
+      if (backendEl) { backendEl.textContent = 'Unavailable'; backendEl.className = 'owner-status-val status-err'; }
+      if (dbEl)      { dbEl.textContent = 'Unavailable';      dbEl.className = 'owner-status-val status-err'; }
+      return;
+    }
+    if (backendEl) { backendEl.textContent = 'Connected'; backendEl.className = 'owner-status-val status-ok'; }
+    supabase
+      .from('profiles')
+      .select('id', { count: 'exact', head: true })
+      .then(function (res) {
+        if (res.error) {
+          if (dbEl) { dbEl.textContent = 'Error'; dbEl.className = 'owner-status-val status-err'; }
+          _trackError('DB check: ' + res.error.message);
+        } else {
+          if (dbEl) { dbEl.textContent = 'OK'; dbEl.className = 'owner-status-val status-ok'; }
+        }
+      });
+  }
+
+  // ── Promo Links — public page loader ──────────────────────
+  // Called on home / music / contact pages to display active promos.
+  function loadPromoLinks(pageLocation, containerId, sectionId) {
+    if (!supabase) return;
+    supabase
+      .from('promo_links')
+      .select('id, title, url')
+      .eq('location', pageLocation)
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true })
+      .limit(6)
+      .then(function (res) {
+        if (res.error || !res.data || res.data.length === 0) return;
+        var container = document.getElementById(containerId);
+        var section   = document.getElementById(sectionId);
+        if (!container) return;
+        container.innerHTML = res.data.map(function (p) {
+          return '<a href="' + escapeHtml(p.url) + '" class="promo-card" target="_blank" rel="noopener noreferrer">' +
+            escapeHtml(p.title) + '</a>';
+        }).join('');
+        if (section) section.removeAttribute('hidden');
+      });
+  }
+
+  // ── Owner: Promo & Links panel ────────────────────────────
+  function loadOwnerPromo() {
+    var listEl = document.getElementById('op-promo-list');
+    if (!listEl || !supabase) return;
+    listEl.innerHTML = '<p class="inbox-empty">Loading…</p>';
+    supabase
+      .from('promo_links')
+      .select('id, title, url, location, is_active, sort_order')
+      .order('location', { ascending: true })
+      .order('sort_order', { ascending: true })
+      .then(function (res) {
+        if (res.error) {
+          _trackError('Promo load: ' + res.error.message);
+          listEl.innerHTML = '<p class="inbox-empty">Could not load promo links.</p>';
+          return;
+        }
+        if (!res.data || res.data.length === 0) {
+          listEl.innerHTML = '<p class="inbox-empty">No promo links yet.</p>';
+          return;
+        }
+        listEl.innerHTML = '';
+        res.data.forEach(function (p) {
+          var row = document.createElement('div');
+          row.className = 'owner-promo-row';
+          row.innerHTML =
+            '<div class="owner-promo-meta">' +
+              '<span class="owner-promo-loc">' + escapeHtml(p.location) + '</span>' +
+              '<span class="owner-promo-title">' + escapeHtml(p.title) + '</span>' +
+              '<span class="owner-promo-url">' + escapeHtml(p.url) + '</span>' +
+              '<span class="owner-promo-order">order: ' + p.sort_order + '</span>' +
+            '</div>' +
+            '<div class="owner-promo-actions">' +
+              '<button type="button" class="owner-promo-toggle op-promo-toggle" data-active="' + p.is_active + '">' +
+                (p.is_active ? 'Active' : 'Inactive') +
+              '</button>' +
+              '<button type="button" class="btn-danger-sm op-promo-delete">Delete</button>' +
+            '</div>';
+          row.querySelector('.op-promo-toggle').addEventListener('click', function () {
+            togglePromoActive(p.id, p.is_active, row);
+          });
+          row.querySelector('.op-promo-delete').addEventListener('click', function () {
+            deletePromoLink(p.id, row);
+          });
+          listEl.appendChild(row);
+        });
+      });
+  }
+
+  function togglePromoActive(id, currentState, rowEl) {
+    if (!supabase) return;
+    supabase
+      .from('promo_links')
+      .update({ is_active: !currentState })
+      .eq('id', id)
+      .then(function (res) {
+        if (res.error) { _trackError('Promo toggle: ' + res.error.message); return; }
+        loadOwnerPromo();
+      });
+  }
+
+  function deletePromoLink(id, rowEl) {
+    if (!supabase) return;
+    if (!confirm('Delete this promo link permanently?')) return;
+    supabase
+      .from('promo_links')
+      .delete()
+      .eq('id', id)
+      .then(function (res) {
+        if (res.error) { _trackError('Promo delete: ' + res.error.message); return; }
+        if (rowEl && rowEl.parentNode) rowEl.remove();
+      });
+  }
+
+  // ── Owner: Feature Flags panel ────────────────────────────
+  function loadOwnerFeatureFlags() {
+    if (!supabase) return;
+    supabase
+      .from('feature_flags')
+      .select('key, enabled')
+      .then(function (res) {
+        if (res.error) { _trackError('Flags load: ' + res.error.message); return; }
+        if (!res.data) return;
+        res.data.forEach(function (flag) {
+          var btn = document.querySelector('[data-key="' + flag.key + '"]');
+          if (!btn) return;
+          btn.dataset.state = flag.enabled ? 'on' : 'off';
+          btn.textContent   = flag.enabled ? 'On' : 'Off';
+          btn.className     = 'owner-flag-toggle ' + (flag.enabled ? 'flag-on' : 'flag-off');
+        });
+      });
+  }
+
+  function updateFeatureFlag(key, enabled) {
+    if (!supabase) return;
+    var alertEl = document.getElementById('op-flags-alert');
+    supabase
+      .from('feature_flags')
+      .upsert({ key: key, enabled: enabled })
+      .then(function (res) {
+        if (res.error) {
+          _trackError('Flag update: ' + res.error.message);
+          if (alertEl) { alertEl.textContent = 'Could not update flag.'; alertEl.className = 'auth-alert error visible'; setTimeout(function () { alertEl.className = 'auth-alert'; }, 3000); }
+          return;
+        }
+        loadOwnerFeatureFlags();
+        if (alertEl) { alertEl.textContent = 'Feature flag updated.'; alertEl.className = 'auth-alert success visible'; setTimeout(function () { alertEl.className = 'auth-alert'; }, 2000); }
+      });
+  }
+
+  // ── Announcements — member view (dashboard overview) ─────
+  function loadAnnouncements() {
+    var card   = document.getElementById('announcements-card');
+    var listEl = document.getElementById('announcements-list');
+    if (!card || !listEl || !supabase) return;
+    supabase
+      .from('announcements')
+      .select('id, title, body, created_at')
+      .eq('is_active', true)
+      .order('created_at', { ascending: false })
+      .limit(3)
+      .then(function (res) {
+        if (res.error || !res.data || res.data.length === 0) return;
+        listEl.innerHTML = res.data.map(function (a) {
+          var date = new Date(a.created_at).toLocaleDateString('en-US', {
+            month: 'short', day: 'numeric', year: 'numeric'
+          });
+          return '<div class="ann-item">' +
+            '<div class="ann-item-header">' +
+              '<span class="ann-item-title">' + escapeHtml(a.title) + '</span>' +
+              '<span class="ann-item-date">' + date + '</span>' +
+            '</div>' +
+            '<div class="ann-item-body">' + escapeHtml(a.body) + '</div>' +
+          '</div>';
+        }).join('');
+        card.removeAttribute('hidden');
+      });
+  }
+
+  // ── Owner: Announcements panel ────────────────────────────
+  function loadOwnerAnnouncements() {
+    var listEl = document.getElementById('op-ann-list');
+    if (!listEl || !supabase) return;
+    listEl.innerHTML = '<p class="inbox-empty">Loading…</p>';
+    supabase
+      .from('announcements')
+      .select('id, title, body, created_at, is_active')
+      .order('created_at', { ascending: false })
+      .limit(20)
+      .then(function (res) {
+        if (res.error) {
+          _trackError('Ann load: ' + res.error.message);
+          listEl.innerHTML = '<p class="inbox-empty">Could not load announcements.</p>';
+          return;
+        }
+        if (!res.data || res.data.length === 0) {
+          listEl.innerHTML = '<p class="inbox-empty">No announcements yet.</p>';
+          return;
+        }
+        listEl.innerHTML = '';
+        res.data.forEach(function (a) {
+          var date = new Date(a.created_at).toLocaleDateString('en-US', {
+            month: 'short', day: 'numeric', year: 'numeric'
+          });
+          var row = document.createElement('div');
+          row.className = 'owner-ann-row' + (a.is_active ? '' : ' ann-inactive');
+          row.innerHTML =
+            '<div class="owner-ann-meta">' +
+              '<span class="owner-ann-title">' + escapeHtml(a.title) + '</span>' +
+              '<span class="owner-ann-date">' + date + '</span>' +
+              (a.is_active ? '' : '<span class="owner-ann-badge">Inactive</span>') +
+            '</div>' +
+            '<div class="owner-ann-body">' + escapeHtml(a.body) + '</div>' +
+            '<div class="owner-ann-actions">' +
+              (a.is_active ? '<button type="button" class="btn btn-outline btn-sm op-ann-deactivate">Deactivate</button>' : '') +
+              '<button type="button" class="btn-danger-sm op-ann-delete">Delete</button>' +
+            '</div>';
+          if (a.is_active) {
+            row.querySelector('.op-ann-deactivate').addEventListener('click', function () {
+              deactivateAnnouncement(a.id, row);
+            });
+          }
+          row.querySelector('.op-ann-delete').addEventListener('click', function () {
+            deleteAnnouncement(a.id, row);
+          });
+          listEl.appendChild(row);
+        });
+      });
+  }
+
+  function deactivateAnnouncement(id, rowEl) {
+    if (!supabase) return;
+    supabase
+      .from('announcements')
+      .update({ is_active: false })
+      .eq('id', id)
+      .then(function (res) {
+        if (res.error) { _trackError('Ann deactivate: ' + res.error.message); return; }
+        loadOwnerAnnouncements();
+      });
+  }
+
+  function deleteAnnouncement(id, rowEl) {
+    if (!supabase) return;
+    if (!confirm('Delete this announcement permanently?')) return;
+    supabase
+      .from('announcements')
+      .delete()
+      .eq('id', id)
+      .then(function (res) {
+        if (res.error) { _trackError('Ann delete: ' + res.error.message); return; }
+        if (rowEl && rowEl.parentNode) rowEl.remove();
       });
   }
 
@@ -633,6 +972,20 @@
     // ── Dashboard tabs + profile + role-based UI ────────────
     initTabs();
 
+    // ── Studio Panel page — owner-only gate ──────────────────
+    // Any authenticated user reaches this point on dashboard-alt.html.
+    // Re-apply auth-loading to hide content, then redirect non-owners.
+    if (body.dataset.page === 'dashboard-alt') {
+      body.classList.add('auth-loading');
+      Auth.getProfile().then(function (profile) {
+        if (!profile || profile.role !== 'owner') {
+          window.location.replace('dashboard.html');
+        } else {
+          body.classList.remove('auth-loading');
+        }
+      });
+    }
+
     var userNameEl      = document.getElementById('dashboard-user-name');
     var roleBadgeEl     = document.getElementById('dashboard-role-badge');
     var profileEditWrap = document.getElementById('profile-edit-wrap');
@@ -656,6 +1009,35 @@
         var displayName = (profile && profile.display_name) || 'Studio';
         var currentMode = (profile && profile.data_mode) || 'standard';
 
+        // Non-owner: remove owner-only DOM nodes entirely.
+        // hidden attribute alone is not enough — devtools can unhide elements.
+        // Removing them means no amount of DOM editing reveals owner UI or loads owner data.
+        if (!isOwner) {
+          ['owner-stats-row', 'tab-admin', 'sidebar-tab-admin', 'mobile-tab-admin',
+           'sidebar-studio-link', 'studio-panel-card'].forEach(function (id) {
+            var el = document.getElementById(id);
+            if (el) el.remove();
+          });
+          // Feature flag: community chat may be disabled by owner
+          if (supabase) {
+            supabase.from('feature_flags').select('key, enabled').then(function (flagRes) {
+              if (flagRes.error || !flagRes.data) return;
+              var chatEnabled = true;
+              flagRes.data.forEach(function (f) {
+                if (f.key === 'community_chat_enabled') chatEnabled = f.enabled;
+              });
+              if (!chatEnabled) {
+                var fChatSidebar = document.querySelector('.sidebar-tab-btn[data-tab="chat"]');
+                var fChatMobile  = document.querySelector('.dash-tab-btn[data-tab="chat"]');
+                var fChatPanel   = document.getElementById('tab-chat');
+                if (fChatSidebar) fChatSidebar.remove();
+                if (fChatMobile)  fChatMobile.remove();
+                if (fChatPanel)   fChatPanel.remove();
+              }
+            });
+          }
+        }
+
         // Header: name + role badge
         if (userNameEl) userNameEl.textContent = displayName;
         if (roleBadgeEl) {
@@ -676,13 +1058,99 @@
         var nameInput = document.getElementById('profile-display-name');
         if (nameInput && profile) nameInput.value = profile.display_name || '';
 
-        // Admin tab — owner only
+        // Admin tab + studio links — owner only
         if (isOwner) {
           if (sidebarAdminBtn) sidebarAdminBtn.removeAttribute('hidden');
           if (mobileAdminBtn)  mobileAdminBtn.removeAttribute('hidden');
+          var sidebarStudioLink = document.getElementById('sidebar-studio-link');
+          var studioPanelCard   = document.getElementById('studio-panel-card');
+          if (sidebarStudioLink) sidebarStudioLink.removeAttribute('hidden');
+          if (studioPanelCard)   studioPanelCard.removeAttribute('hidden');
           loadOwnerStats();
           loadInbox();
+          loadOwnerChatMod();
+          loadSystemStatus();
+          loadOwnerPromo();
+          loadOwnerFeatureFlags();
+          loadOwnerAnnouncements();
+
+          var inboxRefreshBtn  = document.getElementById('op-inbox-refresh');
+          var chatRefreshBtn   = document.getElementById('op-chat-refresh');
+          var promoRefreshBtn  = document.getElementById('op-promo-refresh');
+          var flagsRefreshBtn  = document.getElementById('op-flags-refresh');
+          var annRefreshBtn    = document.getElementById('op-ann-refresh');
+          if (inboxRefreshBtn) inboxRefreshBtn.addEventListener('click', loadInbox);
+          if (chatRefreshBtn)  chatRefreshBtn.addEventListener('click', loadOwnerChatMod);
+          if (promoRefreshBtn) promoRefreshBtn.addEventListener('click', loadOwnerPromo);
+          if (flagsRefreshBtn) flagsRefreshBtn.addEventListener('click', loadOwnerFeatureFlags);
+          if (annRefreshBtn)   annRefreshBtn.addEventListener('click', loadOwnerAnnouncements);
+
+          // Feature flag toggle buttons
+          document.querySelectorAll('.owner-flag-toggle[data-key]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+              updateFeatureFlag(btn.dataset.key, btn.dataset.state !== 'on');
+            });
+          });
+
+          // Promo link form
+          var promoForm  = document.getElementById('op-promo-form');
+          var promoAlert = document.getElementById('op-promo-alert');
+          if (promoForm) {
+            promoForm.addEventListener('submit', function (e) {
+              e.preventDefault();
+              if (!supabase) return;
+              var title    = document.getElementById('op-promo-title').value.trim();
+              var url      = document.getElementById('op-promo-url').value.trim();
+              var location = document.getElementById('op-promo-location').value;
+              var order    = parseInt(document.getElementById('op-promo-order').value, 10) || 0;
+              if (!title || !url) {
+                if (promoAlert) { promoAlert.textContent = 'Title and URL are required.'; promoAlert.className = 'auth-alert error visible'; }
+                return;
+              }
+              supabase.from('promo_links').insert({ title: title, url: url, location: location, sort_order: order, is_active: true })
+                .then(function (res) {
+                  if (res.error) {
+                    _trackError('Promo insert: ' + res.error.message);
+                    if (promoAlert) { promoAlert.textContent = 'Could not add promo.'; promoAlert.className = 'auth-alert error visible'; }
+                    return;
+                  }
+                  if (promoAlert) { promoAlert.textContent = 'Promo link added.'; promoAlert.className = 'auth-alert success visible'; setTimeout(function () { promoAlert.className = 'auth-alert'; }, 2500); }
+                  promoForm.reset();
+                  loadOwnerPromo();
+                });
+            });
+          }
+
+          // Announcements form
+          var annForm  = document.getElementById('op-ann-form');
+          var annAlert = document.getElementById('op-ann-alert');
+          if (annForm) {
+            annForm.addEventListener('submit', function (e) {
+              e.preventDefault();
+              if (!supabase) return;
+              var annTitle = document.getElementById('op-ann-title').value.trim();
+              var annBody  = document.getElementById('op-ann-body').value.trim();
+              if (!annTitle || !annBody) {
+                if (annAlert) { annAlert.textContent = 'Title and body are required.'; annAlert.className = 'auth-alert error visible'; }
+                return;
+              }
+              supabase.from('announcements').insert({ title: annTitle, body: annBody, is_active: true })
+                .then(function (res) {
+                  if (res.error) {
+                    _trackError('Ann insert: ' + res.error.message);
+                    if (annAlert) { annAlert.textContent = 'Could not post announcement.'; annAlert.className = 'auth-alert error visible'; }
+                    return;
+                  }
+                  if (annAlert) { annAlert.textContent = 'Announcement posted.'; annAlert.className = 'auth-alert success visible'; setTimeout(function () { annAlert.className = 'auth-alert'; }, 2500); }
+                  annForm.reset();
+                  loadOwnerAnnouncements();
+                });
+            });
+          }
         }
+
+        // Announcements — all authenticated users see active ones on overview
+        loadAnnouncements();
 
         // Update last_seen
         if (supabase && user) {
@@ -883,6 +1351,19 @@
         if (submitBtn) submitBtn.disabled = true;
       }
 
+      // Feature flag: contact form may be disabled by owner
+      if (supabase) {
+        supabase.from('feature_flags').select('enabled').eq('key', 'contact_form_enabled').single()
+          .then(function (res) {
+            if (!res.error && res.data && res.data.enabled === false) {
+              var cSubmitBtn = contactForm.querySelector('[type="submit"]');
+              var cAlertEl   = document.getElementById('contact-alert');
+              if (cSubmitBtn) { cSubmitBtn.disabled = true; cSubmitBtn.textContent = 'Contact form unavailable'; }
+              if (cAlertEl)   { cAlertEl.textContent = 'Contact form is temporarily unavailable.'; cAlertEl.className = 'auth-alert error visible'; }
+            }
+          });
+      }
+
       contactForm.addEventListener('submit', async function (e) {
         e.preventDefault();
         var alertEl = document.getElementById('contact-alert');
@@ -929,6 +1410,12 @@
           contactForm.reset();
         }
       });
+    }
+
+    // Promo links — public pages only (home, music, contact)
+    var promoPage = body.dataset.page;
+    if (supabase && (promoPage === 'home' || promoPage === 'music' || promoPage === 'contact')) {
+      loadPromoLinks(promoPage, promoPage + '-promo-area', promoPage + '-promo-section');
     }
   }
 

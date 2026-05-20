@@ -19,11 +19,11 @@
         <button type="button" class="sidebar-link sidebar-tab-btn active" data-tab="overview"><span class="sidebar-link-icon">⊞</span> Overview</button>
         <button type="button" class="sidebar-link sidebar-tab-btn" data-tab="chat"><span class="sidebar-link-icon">💬</span> Community</button>
         <button type="button" class="sidebar-link sidebar-tab-btn" data-tab="settings"><span class="sidebar-link-icon">⚙</span> Settings</button>
-        <button type="button" class="sidebar-link sidebar-tab-btn" data-tab="admin" id="sidebar-tab-admin" hidden><span class="sidebar-link-icon">🔑</span> Admin</button>
+        <button type="button" class="sidebar-link sidebar-tab-btn" data-tab="admin" id="sidebar-tab-admin" hidden><span class="sidebar-link-icon">🔑</span> Owner Panel</button>
         <p class="sidebar-section-label">Site</p>
         <a href="music.html" class="sidebar-link"><span class="sidebar-link-icon">🎵</span> Music</a>
         <a href="contact.html" class="sidebar-link"><span class="sidebar-link-icon">✉</span> Contact</a>
-        <a href="dashboard-alt.html" class="sidebar-link"><span class="sidebar-link-icon">⬡</span> Studio Panel</a>
+        <a href="dashboard-alt.html" class="sidebar-link" id="sidebar-studio-link" hidden><span class="sidebar-link-icon">⬡</span> Studio Panel</a>
       </nav>
       <div class="sidebar-footer">
         <button type="button" data-action="logout" class="btn btn-secondary btn-sm btn-full">Sign Out</button>
@@ -47,7 +47,7 @@
         <button type="button" class="dash-tab-btn active" data-tab="overview" role="tab" aria-selected="true">Overview</button>
         <button type="button" class="dash-tab-btn" data-tab="chat" role="tab" aria-selected="false">Community</button>
         <button type="button" class="dash-tab-btn" data-tab="settings" role="tab" aria-selected="false">Settings</button>
-        <button type="button" class="dash-tab-btn" data-tab="admin" id="mobile-tab-admin" role="tab" aria-selected="false" hidden>Admin</button>
+        <button type="button" class="dash-tab-btn" data-tab="admin" id="mobile-tab-admin" role="tab" aria-selected="false" hidden>Owner Panel</button>
       </div>
 
       <!-- TAB: Overview -->
@@ -110,7 +110,7 @@
               <a href="contact.html" class="platform-link platform-link-start"><span>✉</span> Contact</a>
             </div>
           </div>
-          <div class="studio-panel">
+          <div class="studio-panel" id="studio-panel-card" hidden>
             <div class="studio-panel-header">
               <div class="studio-dot"></div>
               <h4>Studio Panel</h4>
@@ -119,6 +119,12 @@
             <p class="text-sm mb-20">An internal studio tool used in the U.N.D Industries workflow.</p>
             <a href="dashboard-alt.html" class="btn btn-outline btn-sm studio-open-btn">Open Panel →</a>
           </div>
+        </div>
+
+        <!-- Announcements — JS reveals when active announcements exist -->
+        <div id="announcements-card" class="card mt-20" hidden>
+          <h4 class="mb-12">Announcements</h4>
+          <div id="announcements-list" class="ann-list"></div>
         </div>
 
       </div>
@@ -211,15 +217,140 @@
 
       </div>
 
-      <!-- TAB: Admin — owner only, tab button hidden for members by main.js -->
+      <!-- TAB: Owner Panel — owner only, removed from DOM for members by main.js -->
       <div id="tab-admin" class="dash-tab-content" role="tabpanel" hidden>
-        <div id="admin-section" class="card">
-          <h4 class="mb-8">Owner Panel</h4>
-          <p class="text-sm mb-16">Contact messages submitted through the site appear below.</p>
+
+        <div class="owner-panel-section">
+          <div class="owner-section-hd">
+            <h4>Contact Messages</h4>
+            <button type="button" id="op-inbox-refresh" class="btn btn-outline btn-sm">Refresh</button>
+          </div>
+          <p class="text-sm mb-16">Messages submitted through the contact form on the site.</p>
           <div id="admin-inbox" class="inbox-placeholder">
-            <p>Loading messages&hellip;</p>
+            <p>Loading&hellip;</p>
           </div>
         </div>
+
+        <div class="owner-panel-section">
+          <div class="owner-section-hd">
+            <h4>Chat Moderation</h4>
+            <button type="button" id="op-chat-refresh" class="btn btn-outline btn-sm">Refresh</button>
+          </div>
+          <p class="text-sm mb-16">Recent community chat messages. Delete is permanent.</p>
+          <div id="owner-chat-mod" class="owner-chat-list">
+            <p class="inbox-empty">Loading&hellip;</p>
+          </div>
+        </div>
+
+        <div class="owner-panel-section">
+          <div class="owner-section-hd">
+            <h4>System Status</h4>
+          </div>
+          <div class="owner-status-grid">
+            <div class="owner-status-item">
+              <span class="owner-status-label">Auth Backend</span>
+              <span id="op-stat-backend" class="owner-status-val">—</span>
+            </div>
+            <div class="owner-status-item">
+              <span class="owner-status-label">Database</span>
+              <span id="op-stat-db" class="owner-status-val">—</span>
+            </div>
+            <div class="owner-status-item">
+              <span class="owner-status-label">Last Client Error</span>
+              <span id="op-stat-error" class="owner-status-val">None</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="owner-panel-section" id="op-promo-section">
+          <div class="owner-section-hd">
+            <h4>Promo &amp; Links</h4>
+            <button type="button" id="op-promo-refresh" class="btn btn-outline btn-sm">Refresh</button>
+          </div>
+          <p class="text-sm mb-16">Manage promotional links shown on public pages (home, music, contact).</p>
+          <div id="op-promo-list" class="owner-promo-list">
+            <p class="inbox-empty">Loading&hellip;</p>
+          </div>
+          <div class="card mt-20">
+            <h4 class="mb-12">Add Promo Link</h4>
+            <div id="op-promo-alert" class="auth-alert" role="alert"></div>
+            <form id="op-promo-form" class="form" novalidate>
+              <div class="form-group">
+                <label class="form-label" for="op-promo-title">Title</label>
+                <input class="form-input" type="text" id="op-promo-title" placeholder="e.g. New Single Out Now" maxlength="120" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="op-promo-url">URL</label>
+                <input class="form-input" type="url" id="op-promo-url" placeholder="https://…" maxlength="500" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="op-promo-location">Page</label>
+                <select class="form-input" id="op-promo-location" required>
+                  <option value="home">Home</option>
+                  <option value="music">Music</option>
+                  <option value="contact">Contact</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="op-promo-order">Sort Order</label>
+                <input class="form-input" type="number" id="op-promo-order" value="0" min="0" max="99">
+              </div>
+              <button type="submit" class="btn btn-outline btn-sm">Add Promo</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="owner-panel-section" id="op-flags-section">
+          <div class="owner-section-hd">
+            <h4>Feature Toggles</h4>
+            <button type="button" id="op-flags-refresh" class="btn btn-outline btn-sm">Refresh</button>
+          </div>
+          <p class="text-sm mb-16">Enable or disable site features globally.</p>
+          <div id="op-flags-alert" class="auth-alert" role="alert"></div>
+          <div class="owner-flags-list">
+            <div class="owner-flag-row">
+              <div class="owner-flag-info">
+                <span class="owner-flag-label">Community Chat</span>
+                <span class="owner-flag-desc">Hides the Community tab for members when off.</span>
+              </div>
+              <button type="button" class="owner-flag-toggle" id="op-flag-chat" data-key="community_chat_enabled" data-state="">—</button>
+            </div>
+            <div class="owner-flag-row">
+              <div class="owner-flag-info">
+                <span class="owner-flag-label">Contact Form</span>
+                <span class="owner-flag-desc">Disables the contact form submit when off.</span>
+              </div>
+              <button type="button" class="owner-flag-toggle" id="op-flag-contact" data-key="contact_form_enabled" data-state="">—</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="owner-panel-section" id="op-announcements-section">
+          <div class="owner-section-hd">
+            <h4>Announcements</h4>
+            <button type="button" id="op-ann-refresh" class="btn btn-outline btn-sm">Refresh</button>
+          </div>
+          <p class="text-sm mb-16">Post short messages visible to all logged-in members on their dashboard.</p>
+          <div id="op-ann-list" class="owner-ann-list">
+            <p class="inbox-empty">Loading&hellip;</p>
+          </div>
+          <div class="card mt-20">
+            <h4 class="mb-12">New Announcement</h4>
+            <div id="op-ann-alert" class="auth-alert" role="alert"></div>
+            <form id="op-ann-form" class="form" novalidate>
+              <div class="form-group">
+                <label class="form-label" for="op-ann-title">Title</label>
+                <input class="form-input" type="text" id="op-ann-title" placeholder="Announcement title" maxlength="120" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="op-ann-body">Body</label>
+                <textarea class="form-input" id="op-ann-body" placeholder="Announcement details…" maxlength="500" required></textarea>
+              </div>
+              <button type="submit" class="btn btn-outline btn-sm">Post</button>
+            </form>
+          </div>
+        </div>
+
       </div>
 
       <footer class="dash-legal-footer">
