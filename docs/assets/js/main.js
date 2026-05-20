@@ -640,7 +640,17 @@
       .delete()
       .eq('id', id)
       .then(function (res) {
-        if (res.error) { _trackError('Promo delete: ' + res.error.message); return; }
+        if (res.error) {
+          _trackError('Promo delete: ' + res.error.message);
+          if (rowEl && rowEl.parentNode) {
+            var errMsg = document.createElement('p');
+            errMsg.className = 'owner-row-error';
+            errMsg.textContent = 'Delete failed.';
+            rowEl.parentNode.insertBefore(errMsg, rowEl.nextSibling);
+            setTimeout(function () { if (errMsg.parentNode) errMsg.remove(); }, 4000);
+          }
+          return;
+        }
         if (rowEl && rowEl.parentNode) rowEl.remove();
       });
   }
@@ -781,7 +791,17 @@
       .delete()
       .eq('id', id)
       .then(function (res) {
-        if (res.error) { _trackError('Ann delete: ' + res.error.message); return; }
+        if (res.error) {
+          _trackError('Ann delete: ' + res.error.message);
+          if (rowEl && rowEl.parentNode) {
+            var errMsg = document.createElement('p');
+            errMsg.className = 'owner-row-error';
+            errMsg.textContent = 'Delete failed.';
+            rowEl.parentNode.insertBefore(errMsg, rowEl.nextSibling);
+            setTimeout(function () { if (errMsg.parentNode) errMsg.remove(); }, 4000);
+          }
+          return;
+        }
         if (rowEl && rowEl.parentNode) rowEl.remove();
       });
   }

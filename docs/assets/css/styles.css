@@ -27,6 +27,8 @@
   --danger:        #ef4444;
   --warning:       #f59e0b;
 
+  --surface:       rgba(255,255,255,0.04);
+
   --radius:        12px;
   --radius-sm:     8px;
   --radius-lg:     20px;
@@ -1969,5 +1971,3 @@ button.sidebar-link {
   transform: translateY(-1px);
 }
 
-/* ── mt-20 utility ───────────────────────────────────────── */
-.mt-20 { margin-top: 20px; }
