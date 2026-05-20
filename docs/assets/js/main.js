@@ -240,7 +240,17 @@
     }
 
     body.classList.remove('auth-loading');
+    updateNavAuth(loggedIn);
     initPage();
+  }
+
+  // ── Nav auth state ────────────────────────────────────────
+  function updateNavAuth(loggedIn) {
+    var navCta = document.querySelector('.nav-cta');
+    if (!navCta) return;
+    navCta.innerHTML = loggedIn
+      ? '<a href="dashboard.html" class="btn btn-outline btn-sm">Dashboard</a>'
+      : '<a href="login.html" class="btn btn-outline btn-sm">Login</a>';
   }
 
   // ── HTML escaping ─────────────────────────────────────────
