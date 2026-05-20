@@ -55,18 +55,46 @@
   if (window.supabase) {
     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Detect password recovery event (works with both PKCE and implicit flow).
-    // Supabase JS auto-exchanges the recovery code on page load and fires this event.
-    supabase.auth.onAuthStateChange(function (event) {
+    // Auth state listener — handles recovery and verification flows.
+    // Registered before runRouteGuard() so it catches events fired during getSession().
+    supabase.auth.onAuthStateChange(function (event, session) {
+
+      // Password reset: hide request form, show set-password form.
       if (event === 'PASSWORD_RECOVERY') {
         var reqWrap = document.getElementById('reset-request-wrap');
         var setWrap = document.getElementById('reset-set-wrap');
         if (reqWrap && setWrap) {
           reqWrap.hidden = true;
           setWrap.removeAttribute('hidden');
+          body.classList.remove('auth-loading');
+        }
+      }
+
+      // Email verification: resolve the verified.html state display.
+      if (event === 'SIGNED_IN') {
+        var pendingEl = document.getElementById('verified-pending');
+        var successEl = document.getElementById('verified-success');
+        if (pendingEl && successEl) {
+          pendingEl.hidden = true;
+          successEl.removeAttribute('hidden');
+          body.classList.remove('auth-loading');
         }
       }
     });
+  }
+
+  // On reset-password.html with a recovery code in the URL, hide the page until
+  // the PASSWORD_RECOVERY event fires so the request form never flashes.
+  if (document.getElementById('reset-request-wrap') &&
+      new URLSearchParams(window.location.search).get('code')) {
+    body.classList.add('auth-loading');
+  }
+
+  // On verified.html with a verification code in the URL, hide the page until
+  // the SIGNED_IN event fires.
+  if (document.getElementById('verified-pending') &&
+      new URLSearchParams(window.location.search).get('code')) {
+    body.classList.add('auth-loading');
   }
 
   // Inject offline banner only when backend is unavailable
@@ -88,7 +116,7 @@
         password: password,
         options: {
           data: { display_name: displayName },
-          emailRedirectTo: 'https://wyrmm999.github.io/und-industries-website/dashboard.html'
+          emailRedirectTo: 'https://wyrmm999.github.io/und-industries-website/verified.html'
         }
       });
       if (res.error) return { ok: false, msg: res.error.message };
@@ -245,6 +273,16 @@
   }
 
   function initPage() {
+
+    // ── Verified page fallback (no session in this browser) ──
+    var pendingEl  = document.getElementById('verified-pending');
+    var nosessionEl = document.getElementById('verified-nosession');
+    if (pendingEl && nosessionEl) {
+      // If SIGNED_IN event already fired, this block is never reached.
+      // Only runs when the page loaded without a ?code (different browser).
+      pendingEl.hidden = true;
+      nosessionEl.removeAttribute('hidden');
+    }
 
     // ── Set new password form ────────────────────────────────
     var setPasswordForm = document.getElementById('set-password-form');
