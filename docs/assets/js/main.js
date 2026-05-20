@@ -70,13 +70,12 @@
   var Auth = {
     register: async function (email, password, displayName) {
       if (!supabase) return { ok: false, msg: 'Registration is currently unavailable.' };
-      var base = window.location.origin + (window.location.pathname.includes('und-industries-website') ? '/und-industries-website' : '');
       var res = await supabase.auth.signUp({
         email: email,
         password: password,
         options: {
           data: { display_name: displayName },
-          emailRedirectTo: base + '/dashboard.html'
+          emailRedirectTo: 'https://wyrmm999.github.io/und-industries-website/dashboard.html'
         }
       });
       if (res.error) return { ok: false, msg: res.error.message };
@@ -118,7 +117,7 @@
 
     requestPasswordReset: async function (email) {
       if (!supabase) return { ok: false, msg: 'Password reset is currently unavailable.' };
-      var redirectUrl = window.location.origin + (window.location.pathname.includes('und-industries-website') ? '/und-industries-website' : '') + '/reset-password.html';
+      var redirectUrl = 'https://wyrmm999.github.io/und-industries-website/reset-password.html';
       var res = await supabase.auth.resetPasswordForEmail(email, { redirectTo: redirectUrl });
       if (res.error) return { ok: false, msg: res.error.message };
       return { ok: true };
