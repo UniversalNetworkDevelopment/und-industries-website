@@ -67,6 +67,10 @@
         var setWrap = document.getElementById('reset-set-wrap');
         if (reqWrap && setWrap) {
           // On reset-password.html — show the form directly.
+          // Flag this as an incomplete recovery so the route guard can block
+          // access to protected pages if the user navigates away without
+          // actually setting a new password.
+          sessionStorage.setItem('und_recovery_pending', '1');
           reqWrap.hidden = true;
           setWrap.removeAttribute('hidden');
           body.classList.remove('auth-loading');
@@ -210,6 +214,20 @@
   async function runRouteGuard() {
     var loggedIn = await Auth.isLoggedIn();
 
+    // If a recovery session is active but the user navigated away from the
+    // reset-password page without completing the password update, the recovery
+    // session must not grant access to the rest of the site.
+    // Sign them out and send them back to finish (or abandon) the reset.
+    if (loggedIn && sessionStorage.getItem('und_recovery_pending') === '1') {
+      var onResetPage = !!document.getElementById('reset-request-wrap');
+      if (!onResetPage) {
+        sessionStorage.removeItem('und_recovery_pending');
+        if (supabase) await supabase.auth.signOut();
+        window.location.href = 'reset-password.html';
+        return;
+      }
+    }
+
     if (isProtected && !loggedIn) {
       window.location.href = 'login.html';
       return;
@@ -347,6 +365,7 @@
           alertEl.textContent = result.error.message || 'Could not update password. Please request a new reset link.';
           alertEl.className   = 'auth-alert error visible';
         } else {
+          sessionStorage.removeItem('und_recovery_pending');
           alertEl.textContent = 'Password updated. Redirecting to sign in…';
           alertEl.className   = 'auth-alert success visible';
           await supabase.auth.signOut();
