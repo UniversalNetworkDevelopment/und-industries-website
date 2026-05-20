@@ -54,6 +54,19 @@
   var supabase = null;
   if (window.supabase) {
     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Detect password recovery event (works with both PKCE and implicit flow).
+    // Supabase JS auto-exchanges the recovery code on page load and fires this event.
+    supabase.auth.onAuthStateChange(function (event) {
+      if (event === 'PASSWORD_RECOVERY') {
+        var reqWrap = document.getElementById('reset-request-wrap');
+        var setWrap = document.getElementById('reset-set-wrap');
+        if (reqWrap && setWrap) {
+          reqWrap.hidden = true;
+          setWrap.removeAttribute('hidden');
+        }
+      }
+    });
   }
 
   // Inject offline banner only when backend is unavailable
@@ -232,42 +245,6 @@
   }
 
   function initPage() {
-
-    // ── Recovery token detection (reset-password.html) ───────
-    // Supabase appends #access_token=...&type=recovery to the reset email link.
-    // Detect this hash, swap UI to "set new password" mode, and exchange the token.
-    var resetRequestWrap = document.getElementById('reset-request-wrap');
-    var resetSetWrap     = document.getElementById('reset-set-wrap');
-
-    if (resetRequestWrap && resetSetWrap) {
-      var hashParams   = new URLSearchParams(window.location.hash.substring(1));
-      var isRecovery   = hashParams.get('type') === 'recovery';
-      var accessToken  = hashParams.get('access_token');
-      var refreshToken = hashParams.get('refresh_token') || '';
-
-      if (isRecovery) {
-        resetRequestWrap.hidden = true;
-        resetSetWrap.removeAttribute('hidden');
-
-        var setAlertEl   = document.getElementById('set-password-alert');
-        var setSubmitBtn = document.getElementById('set-password-submit');
-
-        if (!supabase || !accessToken) {
-          setAlertEl.textContent = 'This reset link is invalid or has expired. Please request a new one.';
-          setAlertEl.className   = 'auth-alert error visible';
-          if (setSubmitBtn) setSubmitBtn.disabled = true;
-        } else {
-          supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
-            .then(function (res) {
-              if (res.error) {
-                setAlertEl.textContent = 'This reset link has expired or has already been used. Please request a new one.';
-                setAlertEl.className   = 'auth-alert error visible';
-                if (setSubmitBtn) setSubmitBtn.disabled = true;
-              }
-            });
-        }
-      }
-    }
 
     // ── Set new password form ────────────────────────────────
     var setPasswordForm = document.getElementById('set-password-form');
