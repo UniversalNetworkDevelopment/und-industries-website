@@ -70,8 +70,46 @@
   var AUTH_KEY  = 'und_auth_user';
   var TOKEN_KEY = 'und_auth_token';
 
+  function bytesToHex(bytes) {
+    return Array.prototype.map.call(bytes, function (b) {
+      return b.toString(16).padStart(2, '0');
+    }).join('');
+  }
+
+  function constantTimeEqual(a, b) {
+    if (!a || !b || a.length !== b.length) return false;
+    var result = 0;
+    for (var i = 0; i < a.length; i++) {
+      result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+    }
+    return result === 0;
+  }
+
+  async function derivePasswordHash(password, saltHex) {
+    var enc = new TextEncoder();
+    var keyMaterial = await window.crypto.subtle.importKey(
+      'raw',
+      enc.encode(password),
+      'PBKDF2',
+      false,
+      ['deriveBits']
+    );
+    var saltBytes = new Uint8Array(saltHex.match(/.{1,2}/g).map(function (h) { return parseInt(h, 16); }));
+    var bits = await window.crypto.subtle.deriveBits(
+      {
+        name: 'PBKDF2',
+        salt: saltBytes,
+        iterations: 100000,
+        hash: 'SHA-256'
+      },
+      keyMaterial,
+      256
+    );
+    return bytesToHex(new Uint8Array(bits));
+  }
+
   var Auth = {
-    register: function (name, email, password) {
+    register: async function (name, email, password) {
       if (!name || !email || !password) return { ok: false, msg: 'All fields are required.' };
       if (password.length < 8)          return { ok: false, msg: 'Password must be at least 8 characters.' };
       var existing = localStorage.getItem(AUTH_KEY);
@@ -79,17 +117,22 @@
         var user = JSON.parse(existing);
         if (user.email === email)        return { ok: false, msg: 'An account with this email already exists.' };
       }
-      var newUser = { name: name, email: email, password: password, created: Date.now() };
+      var salt = new Uint8Array(16);
+      window.crypto.getRandomValues(salt);
+      var saltHex = bytesToHex(salt);
+      var passwordHash = await derivePasswordHash(password, saltHex);
+      var newUser = { name: name, email: email, passwordHash: passwordHash, passwordSalt: saltHex, created: Date.now() };
       localStorage.setItem(AUTH_KEY, JSON.stringify(newUser));
       return { ok: true };
     },
 
-    login: function (email, password) {
+    login: async function (email, password) {
       var stored = localStorage.getItem(AUTH_KEY);
       if (!stored) return { ok: false, msg: 'No account found. Please register first.' };
       var user = JSON.parse(stored);
       if (user.email !== email)    return { ok: false, msg: 'Incorrect email or password.' };
-      if (user.password !== password) return { ok: false, msg: 'Incorrect email or password.' };
+      var computedHash = await derivePasswordHash(password, user.passwordSalt || '');
+      if (!constantTimeEqual(user.passwordHash || '', computedHash)) return { ok: false, msg: 'Incorrect email or password.' };
       var token = 'und_' + Math.random().toString(36).slice(2) + Date.now();
       localStorage.setItem(TOKEN_KEY, token);
       return { ok: true, user: user };
