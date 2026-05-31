@@ -423,33 +423,54 @@
 
   var Chat = {
     currentUserId: null,
+    renderedIds:   {},
+    lastDay:       '',
+
+    buildRow: function (msg) {
+      var d    = new Date(msg.created_at);
+      var time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+      var day  = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      var own  = msg.user_id && msg.user_id === Chat.currentUserId;
+      var sep  = '';
+      if (day !== Chat.lastDay) { Chat.lastDay = day; sep = '<div class="chat-day-sep"><span>' + escapeHtml(day) + '</span></div>'; }
+      return sep +
+        '<div class="chat-row' + (own ? ' chat-row-own' : '') + '">' +
+          (own ? '' : chatAvatar(msg.display_name)) +
+          '<div class="chat-bubble-wrap">' +
+            (own ? '' : '<span class="chat-bubble-name">' + escapeHtml(msg.display_name || 'Anonymous') + '</span>') +
+            '<div class="chat-bubble">' + renderChatBody(msg.content) + '</div>' +
+            '<span class="chat-bubble-time">' + escapeHtml(time) + '</span>' +
+          '</div>' +
+        '</div>';
+    },
 
     render: function (messages) {
       var container = document.getElementById('chat-messages');
       if (!container) return;
+      Chat.renderedIds = {};
+      Chat.lastDay = '';
       if (!messages || messages.length === 0) {
         container.innerHTML = '<div class="chat-empty"><span class="chat-empty-icon">💬</span><p>No messages yet.<br>Be the first to say something.</p></div>';
         return;
       }
-      var lastDay = '';
       container.innerHTML = messages.map(function (msg) {
-        var d    = new Date(msg.created_at);
-        var time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-        var day  = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-        var own  = msg.user_id && msg.user_id === Chat.currentUserId;
-        var sep  = '';
-        if (day !== lastDay) { lastDay = day; sep = '<div class="chat-day-sep"><span>' + escapeHtml(day) + '</span></div>'; }
-        return sep +
-          '<div class="chat-row' + (own ? ' chat-row-own' : '') + '">' +
-            (own ? '' : chatAvatar(msg.display_name)) +
-            '<div class="chat-bubble-wrap">' +
-              (own ? '' : '<span class="chat-bubble-name">' + escapeHtml(msg.display_name || 'Anonymous') + '</span>') +
-              '<div class="chat-bubble">' + renderChatBody(msg.content) + '</div>' +
-              '<span class="chat-bubble-time">' + escapeHtml(time) + '</span>' +
-            '</div>' +
-          '</div>';
+        if (msg.id) Chat.renderedIds[msg.id] = true;
+        return Chat.buildRow(msg);
       }).join('');
       container.scrollTop = container.scrollHeight;
+    },
+
+    // Append a single new message live (from realtime) without a full reload
+    appendMessage: function (msg) {
+      var container = document.getElementById('chat-messages');
+      if (!container || !msg) return;
+      if (msg.id && Chat.renderedIds[msg.id]) return;       // already shown — dedupe
+      if (msg.id) Chat.renderedIds[msg.id] = true;
+      var empty = container.querySelector('.chat-empty');
+      if (empty) { container.innerHTML = ''; Chat.lastDay = ''; }
+      var nearBottom = (container.scrollHeight - container.scrollTop - container.clientHeight) < 90;
+      container.insertAdjacentHTML('beforeend', Chat.buildRow(msg));
+      if (nearBottom) container.scrollTop = container.scrollHeight;
     },
 
     load: function () {
@@ -2059,6 +2080,73 @@
 
           if (chatRefresh) {
             chatRefresh.addEventListener('click', function () { Chat.load(); });
+          }
+
+          // ── Realtime: live messages, typing, presence ────────
+          var chatChannel = null;
+          var typingTimers = {};
+          var typingBroadcastAt = 0;
+
+          function renderTypingIndicator() {
+            var el = document.getElementById('chat-typing');
+            if (!el) return;
+            var names = Object.keys(typingTimers).map(function (k) { return typingTimers[k].name; });
+            if (!names.length) { el.innerHTML = ''; el.hidden = true; return; }
+            var label = names.length === 1 ? names[0] + ' is typing'
+                      : names.length === 2 ? names[0] + ' and ' + names[1] + ' are typing'
+                      : 'Several people are typing';
+            el.hidden = false;
+            el.innerHTML = '<span class="chat-typing-name">' + escapeHtml(label) + '</span>' +
+              '<span class="chat-typing-dots"><i></i><i></i><i></i></span>';
+          }
+
+          function setOnline(n) {
+            var el = document.getElementById('chat-online');
+            if (el) el.textContent = n + (n === 1 ? ' online' : ' online');
+          }
+
+          if (supabase) {
+            chatChannel = supabase.channel('community-chat', {
+              config: { presence: { key: (user && user.id) || ('guest-' + Math.random().toString(36).slice(2)) } }
+            });
+
+            // New messages appear instantly for everyone
+            chatChannel.on('postgres_changes',
+              { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: 'room=eq.general' },
+              function (payload) { Chat.appendMessage(payload.new); });
+
+            // Typing indicator (broadcast — no DB writes)
+            chatChannel.on('broadcast', { event: 'typing' }, function (m) {
+              var p = m.payload || {};
+              if (!p.uid || p.uid === Chat.currentUserId) return;
+              if (typingTimers[p.uid]) clearTimeout(typingTimers[p.uid].t);
+              typingTimers[p.uid] = { name: p.name || 'Someone', t: setTimeout(function () {
+                delete typingTimers[p.uid]; renderTypingIndicator();
+              }, 3500) };
+              renderTypingIndicator();
+            });
+
+            // Online presence count
+            chatChannel.on('presence', { event: 'sync' }, function () {
+              try { setOnline(Object.keys(chatChannel.presenceState()).length); } catch (_) {}
+            });
+
+            chatChannel.subscribe(function (status) {
+              if (status === 'SUBSCRIBED') {
+                chatChannel.track({ name: displayName || 'Member', at: new Date().toISOString() });
+              }
+            });
+
+            // Broadcast "typing" as the user types (throttled to once / 1.5s)
+            if (chatInput) {
+              chatInput.addEventListener('input', function () {
+                var now = Date.now();
+                if (now - typingBroadcastAt < 1500) return;
+                typingBroadcastAt = now;
+                chatChannel.send({ type: 'broadcast', event: 'typing',
+                  payload: { uid: Chat.currentUserId, name: displayName || 'Member' } });
+              });
+            }
           }
 
           // ── Emoji picker ─────────────────────────────────────
