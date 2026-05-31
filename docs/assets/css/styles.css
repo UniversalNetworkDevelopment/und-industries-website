@@ -2648,3 +2648,23 @@ button.sidebar-link {
   filter: drop-shadow(0 8px 50px rgba(124,58,237,0.35));
 }
 @media (max-width: 540px) { .hero-logo { max-width: 290px; } }
+
+/* Flagship division card */
+.pillar-card-flagship {
+  position: relative;
+  border-color: var(--border-accent);
+  background: linear-gradient(160deg, rgba(124,58,237,0.10), var(--bg-card) 60%);
+}
+.pillar-flag {
+  position: absolute;
+  top: 12px; right: 12px;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-light);
+  background: rgba(124,58,237,0.16);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius-full);
+  padding: 3px 10px;
+}
