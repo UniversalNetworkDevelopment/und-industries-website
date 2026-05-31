@@ -2639,13 +2639,14 @@ button.sidebar-link {
 }
 .cta-email:hover { color: var(--text); }
 
-/* Real UND logo in the hero */
+/* Real UND logo in the hero — screen blend drops the black background
+   so the logo sits seamlessly on the dark hero (no visible box). */
 .hero-logo {
   width: 100%;
-  max-width: 340px;
+  max-width: 400px;
   height: auto;
-  margin-bottom: 24px;
-  border-radius: 18px;
-  filter: drop-shadow(0 10px 60px rgba(124,58,237,0.32));
+  margin-bottom: 12px;
+  mix-blend-mode: screen;
+  filter: drop-shadow(0 0 60px rgba(124,58,237,0.28));
 }
-@media (max-width: 540px) { .hero-logo { max-width: 260px; } }
+@media (max-width: 540px) { .hero-logo { max-width: 290px; } }
