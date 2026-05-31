@@ -1077,6 +1077,7 @@
         catsHtml +
       '</div>' +
       '<h2 id="store-modal-title" class="store-modal-title">' + escapeHtml(product.title) + '</h2>' +
+      (product.series ? '<div class="store-modal-series">Part of <strong>' + escapeHtml(product.series) + '</strong></div>' : '') +
       (tagsHtml ? '<div class="store-modal-tags">' + tagsHtml + '</div>' : '') +
       '<div class="store-modal-desc">' + escapeHtml(product.long_description || product.short_description) + '</div>' +
       '<div class="store-modal-footer">' +
@@ -1251,6 +1252,8 @@
           document.getElementById('op-prod-currency').value   = p.currency || 'USD';
           document.getElementById('op-prod-cover').value      = p.cover_image_url || '';
           document.getElementById('op-prod-external').value   = p.external_url || '';
+          var seriesEl = document.getElementById('op-prod-series');
+          if (seriesEl) seriesEl.value = p.series || '';
 
           var catIds = (p.store_product_categories || []).map(function (c) { return c.category_id; });
           document.querySelectorAll('#op-prod-cats input[type="checkbox"]').forEach(function (cb) {
@@ -1303,6 +1306,8 @@
     var currency  =  document.getElementById('op-prod-currency').value || 'USD';
     var cover     = (document.getElementById('op-prod-cover').value    || '').trim();
     var external  = (document.getElementById('op-prod-external').value || '').trim();
+    var seriesEl2 = document.getElementById('op-prod-series');
+    var series    = (seriesEl2 ? seriesEl2.value : '').trim();
 
     var priceCents = Math.round(parseFloat(priceStr || '0') * 100);
     if (isNaN(priceCents) || priceCents < 0) priceCents = 0;
@@ -1333,7 +1338,8 @@
       price_cents:       priceCents,
       currency:          currency,
       cover_image_url:   cover        || null,
-      external_url:      safeExternal || null
+      external_url:      safeExternal || null,
+      series:            series       || null
     };
 
     if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }

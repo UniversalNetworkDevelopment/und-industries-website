@@ -2668,3 +2668,11 @@ button.sidebar-link {
   border-radius: var(--radius-full);
   padding: 3px 10px;
 }
+
+/* Store product series / universe label */
+.store-modal-series {
+  font-size: 0.82rem;
+  color: var(--text-soft);
+  margin: -6px 0 10px;
+}
+.store-modal-series strong { color: var(--accent-light); }
