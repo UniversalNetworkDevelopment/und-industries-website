@@ -142,6 +142,9 @@
     try { if (window.turnstile) window.turnstile.reset(); } catch (_) {}
   }
 
+  // Current Terms of Use version — bump when the terms materially change
+  var TERMS_VERSION = '2026-05-31';
+
   var Auth = {
     register: async function (email, password, displayName, captchaToken) {
       if (!supabase) return { ok: false, msg: 'Registration is currently unavailable.' };
@@ -149,7 +152,13 @@
         email: email,
         password: password,
         options: {
-          data: { display_name: (displayName || '').substring(0, 120) },
+          data: {
+            display_name:    (displayName || '').substring(0, 120),
+            // Recorded consent — auditable proof the user agreed at signup
+            agreed_terms:         true,
+            agreed_terms_version: TERMS_VERSION,
+            agreed_terms_at:      new Date().toISOString()
+          },
           emailRedirectTo: 'https://universalnetworkdevelopment.github.io/und-industries-website/verified.html',
           captchaToken: captchaToken || undefined
         }
