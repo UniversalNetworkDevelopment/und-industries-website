@@ -2638,3 +2638,14 @@ button.sidebar-link {
   padding-bottom: 2px;
 }
 .cta-email:hover { color: var(--text); }
+
+/* Real UND logo in the hero */
+.hero-logo {
+  width: 100%;
+  max-width: 340px;
+  height: auto;
+  margin-bottom: 24px;
+  border-radius: 18px;
+  filter: drop-shadow(0 10px 60px rgba(124,58,237,0.32));
+}
+@media (max-width: 540px) { .hero-logo { max-width: 260px; } }
