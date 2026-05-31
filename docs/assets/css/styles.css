@@ -175,6 +175,14 @@ p  { color: var(--text-soft); line-height: 1.75; }
 /* Login/Sign Up links live in the mobile menu only — hidden on desktop */
 .nav-mobile-auth { display: none; }
 
+/* Brand logos are now clickable links to home — keep them looking like text */
+.auth-logo, .sidebar-logo, .dash-mobile-logo {
+  text-decoration: none;
+  cursor: pointer;
+  display: inline-block;
+}
+.auth-logo:hover, .sidebar-logo:hover, .dash-mobile-logo:hover { opacity: 0.85; }
+
 /* Hamburger */
 .nav-hamburger {
   display: none;

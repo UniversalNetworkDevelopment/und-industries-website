@@ -295,11 +295,25 @@
 
   // ── Nav auth state ────────────────────────────────────────
   function updateNavAuth(loggedIn) {
+    // Desktop CTA buttons
     var navCta = document.querySelector('.nav-cta');
-    if (!navCta) return;
-    navCta.innerHTML = loggedIn
-      ? '<a href="dashboard.html" class="btn btn-outline btn-sm">Dashboard</a>'
-      : '<a href="login.html" class="btn btn-outline btn-sm">Login</a>';
+    if (navCta) {
+      navCta.innerHTML = loggedIn
+        ? '<a href="dashboard.html" class="btn btn-outline btn-sm">Dashboard</a>'
+        : '<a href="login.html" class="btn btn-outline btn-sm">Login</a>' +
+          '<a href="register.html" class="btn btn-primary btn-sm">Sign Up</a>';
+    }
+    // Mobile hamburger menu auth items — keep them in sync with login state
+    var mob = document.querySelectorAll('.nav-mobile-auth');
+    if (mob.length >= 2) {
+      if (loggedIn) {
+        mob[0].innerHTML = '<a href="dashboard.html">Dashboard</a>';
+        mob[1].innerHTML = '<a href="#" data-action="logout">Sign Out</a>';
+      } else {
+        mob[0].innerHTML = '<a href="login.html">Login</a>';
+        mob[1].innerHTML = '<a href="register.html">Sign Up</a>';
+      }
+    }
   }
 
   // ── Tab switching (dashboard) ─────────────────────────────
