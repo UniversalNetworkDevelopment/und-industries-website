@@ -433,11 +433,12 @@
       var own  = msg.user_id && msg.user_id === Chat.currentUserId;
       var sep  = '';
       if (day !== Chat.lastDay) { Chat.lastDay = day; sep = '<div class="chat-day-sep"><span>' + escapeHtml(day) + '</span></div>'; }
+      var name = own ? 'You' : (msg.display_name || 'Member');
       return sep +
         '<div class="chat-row' + (own ? ' chat-row-own' : '') + '">' +
-          (own ? '' : chatAvatar(msg.display_name)) +
+          chatAvatar(name) +
           '<div class="chat-bubble-wrap">' +
-            (own ? '' : '<span class="chat-bubble-name">' + escapeHtml(msg.display_name || 'Anonymous') + '</span>') +
+            '<span class="chat-bubble-name">' + escapeHtml(name) + '</span>' +
             '<div class="chat-bubble">' + renderChatBody(msg.content) + '</div>' +
             '<span class="chat-bubble-time">' + escapeHtml(time) + '</span>' +
           '</div>' +
