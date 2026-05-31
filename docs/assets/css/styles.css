@@ -172,6 +172,9 @@ p  { color: var(--text-soft); line-height: 1.75; }
 
 .nav-cta { display: flex; align-items: center; gap: 12px; }
 
+/* Login/Sign Up links live in the mobile menu only — hidden on desktop */
+.nav-mobile-auth { display: none; }
+
 /* Hamburger */
 .nav-hamburger {
   display: none;
@@ -818,6 +821,26 @@ textarea.form-input { min-height: 140px; resize: vertical; }
 
   .nav-links.mobile-open a        { padding: 12px 24px; border-radius: 0; }
   .nav-links.mobile-open a::after { display: none; }
+
+  /* Login / Sign Up appear inside the mobile menu */
+  .nav-links.mobile-open .nav-mobile-auth { display: block; }
+  .nav-links.mobile-open .nav-mobile-auth:first-of-type {
+    margin-top: 8px;
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+  }
+  .nav-links.mobile-open .nav-mobile-auth a {
+    font-weight: 600;
+    color: var(--accent-light);
+  }
+  .nav-links.mobile-open .nav-mobile-auth:last-of-type a {
+    display: inline-block;
+    margin: 4px 24px 0;
+    padding: 10px 20px;
+    background: var(--accent);
+    color: #fff;
+    border-radius: var(--radius-full);
+  }
 
   .hero-actions     { flex-direction: column; align-items: flex-start; }
   .pillars-grid     { grid-template-columns: 1fr; }
