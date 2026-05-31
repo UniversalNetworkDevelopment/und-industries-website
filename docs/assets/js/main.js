@@ -390,28 +390,55 @@
   // ── Chat ──────────────────────────────────────────────────
   // Reads/writes public.chat_messages (room='general').
   // No realtime yet — load on open + manual refresh button.
+  // Render a chat message body: animate GIF/image URLs inline, escape the rest.
+  // Only https image/GIF URLs (or known GIF hosts) become <img>; everything
+  // else is escaped text — no arbitrary HTML can be injected.
+  function renderChatBody(text) {
+    var t = String(text || '').trim();
+    var isImg =
+      /^https:\/\/\S+\.(gif|png|jpe?g|webp)(\?\S*)?$/i.test(t) ||
+      /^https:\/\/(media\d*\.giphy\.com|i\.giphy\.com|media\d*\.tenor\.com|c\.tenor\.com|tenor\.com)\/\S+$/i.test(t);
+    if (isImg) {
+      return '<img class="chat-gif" src="' + escapeHtml(t) + '" alt="GIF" loading="lazy">';
+    }
+    return '<span class="chat-bubble-text">' + escapeHtml(text) + '</span>';
+  }
+
+  function chatAvatar(name) {
+    var ch = (String(name || 'A').trim().charAt(0) || 'A').toUpperCase();
+    // deterministic hue from the name so each user keeps a consistent color
+    var hue = 0, s = String(name || 'A');
+    for (var i = 0; i < s.length; i++) hue = (hue * 31 + s.charCodeAt(i)) % 360;
+    return '<span class="chat-avatar" style="background:hsl(' + hue + ',55%,45%)">' + escapeHtml(ch) + '</span>';
+  }
+
   var Chat = {
+    currentUserId: null,
+
     render: function (messages) {
       var container = document.getElementById('chat-messages');
       if (!container) return;
       if (!messages || messages.length === 0) {
-        container.innerHTML = '<p class="chat-empty">No messages yet. Be the first.</p>';
+        container.innerHTML = '<div class="chat-empty"><span class="chat-empty-icon">💬</span><p>No messages yet.<br>Be the first to say something.</p></div>';
         return;
       }
+      var lastDay = '';
       container.innerHTML = messages.map(function (msg) {
-        var time = new Date(msg.created_at).toLocaleTimeString('en-US', {
-          hour: 'numeric', minute: '2-digit'
-        });
-        var date = new Date(msg.created_at).toLocaleDateString('en-US', {
-          month: 'short', day: 'numeric'
-        });
-        return '<div class="chat-message">' +
-          '<div class="chat-message-header">' +
-            '<span class="chat-message-name">' + escapeHtml(msg.display_name || 'Anonymous') + '</span>' +
-            '<span class="chat-message-time">' + escapeHtml(date + ' ' + time) + '</span>' +
-          '</div>' +
-          '<div class="chat-message-text">' + escapeHtml(msg.content) + '</div>' +
-        '</div>';
+        var d    = new Date(msg.created_at);
+        var time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        var day  = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        var own  = msg.user_id && msg.user_id === Chat.currentUserId;
+        var sep  = '';
+        if (day !== lastDay) { lastDay = day; sep = '<div class="chat-day-sep"><span>' + escapeHtml(day) + '</span></div>'; }
+        return sep +
+          '<div class="chat-row' + (own ? ' chat-row-own' : '') + '">' +
+            (own ? '' : chatAvatar(msg.display_name)) +
+            '<div class="chat-bubble-wrap">' +
+              (own ? '' : '<span class="chat-bubble-name">' + escapeHtml(msg.display_name || 'Anonymous') + '</span>') +
+              '<div class="chat-bubble">' + renderChatBody(msg.content) + '</div>' +
+              '<span class="chat-bubble-time">' + escapeHtml(time) + '</span>' +
+            '</div>' +
+          '</div>';
       }).join('');
       container.scrollTop = container.scrollHeight;
     },
@@ -420,10 +447,10 @@
       if (!supabase) return;
       supabase
         .from('chat_messages')
-        .select('id, display_name, content, created_at')
+        .select('id, user_id, display_name, content, created_at')
         .eq('room', 'general')
         .order('created_at', { ascending: true })
-        .limit(50)
+        .limit(80)
         .then(function (res) {
           if (!res.error) Chat.render(res.data);
         });
@@ -2008,6 +2035,7 @@
           handleModeBtn(advBtn);
 
           // Chat: wire form in its own tab
+          Chat.currentUserId = user ? user.id : null;
           Chat.load();
           var chatForm    = document.getElementById('chat-form');
           var chatInput   = document.getElementById('chat-input');
@@ -2016,6 +2044,44 @@
 
           if (chatRefresh) {
             chatRefresh.addEventListener('click', function () { Chat.load(); });
+          }
+
+          // ── Emoji picker ─────────────────────────────────────
+          var emojiBtn   = document.getElementById('chat-emoji-btn');
+          var emojiPanel = document.getElementById('chat-emoji-panel');
+          if (emojiBtn && emojiPanel && chatInput) {
+            var EMOJIS = ['😀','😁','😂','🤣','😊','😍','😎','😜','🤔','😴','😢','😭','😡','👍','👎','👏','🙌','🙏','💪','🔥','✨','⭐','💯','🎉','🎮','🎵','💜','❤️','💔','👀','💀','🤖','🚀','⚡','✅','❌','💡','📌','🕹️','🎧'];
+            emojiPanel.innerHTML = EMOJIS.map(function (e) {
+              return '<button type="button" class="chat-emoji" tabindex="-1">' + e + '</button>';
+            }).join('');
+            emojiBtn.addEventListener('click', function (ev) {
+              ev.stopPropagation();
+              emojiPanel.classList.toggle('open');
+            });
+            emojiPanel.addEventListener('click', function (ev) {
+              if (ev.target.classList.contains('chat-emoji')) {
+                chatInput.value += ev.target.textContent;
+                chatInput.focus();
+              }
+            });
+            document.addEventListener('click', function (ev) {
+              if (!emojiPanel.contains(ev.target) && ev.target !== emojiBtn) emojiPanel.classList.remove('open');
+            });
+          }
+
+          // ── GIF button ───────────────────────────────────────
+          // Inline GIFs already render when a GIF/image URL is sent. This
+          // button lets users paste a GIF link quickly (e.g. from Giphy/Tenor).
+          // Full in-app GIF search activates once a Tenor API key is added.
+          var gifBtn = document.getElementById('chat-gif-btn');
+          if (gifBtn && chatInput) {
+            gifBtn.addEventListener('click', function () {
+              var url = prompt('Paste a GIF link (Giphy or Tenor, ending in .gif):');
+              if (url && /^https:\/\/\S+/i.test(url.trim())) {
+                chatInput.value = url.trim();
+                chatInput.focus();
+              }
+            });
           }
 
           if (chatForm) {

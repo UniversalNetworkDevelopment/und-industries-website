@@ -133,19 +133,29 @@
 
       <!-- TAB: Community Chat -->
       <div id="tab-chat" class="dash-tab-content" role="tabpanel" hidden>
-        <div class="card">
-          <h4 class="mb-8">Community Chat</h4>
-          <p class="text-sm mb-12">Chat with the U.N.D Industries community.</p>
-          <div class="chat-notice">Messages are visible to all logged-in members. Keep it respectful.</div>
-          <div id="chat-messages" class="chat-messages" aria-live="polite" aria-label="Chat messages">
-            <p class="chat-empty">No messages yet. Be the first.</p>
+        <div class="chat-shell">
+          <div class="chat-shell-head">
+            <div class="chat-shell-title">
+              <span class="chat-live-dot"></span>
+              <h4>Community</h4>
+            </div>
+            <button type="button" id="chat-refresh" class="chat-icon-btn" aria-label="Refresh messages" title="Refresh">↻</button>
           </div>
-          <div id="chat-alert" class="auth-alert" role="alert"></div>
+
+          <div id="chat-messages" class="chat-messages" aria-live="polite" aria-label="Chat messages">
+            <div class="chat-empty"><span class="chat-empty-icon">💬</span><p>Loading messages…</p></div>
+          </div>
+
+          <div id="chat-alert" class="auth-alert chat-alert-inline" role="alert"></div>
+
           <form id="chat-form" class="chat-form" novalidate>
-            <input class="form-input chat-input" type="text" id="chat-input" placeholder="Send a message…" maxlength="2000" autocomplete="off" required>
-            <button type="submit" class="btn btn-primary btn-sm">Send</button>
+            <button type="button" id="chat-emoji-btn" class="chat-icon-btn" aria-label="Add emoji" title="Emoji">😊</button>
+            <button type="button" id="chat-gif-btn" class="chat-icon-btn" aria-label="Add GIF" title="Add a GIF link">GIF</button>
+            <input class="chat-input" type="text" id="chat-input" placeholder="Message the community…" maxlength="2000" autocomplete="off" required>
+            <button type="submit" class="chat-send-btn" aria-label="Send message">➤</button>
+            <div id="chat-emoji-panel" class="chat-emoji-panel" role="menu" aria-label="Emoji picker"></div>
           </form>
-          <button type="button" id="chat-refresh" class="btn btn-outline btn-sm mt-8">Refresh</button>
+          <p class="chat-foot-note">Visible to all logged-in members. Paste a Giphy/Tenor link to drop a GIF.</p>
         </div>
       </div>
 
