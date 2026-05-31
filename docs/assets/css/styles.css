@@ -2628,3 +2628,13 @@ button.sidebar-link {
 .faq-item[open] summary::after { content: "−"; }
 .faq-item p { padding: 0 0 16px; color: var(--text-soft); font-size: 0.92rem; line-height: 1.6; }
 .faq-item a { color: var(--accent-light); }
+
+/* Customer-service support email */
+.cta-email {
+  font-family: var(--font-mono, monospace);
+  font-size: 1rem;
+  color: var(--accent-light);
+  border-bottom: 1px solid var(--border-accent);
+  padding-bottom: 2px;
+}
+.cta-email:hover { color: var(--text); }
