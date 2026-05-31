@@ -1,0 +1,230 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; connect-src 'self' https://*.supabase.co wss://*.supabase.co; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; base-uri 'self'; form-action 'self'; frame-ancestors 'none';">
+  <meta name="theme-color" content="#0d0d0f">
+  <meta name="description" content="UND Tyzen — music, innovation, and the UND Industries universe. Listen, explore, and connect.">
+  <meta property="og:type"        content="website">
+  <meta property="og:title"       content="U.N.D Industries">
+  <meta property="og:description" content="Music, technology, and creative innovation from UND Tyzen and U.N.D Industries.">
+  <meta property="og:url"         content="https://universalnetworkdevelopment.github.io/und-industries-website/">
+  <meta property="og:image"       content="https://universalnetworkdevelopment.github.io/und-industries-website/assets/img/und-og.svg">
+  <meta name="twitter:card"       content="summary_large_image">
+  <meta name="twitter:image"      content="https://universalnetworkdevelopment.github.io/und-industries-website/assets/img/und-og.svg">
+  <link rel="canonical"           href="https://universalnetworkdevelopment.github.io/und-industries-website/">
+  <title>UND Tyzen | UND Industries</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <script>
+    // If Supabase redirects an auth email link to the homepage (allowlist fallback),
+    // forward the code to the correct handler before any page content renders.
+    (function () {
+      var s = window.location.search, h = window.location.hash;
+      if (s.indexOf('code=') !== -1) {
+        window.location.replace('verified.html' + s + h); return;
+      }
+      if (h.indexOf('type=recovery') !== -1) {
+        window.location.replace('reset-password.html' + h); return;
+      }
+      if (h.indexOf('type=signup') !== -1 || h.indexOf('type=email_change') !== -1) {
+        window.location.replace('verified.html' + h); return;
+      }
+    }());
+  </script>
+</head>
+<body data-page="home">
+
+  <nav class="nav" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">U.N.D <span>Industries</span></a>
+      <ul class="nav-links" id="nav-links" role="list">
+        <li><a href="index.html" class="active" aria-current="page">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="music.html">Music</a></li>
+        <li><a href="store.html">Store</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+      <div class="nav-cta">
+        <a href="login.html" class="btn btn-outline btn-sm">Login</a>
+      </div>
+      <button class="nav-hamburger" id="nav-hamburger" aria-label="Toggle navigation" aria-expanded="false" type="button">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+    </div>
+  </nav>
+
+  <main>
+
+    <section class="hero">
+      <div class="container">
+        <div class="hero-grid">
+
+          <div class="hero-content">
+            <div class="hero-badge hero-animate hero-delay-0">
+              <span class="hero-badge-dot"></span>
+              UND Tyzen
+            </div>
+            <h1 class="hero-title hero-animate hero-delay-1">Music for the<br><span class="accent">wired future.</span></h1>
+            <p class="hero-sub hero-animate hero-delay-2">
+              Original sound from U.N.D Industries. Streaming on all major platforms — built from the ground up.
+            </p>
+            <div class="hero-actions hero-animate hero-delay-3">
+              <a href="music.html" class="btn btn-primary btn-lg">Listen Now</a>
+              <a href="contact.html" class="btn btn-secondary btn-lg">Book UND Tyzen</a>
+            </div>
+          </div>
+
+          <div class="hero-now-playing hero-animate hero-delay-4" aria-label="Stream UND Tyzen">
+            <div class="now-playing-label">
+              <span class="now-playing-dot"></span>
+              Now Streaming
+            </div>
+            <div class="now-playing-track">
+              <div class="now-playing-art" aria-hidden="true">
+                <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="64" height="64" rx="8" fill="rgba(124,58,237,0.2)"/>
+                  <text x="32" y="44" font-family="Space Grotesk,sans-serif" font-size="32" font-weight="800" fill="#a855f7" text-anchor="middle">U</text>
+                </svg>
+              </div>
+              <div class="now-playing-meta">
+                <p class="now-playing-title">Latest Release</p>
+                <p class="now-playing-artist">UND Tyzen</p>
+              </div>
+            </div>
+            <div class="platform-pills">
+              <a href="https://open.spotify.com/artist/09cvXQPxvhR6oRSv964gAh" target="_blank" rel="noopener noreferrer" class="platform-pill">Spotify</a>
+              <a href="https://music.apple.com/us/artist/und-tyzen/1826707894" target="_blank" rel="noopener noreferrer" class="platform-pill">Apple Music</a>
+              <a href="https://www.youtube.com/@UNDTyzen" target="_blank" rel="noopener noreferrer" class="platform-pill">YouTube</a>
+              <a href="https://www.bandlab.com/und_tyzen" target="_blank" rel="noopener noreferrer" class="platform-pill">BandLab</a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Promo area — owner-managed; hidden until JS loads active promos for 'home' -->
+    <section class="section-sm" id="home-promo-section" hidden>
+      <div class="container">
+        <p class="section-label">Featured</p>
+        <div id="home-promo-area" class="promo-area"></div>
+      </div>
+    </section>
+
+    <section class="section" data-section="pillars">
+      <div class="container">
+        <div class="section-header">
+          <p class="section-label">What We Build</p>
+          <h2>Three Pillars</h2>
+          <div class="divider"></div>
+        </div>
+        <div class="pillars-grid">
+          <div class="pillar-card">
+            <div class="pillar-icon">
+              <!-- Music note -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+            </div>
+            <h3>Music</h3>
+            <p>Original releases, features, and collaborations from UND Tyzen — available across all major streaming platforms.</p>
+            <a href="music.html" class="btn btn-outline btn-sm mt-24 btn-fit">Listen Now</a>
+          </div>
+          <div class="pillar-card">
+            <div class="pillar-icon">
+              <!-- Lightning bolt -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4.09 12.96A1 1 0 005 14h6l-2 8 8.91-10.96A1 1 0 0017 10h-6l2-8z"/></svg>
+            </div>
+            <h3>Technology</h3>
+            <p>Internal tools and systems powering the studio workflow. Built to support creative work at every stage of the process.</p>
+          </div>
+          <div class="pillar-card">
+            <div class="pillar-icon">
+              <!-- Star / creative -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <h3>Creative</h3>
+            <p>Visual storytelling, character development, and a growing creative universe that extends beyond music.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-sm" data-section="platforms">
+      <div class="container">
+        <div class="section-header">
+          <p class="section-label">Stream Everywhere</p>
+          <h2>Find UND Tyzen</h2>
+          <div class="divider"></div>
+        </div>
+        <div class="platform-grid">
+          <a href="https://open.spotify.com/artist/09cvXQPxvhR6oRSv964gAh" target="_blank" rel="noopener noreferrer" class="platform-link"><span>🎧</span> Spotify</a>
+          <a href="https://music.apple.com/us/artist/und-tyzen/1826707894" target="_blank" rel="noopener noreferrer" class="platform-link"><span>🍎</span> Apple Music</a>
+          <a href="https://www.youtube.com/@UNDTyzen" target="_blank" rel="noopener noreferrer" class="platform-link"><span>▶</span> YouTube</a>
+          <a href="https://www.bandlab.com/und_tyzen" target="_blank" rel="noopener noreferrer" class="platform-link"><span>🎛</span> BandLab</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-sm" data-section="cta">
+      <div class="container">
+        <div class="card card-accent card-cta">
+          <p class="section-label">Work Together</p>
+          <h2 class="cta-heading">Open for Collaborations</h2>
+          <p class="cta-desc">Features, bookings, and select creative projects. Reach out and let's build something together.</p>
+          <a href="contact.html" class="btn btn-primary btn-lg">Get in Touch</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div>
+          <div class="footer-brand">U.N.D <span>Industries</span></div>
+          <p class="footer-desc">Universal Network Development Industries — a multidisciplinary creative and technology organization.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Pages</h4>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="music.html">Music</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Music</h4>
+          <ul class="footer-links">
+            <li><a href="https://open.spotify.com/artist/09cvXQPxvhR6oRSv964gAh" target="_blank" rel="noopener noreferrer">Spotify</a></li>
+            <li><a href="https://music.apple.com/us/artist/und-tyzen/1826707894" target="_blank" rel="noopener noreferrer">Apple Music</a></li>
+            <li><a href="https://www.youtube.com/@UNDTyzen" target="_blank" rel="noopener noreferrer">YouTube</a></li>
+            <li><a href="https://www.bandlab.com/und_tyzen" target="_blank" rel="noopener noreferrer">BandLab</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p class="footer-copy">&copy; <span data-year>2026</span> U.N.D Industries. All rights reserved.</p>
+        <div class="footer-legal-row">
+          <a href="privacy.html" class="footer-legal-link">Privacy Policy</a>
+          <a href="terms.html" class="footer-legal-link">Terms of Use</a>
+          <a href="security.html" class="footer-legal-link">Security Disclaimer</a>
+          <a href="cookie.html" class="footer-legal-link">Cookie Policy</a>
+          <a href="dmca.html" class="footer-legal-link">DMCA</a>
+          <a href="copyright.html" class="footer-legal-link">Copyright</a>
+        </div>
+        <p class="footer-copy">UND Tyzen</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
+

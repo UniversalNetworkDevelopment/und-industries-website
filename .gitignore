@@ -1,0 +1,33 @@
+# ============================================================
+# PRIVATE — These files and folders are NEVER committed
+# ============================================================
+
+# Internal planning — local only
+private/
+MASTERPLAN.md
+*.private.md
+*.internal.md
+
+# Environment and credentials — NEVER
+.env
+.env.*
+.env.local
+*.key
+*.secret
+secrets/
+
+# Dev and admin tools — local only
+studio.html
+dev.html
+admin.html
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo

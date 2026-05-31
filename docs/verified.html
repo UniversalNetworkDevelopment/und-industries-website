@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; connect-src 'self' https://*.supabase.co wss://*.supabase.co; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; base-uri 'self'; form-action 'self'; frame-ancestors 'none';">
+  <meta name="theme-color" content="#0d0d0f">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Email Verified — U.N.D Industries</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body data-page="verified">
+  <div class="auth-page">
+    <div class="auth-box">
+      <div class="auth-logo">U.N.D <span>Industries</span></div>
+
+      <!-- State A: shown while Supabase processes the verification code -->
+      <div id="verified-pending">
+        <h1 class="auth-title">Verifying&hellip;</h1>
+        <p class="auth-sub">Just a moment while we confirm your email.</p>
+      </div>
+
+      <!-- State B: verification succeeded and session established -->
+      <div id="verified-success" hidden>
+        <h1 class="auth-title">Email <span class="accent">Verified</span></h1>
+        <p class="auth-sub">Your account is confirmed and you're signed in. You're all set.</p>
+        <a href="dashboard.html" class="btn btn-primary btn-full mt-8">Go to Dashboard</a>
+      </div>
+
+      <!-- State C: verified but session not in this browser (opened link in different browser) -->
+      <div id="verified-nosession" hidden>
+        <h1 class="auth-title">Email <span class="accent">Verified</span></h1>
+        <p class="auth-sub">Your email address has been confirmed. Sign in to access your account.</p>
+        <a href="login.html" class="btn btn-primary btn-full mt-8">Sign In</a>
+      </div>
+
+      <p class="auth-footer-text mt-16"><a href="index.html" class="auth-link-muted">&#8592; Back to site</a></p>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

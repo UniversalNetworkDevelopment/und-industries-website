@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; connect-src 'self' https://*.supabase.co wss://*.supabase.co; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; base-uri 'self'; form-action 'self'; frame-ancestors 'none';">
+  <meta name="theme-color" content="#0d0d0f">
+  <meta name="description" content="Browse music, games, software, and stories from U.N.D Industries.">
+  <title>Store — U.N.D Industries</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="icon" type="image/png"     href="assets/favicon.png">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body data-page="store">
+
+  <nav class="nav" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">U.N.D <span>Industries</span></a>
+      <ul class="nav-links" id="nav-links" role="list">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="music.html">Music</a></li>
+        <li><a href="store.html" class="active" aria-current="page">Store</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+      <div class="nav-cta">
+        <a href="login.html" class="btn btn-outline btn-sm">Login</a>
+      </div>
+      <button class="nav-hamburger" id="nav-hamburger" aria-label="Toggle navigation" aria-expanded="false" type="button">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+    </div>
+  </nav>
+
+  <main class="store-main">
+
+    <div class="store-hero">
+      <div class="container">
+        <h1 class="store-hero-title">Store</h1>
+        <p class="store-hero-sub">Music, games, software, and stories from U.N.D Industries.</p>
+      </div>
+    </div>
+
+    <div class="container store-layout">
+
+      <!-- Sidebar filters -->
+      <aside class="store-sidebar" aria-label="Store filters">
+
+        <div class="store-filter-group">
+          <h2 class="store-filter-label">Category</h2>
+          <div class="store-type-btns" role="group" aria-label="Filter by type">
+            <button type="button" class="store-type-btn active" data-store-type="all">All</button>
+            <button type="button" class="store-type-btn" data-store-type="music">Music</button>
+            <button type="button" class="store-type-btn" data-store-type="game">Games</button>
+            <button type="button" class="store-type-btn" data-store-type="software">Software</button>
+            <button type="button" class="store-type-btn" data-store-type="story">Stories</button>
+          </div>
+        </div>
+
+        <div class="store-filter-group" id="store-subcat-wrap">
+          <h2 class="store-filter-label">Subcategory</h2>
+          <div id="store-subcat-filter" class="store-subcat-filters"></div>
+        </div>
+
+        <div class="store-filter-group">
+          <h2 class="store-filter-label">Tags</h2>
+          <div id="store-tag-filter" class="store-tag-filters">
+            <span class="text-sm" style="color:var(--text-muted)">Loading&hellip;</span>
+          </div>
+        </div>
+
+      </aside>
+
+      <!-- Main content -->
+      <div class="store-content">
+
+        <div class="store-toolbar">
+          <div class="store-search-wrap">
+            <label for="store-search" class="sr-only">Search products</label>
+            <input
+              type="search"
+              id="store-search"
+              class="store-search-input"
+              placeholder="Search products&hellip;"
+              autocomplete="off"
+              aria-label="Search products"
+            >
+          </div>
+          <span id="store-count" class="store-count" aria-live="polite" aria-atomic="true"></span>
+        </div>
+
+        <div id="store-grid" class="store-grid" aria-label="Products">
+          <p class="store-empty">Loading products&hellip;</p>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Product detail modal -->
+  <div id="store-modal" class="store-modal" role="dialog" aria-modal="true" aria-labelledby="store-modal-title" hidden>
+    <div id="store-modal-backdrop" class="store-modal-backdrop"></div>
+    <div class="store-modal-content">
+      <button type="button" id="store-modal-close" class="store-modal-close" aria-label="Close product details">&times;</button>
+      <div id="store-modal-body" class="store-modal-body"></div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">U.N.D Industries</div>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="contact.html">Contact</a>
+      </nav>
+      <p class="footer-copy">&copy; <span data-year></span> U.N.D Industries. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

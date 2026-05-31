@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; connect-src 'self' https://*.supabase.co wss://*.supabase.co; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; base-uri 'self'; form-action 'self'; frame-ancestors 'none';">
+  <meta name="theme-color" content="#0d0d0f">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Dashboard — U.N.D Industries</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body data-page="dashboard" data-protected="true">
+  <div class="dashboard-layout">
+
+    <aside class="sidebar" aria-label="Dashboard navigation">
+      <div class="sidebar-logo">U.N.D <span>Industries</span></div>
+      <nav class="sidebar-nav">
+        <p class="sidebar-section-label">Dashboard</p>
+        <button type="button" class="sidebar-link sidebar-tab-btn active" data-tab="overview"><span class="sidebar-link-icon">⊞</span> Overview</button>
+        <button type="button" class="sidebar-link sidebar-tab-btn" data-tab="chat"><span class="sidebar-link-icon">💬</span> Community</button>
+        <button type="button" class="sidebar-link sidebar-tab-btn" data-tab="settings"><span class="sidebar-link-icon">⚙</span> Settings</button>
+        <button type="button" class="sidebar-link sidebar-tab-btn" data-tab="admin" id="sidebar-tab-admin" hidden><span class="sidebar-link-icon">🔑</span> Owner Panel</button>
+        <p class="sidebar-section-label">Site</p>
+        <a href="music.html"  class="sidebar-link"><span class="sidebar-link-icon">🎵</span> Music</a>
+        <a href="store.html"  class="sidebar-link"><span class="sidebar-link-icon">🛒</span> Store</a>
+        <a href="contact.html" class="sidebar-link"><span class="sidebar-link-icon">✉</span> Contact</a>
+        <a href="dashboard-alt.html" class="sidebar-link" id="sidebar-studio-link" hidden><span class="sidebar-link-icon">⬡</span> Studio Panel</a>
+      </nav>
+      <div class="sidebar-footer">
+        <button type="button" data-action="logout" class="btn btn-secondary btn-sm btn-full">Sign Out</button>
+        <p class="sidebar-privacy"><a href="privacy.html">Privacy Policy</a></p>
+      </div>
+    </aside>
+
+    <div class="dashboard-main">
+
+      <div class="dash-mobile-bar">
+        <div class="dash-mobile-logo">U.N.D <span>Industries</span></div>
+        <button type="button" data-action="logout" class="btn btn-secondary btn-sm">Sign Out</button>
+      </div>
+
+      <div class="dashboard-topbar">
+        <div class="dashboard-topbar-title">Welcome, <span id="dashboard-user-name">—</span><span id="dashboard-role-badge" class="role-badge" hidden></span></div>
+        <div id="backend-status-bar" class="topbar-backend-status"></div>
+      </div>
+
+      <div class="dash-tab-nav" role="tablist">
+        <button type="button" class="dash-tab-btn active" data-tab="overview" role="tab" aria-selected="true">Overview</button>
+        <button type="button" class="dash-tab-btn" data-tab="chat" role="tab" aria-selected="false">Community</button>
+        <button type="button" class="dash-tab-btn" data-tab="settings" role="tab" aria-selected="false">Settings</button>
+        <button type="button" class="dash-tab-btn" data-tab="admin" id="mobile-tab-admin" role="tab" aria-selected="false" hidden>Owner Panel</button>
+      </div>
+
+      <!-- TAB: Overview -->
+      <div id="tab-overview" class="dash-tab-content" role="tabpanel">
+
+        <!-- Owner stats — JS reveals for role='owner' only -->
+        <div id="owner-stats-row" class="stat-grid" hidden>
+          <div class="stat-card">
+            <div class="stat-label">Inbox Messages</div>
+            <div class="stat-value" id="owner-stat-inbox">—</div>
+            <div class="stat-sub">Contact submissions</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total Members</div>
+            <div class="stat-value" id="owner-stat-users">—</div>
+            <div class="stat-sub">Registered accounts</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Active (10 min)</div>
+            <div class="stat-value stat-value-live" id="owner-stat-active">—</div>
+            <div class="stat-sub">Recently seen online</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Auth Backend</div>
+            <div class="stat-value stat-value-live" id="owner-stat-auth">—</div>
+            <div class="stat-sub">Supabase connection</div>
+          </div>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-label">Platform Status</div>
+            <div class="stat-value stat-value-live">Live</div>
+            <div class="stat-sub">Site online</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Public Pages</div>
+            <div class="stat-value">4</div>
+            <div class="stat-sub">Active</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Studio Tools</div>
+            <div class="stat-value stat-value-accent">Internal</div>
+            <div class="stat-sub">Studio only</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">In Development</div>
+            <div class="stat-value">3+</div>
+            <div class="stat-sub">Coming soon</div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="card">
+            <h4 class="mb-16">Quick Links</h4>
+            <div class="quick-links">
+              <a href="index.html" class="platform-link platform-link-start"><span>🏠</span> Home</a>
+              <a href="music.html" class="platform-link platform-link-start"><span>🎵</span> Music</a>
+              <a href="about.html" class="platform-link platform-link-start"><span>📋</span> About</a>
+              <a href="contact.html" class="platform-link platform-link-start"><span>✉</span> Contact</a>
+            </div>
+          </div>
+          <div class="studio-panel" id="studio-panel-card" hidden>
+            <div class="studio-panel-header">
+              <div class="studio-dot"></div>
+              <h4>Studio Panel</h4>
+              <span class="studio-status-badge">Internal Only</span>
+            </div>
+            <p class="text-sm mb-20">An internal studio tool used in the U.N.D Industries workflow.</p>
+            <a href="dashboard-alt.html" class="btn btn-outline btn-sm studio-open-btn">Open Panel →</a>
+          </div>
+        </div>
+
+        <!-- Announcements — JS reveals when active announcements exist -->
+        <div id="announcements-card" class="card mt-20" hidden>
+          <h4 class="mb-12">Announcements</h4>
+          <div id="announcements-list" class="ann-list"></div>
+        </div>
+
+      </div>
+
+      <!-- TAB: Community Chat -->
+      <div id="tab-chat" class="dash-tab-content" role="tabpanel" hidden>
+        <div class="card">
+          <h4 class="mb-8">Community Chat</h4>
+          <p class="text-sm mb-12">Chat with the U.N.D Industries community.</p>
+          <div class="chat-notice">Messages are visible to all logged-in members. Keep it respectful.</div>
+          <div id="chat-messages" class="chat-messages" aria-live="polite" aria-label="Chat messages">
+            <p class="chat-empty">No messages yet. Be the first.</p>
+          </div>
+          <div id="chat-alert" class="auth-alert" role="alert"></div>
+          <form id="chat-form" class="chat-form" novalidate>
+            <input class="form-input chat-input" type="text" id="chat-input" placeholder="Send a message…" maxlength="2000" autocomplete="off" required>
+            <button type="submit" class="btn btn-primary btn-sm">Send</button>
+          </form>
+          <button type="button" id="chat-refresh" class="btn btn-outline btn-sm mt-8">Refresh</button>
+        </div>
+      </div>
+
+      <!-- TAB: Settings -->
+      <div id="tab-settings" class="dash-tab-content" role="tabpanel" hidden>
+
+        <div class="card mb-20">
+          <h4 class="mb-16">Account Info</h4>
+          <div class="account-info-grid">
+            <div class="account-info-item">
+              <span class="account-info-label">Email</span>
+              <span class="account-info-value" id="account-email-display">—</span>
+            </div>
+            <div class="account-info-item">
+              <span class="account-info-label">Role</span>
+              <span class="account-info-value" id="account-role-display">—</span>
+            </div>
+            <div class="account-info-item">
+              <span class="account-info-label">Data Mode</span>
+              <span class="account-info-value" id="account-mode-display">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-20" id="profile-edit-wrap">
+          <h4 class="mb-8">Display Name</h4>
+          <p class="text-sm mb-16">Update your public display name.</p>
+          <div id="profile-edit-alert" class="auth-alert" role="alert"></div>
+          <form id="profile-edit-form" class="form" novalidate>
+            <div class="form-group">
+              <label class="form-label" for="profile-display-name">Display Name</label>
+              <input class="form-input" type="text" id="profile-display-name" placeholder="Your name" maxlength="120" autocomplete="name">
+            </div>
+            <button type="submit" class="btn btn-outline btn-sm">Save</button>
+          </form>
+        </div>
+
+        <div class="card mb-20">
+          <h4 class="mb-8">Change Password</h4>
+          <p class="text-sm mb-16">Set a new password for your account.</p>
+          <div id="change-password-alert" class="auth-alert" role="alert"></div>
+          <form id="change-password-form" class="form" novalidate>
+            <div class="form-group">
+              <label class="form-label" for="change-current-password">Current Password</label>
+              <input class="form-input" type="password" id="change-current-password" placeholder="Your current password" autocomplete="current-password">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="change-new-password">New Password</label>
+              <input class="form-input" type="password" id="change-new-password" placeholder="At least 8 characters" minlength="8" autocomplete="new-password">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="change-confirm-password">Confirm New Password</label>
+              <input class="form-input" type="password" id="change-confirm-password" placeholder="Repeat new password" autocomplete="new-password">
+            </div>
+            <button type="submit" class="btn btn-outline btn-sm" id="change-password-submit">Update Password</button>
+          </form>
+        </div>
+
+        <div class="card" id="settings-section">
+          <h4 class="mb-8">Privacy &amp; Data</h4>
+          <p class="text-sm mb-16">Choose how this site handles your data.</p>
+          <div id="settings-alert" class="auth-alert" role="alert"></div>
+          <div class="settings-mode-wrap">
+            <button type="button" id="settings-mode-standard" class="settings-mode-btn" data-mode="standard">
+              <span class="settings-mode-label">Standard</span>
+              <span class="settings-mode-desc">Account auth and contact messages only. Nothing collected beyond what you submit.</span>
+            </button>
+            <button type="button" id="settings-mode-advanced" class="settings-mode-btn" data-mode="advanced">
+              <span class="settings-mode-label">Advanced</span>
+              <span class="settings-mode-desc">Enables optional personalization as features roll out. No third-party trackers, ever.</span>
+            </button>
+          </div>
+          <p class="settings-mode-note">Current mode: <strong id="settings-current-mode">—</strong>. See <a href="privacy.html">Privacy Policy</a>.</p>
+        </div>
+
+      </div>
+
+      <!-- TAB: Owner Panel — owner only, removed from DOM for members by main.js -->
+      <div id="tab-admin" class="dash-tab-content" role="tabpanel" hidden>
+
+        <div class="owner-panel-section">
+          <div class="owner-section-hd">
+            <h4>Contact Messages</h4>
+            <button type="button" id="op-inbox-refresh" class="btn btn-outline btn-sm">Refresh</button>
+          </div>
+          <p class="text-sm mb-16">Messages submitted through the contact form on the site.</p>
+          <div id="admin-inbox" class="inbox-placeholder">
+            <p>Loading&hellip;</p>
+          </div>
+        </div>
+
+        <div class="owner-panel-section">
+          <div class="owner-section-hd">
+            <h4>Chat Moderation</h4>
+            <button type="button" id="op-chat-refresh" class="btn btn-outline btn-sm">Refresh</button>
+          </div>
+          <p class="text-sm mb-16">Recent community chat messages. Delete is permanent.</p>
+          <div id="owner-chat-mod" class="owner-chat-list">
+            <p class="inbox-empty">Loading&hellip;</p>
+          </div>
+        </div>
+
+        <div class="owner-panel-section">
+          <div class="owner-section-hd">
+            <h4>System Status</h4>
+          </div>
+          <div class="owner-status-grid">
+            <div class="owner-status-item">
+              <span class="owner-status-label">Auth Backend</span>
+              <span id="op-stat-backend" class="owner-status-val">—</span>
+            </div>
+            <div class="owner-status-item">
+              <span class="owner-status-label">Database</span>
+              <span id="op-stat-db" class="owner-status-val">—</span>
+            </div>
+            <div class="owner-status-item">
+              <span class="owner-status-label">Last Client Error</span>
+              <span id="op-stat-error" class="owner-status-val">None</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="owner-panel-section" id="op-promo-section">
+          <div class="owner-section-hd">
+            <h4>Promo &amp; Links</h4>
+            <button type="button" id="op-promo-refresh" class="btn btn-outline btn-sm">Refresh</button>
+          </div>
+          <p class="text-sm mb-16">Manage promotional links shown on public pages (home, music, contact).</p>
+          <div id="op-promo-list" class="owner-promo-list">
+            <p class="inbox-empty">Loading&hellip;</p>
+          </div>
+          <div class="card mt-20">
+            <h4 class="mb-12">Add Promo Link</h4>
+            <div id="op-promo-alert" class="auth-alert" role="alert"></div>
+            <form id="op-promo-form" class="form" novalidate>
+              <div class="form-group">
+                <label class="form-label" for="op-promo-title">Title</label>
+                <input class="form-input" type="text" id="op-promo-title" placeholder="e.g. New Single Out Now" maxlength="120" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="op-promo-url">URL</label>
+                <input class="form-input" type="url" id="op-promo-url" placeholder="https://…" maxlength="500" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="op-promo-location">Page</label>
+                <select class="form-input" id="op-promo-location" required>
+                  <option value="home">Home</option>
+                  <option value="music">Music</option>
+                  <option value="contact">Contact</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="op-promo-order">Sort Order</label>
+                <input class="form-input" type="number" id="op-promo-order" value="0" min="0" max="99">
+              </div>
+              <button type="submit" class="btn btn-outline btn-sm">Add Promo</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="owner-panel-section" id="op-flags-section">
+          <div class="owner-section-hd">
+            <h4>Feature Toggles</h4>
+            <button type="button" id="op-flags-refresh" class="btn btn-outline btn-sm">Refresh</button>
+          </div>
+          <p class="text-sm mb-16">Enable or disable site features globally.</p>
+          <div id="op-flags-alert" class="auth-alert" role="alert"></div>
+          <div class="owner-flags-list">
+            <div class="owner-flag-row">
+              <div class="owner-flag-info">
+                <span class="owner-flag-label">Community Chat</span>
+                <span class="owner-flag-desc">Hides the Community tab for members when off.</span>
+              </div>
+              <button type="button" class="owner-flag-toggle" id="op-flag-chat" data-key="community_chat_enabled" data-state="">—</button>
+            </div>
+            <div class="owner-flag-row">
+              <div class="owner-flag-info">
+                <span class="owner-flag-label">Contact Form</span>
+                <span class="owner-flag-desc">Disables the contact form submit when off.</span>
+              </div>
+              <button type="button" class="owner-flag-toggle" id="op-flag-contact" data-key="contact_form_enabled" data-state="">—</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="owner-panel-section" id="op-announcements-section">
+          <div class="owner-section-hd">
+            <h4>Announcements</h4>
+            <button type="button" id="op-ann-refresh" class="btn btn-outline btn-sm">Refresh</button>
+          </div>
+          <p class="text-sm mb-16">Post short messages visible to all logged-in members on their dashboard.</p>
+          <div id="op-ann-list" class="owner-ann-list">
+            <p class="inbox-empty">Loading&hellip;</p>
+          </div>
+          <div class="card mt-20">
+            <h4 class="mb-12">New Announcement</h4>
+            <div id="op-ann-alert" class="auth-alert" role="alert"></div>
+            <form id="op-ann-form" class="form" novalidate>
+              <div class="form-group">
+                <label class="form-label" for="op-ann-title">Title</label>
+                <input class="form-input" type="text" id="op-ann-title" placeholder="Announcement title" maxlength="120" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="op-ann-body">Body</label>
+                <textarea class="form-input" id="op-ann-body" placeholder="Announcement details…" maxlength="500" required></textarea>
+              </div>
+              <button type="submit" class="btn btn-outline btn-sm">Post</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- ── STOREFRONT ── owner only, built by JS ── -->
+        <div class="owner-panel-section" id="op-store-section">
+          <div class="owner-section-hd">
+            <h4>Storefront — Products</h4>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button type="button" id="op-store-refresh" class="btn btn-outline btn-sm">Refresh</button>
+              <button type="button" id="op-product-new"   class="btn btn-outline btn-sm">+ New Product</button>
+            </div>
+          </div>
+          <p class="text-sm mb-16">Products visible on the public <a href="store.html" target="_blank">Store page</a>.</p>
+
+          <!-- Inline product editor (hidden until New/Edit clicked) -->
+          <div id="op-product-editor" class="card mb-20" hidden>
+            <div class="owner-section-hd">
+              <h4 id="op-editor-title">New Product</h4>
+              <button type="button" id="op-editor-cancel" class="btn btn-outline btn-sm">Cancel</button>
+            </div>
+            <div id="op-product-alert" class="auth-alert" role="alert"></div>
+            <form id="op-product-form" class="form" novalidate autocomplete="off">
+              <input type="hidden" id="op-product-id">
+              <div class="op-form-grid">
+                <div class="form-group">
+                  <label class="form-label" for="op-prod-title">Title *</label>
+                  <input class="form-input" type="text" id="op-prod-title" maxlength="200" required placeholder="Product name">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="op-prod-slug">Slug * <span class="form-label-hint">(URL key, auto-filled)</span></label>
+                  <input class="form-input" type="text" id="op-prod-slug" maxlength="200" required placeholder="my-product-slug">
+                </div>
+              </div>
+              <div class="op-form-grid">
+                <div class="form-group">
+                  <label class="form-label" for="op-prod-type">Type *</label>
+                  <select class="form-input" id="op-prod-type" required>
+                    <option value="music">Music</option>
+                    <option value="game">Game</option>
+                    <option value="software">Software</option>
+                    <option value="story">Story</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="op-prod-currency">Currency</label>
+                  <select class="form-input" id="op-prod-currency">
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                    <option value="GBP">GBP</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="op-prod-price">Price (dollars)</label>
+                  <input class="form-input" type="number" id="op-prod-price" value="0.00" min="0" step="0.01" placeholder="0.00">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="op-prod-short">Short Description * <span class="form-label-hint">(shown on card, max 200 chars)</span></label>
+                <input class="form-input" type="text" id="op-prod-short" maxlength="200" required placeholder="One-line summary">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="op-prod-long">Long Description</label>
+                <textarea class="form-input" id="op-prod-long" rows="4" maxlength="2000" placeholder="Full description shown in the detail view"></textarea>
+              </div>
+              <div class="op-form-grid">
+                <div class="form-group">
+                  <label class="form-label" for="op-prod-cover">Cover Image URL</label>
+                  <input class="form-input" type="url" id="op-prod-cover" maxlength="500" placeholder="https://…">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="op-prod-external">External Link</label>
+                  <input class="form-input" type="url" id="op-prod-external" maxlength="500" placeholder="https://itch.io/…">
+                </div>
+              </div>
+              <div class="op-form-grid">
+                <div class="form-group">
+                  <label class="form-label">Subcategories <span class="form-label-hint">(filtered by type)</span></label>
+                  <div id="op-prod-cats" class="op-checkbox-group"></div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Tags</label>
+                  <div id="op-prod-tags" class="op-checkbox-group"></div>
+                </div>
+              </div>
+              <button type="button" id="op-product-save" class="btn btn-outline btn-sm">Save Product</button>
+            </form>
+          </div>
+
+          <!-- Product list -->
+          <div id="op-product-list" class="owner-product-list">
+            <p class="inbox-empty">Loading&hellip;</p>
+          </div>
+        </div>
+
+        <!-- ── STOREFRONT — Categories & Tags ── -->
+        <div class="owner-panel-section" id="op-taxonomy-section">
+          <div class="owner-section-hd">
+            <h4>Categories &amp; Tags</h4>
+            <button type="button" id="op-taxonomy-refresh" class="btn btn-outline btn-sm">Refresh</button>
+          </div>
+          <p class="text-sm mb-16">Subcategories and tags used to filter products on the store page.</p>
+
+          <div class="op-taxonomy-grid">
+            <!-- Categories -->
+            <div class="card">
+              <h4 class="mb-8">Categories</h4>
+              <div id="op-cat-list" class="owner-tax-list">
+                <p class="inbox-empty">Loading&hellip;</p>
+              </div>
+              <div class="card mt-16">
+                <h4 class="mb-8">Add Category</h4>
+                <div id="op-cat-alert" class="auth-alert" role="alert"></div>
+                <form id="op-cat-form" class="form" novalidate>
+                  <div class="form-group">
+                    <label class="form-label" for="op-cat-label">Label</label>
+                    <input class="form-input" type="text" id="op-cat-label" maxlength="80" placeholder="e.g. Album" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="op-cat-key">Key <span class="form-label-hint">(lowercase, no spaces)</span></label>
+                    <input class="form-input" type="text" id="op-cat-key" maxlength="60" placeholder="e.g. album" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="op-cat-type">Type</label>
+                    <select class="form-input" id="op-cat-type" required>
+                      <option value="music">Music</option>
+                      <option value="game">Game</option>
+                      <option value="software">Software</option>
+                      <option value="story">Story</option>
+                    </select>
+                  </div>
+                  <button type="submit" class="btn btn-outline btn-sm">Add Category</button>
+                </form>
+              </div>
+            </div>
+
+            <!-- Tags -->
+            <div class="card">
+              <h4 class="mb-8">Tags</h4>
+              <div id="op-tag-list" class="owner-tax-list">
+                <p class="inbox-empty">Loading&hellip;</p>
+              </div>
+              <div class="card mt-16">
+                <h4 class="mb-8">Add Tag</h4>
+                <div id="op-tag-alert" class="auth-alert" role="alert"></div>
+                <form id="op-tag-form" class="form" novalidate>
+                  <div class="form-group">
+                    <label class="form-label" for="op-tag-label">Label</label>
+                    <input class="form-input" type="text" id="op-tag-label" maxlength="80" placeholder="e.g. Cyberpunk" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="op-tag-key">Key <span class="form-label-hint">(lowercase, no spaces)</span></label>
+                    <input class="form-input" type="text" id="op-tag-key" maxlength="60" placeholder="e.g. cyberpunk" required>
+                  </div>
+                  <button type="submit" class="btn btn-outline btn-sm">Add Tag</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <footer class="dash-legal-footer">
+        <span>&copy; <span data-year>2026</span> U.N.D Industries</span>
+        <a href="privacy.html">Privacy Policy</a>
+      </footer>
+
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

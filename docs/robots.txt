@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Private / auth pages — no indexing
+Disallow: /login.html
+Disallow: /register.html
+Disallow: /dashboard.html
+Disallow: /dashboard-alt.html
+Disallow: /reset-password.html
+Disallow: /verified.html
+
+Sitemap: https://universalnetworkdevelopment.github.io/und-industries-website/sitemap.xml

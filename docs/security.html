@@ -1,0 +1,171 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; connect-src 'self' https://*.supabase.co wss://*.supabase.co; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; base-uri 'self'; form-action 'self'; frame-ancestors 'none';">
+  <meta name="theme-color" content="#0d0d0f">
+  <meta name="description" content="Security Disclaimer for UND Industries. Supabase auth — passwords hashed, not plaintext. Artist platform, not a secure data service.">
+  <meta property="og:type"  content="website">
+  <meta property="og:title" content="Security Disclaimer | UND Tyzen">
+  <meta property="og:url"   content="https://universalnetworkdevelopment.github.io/und-industries-website/security.html">
+  <meta property="og:image" content="https://universalnetworkdevelopment.github.io/und-industries-website/assets/img/und-og.svg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://universalnetworkdevelopment.github.io/und-industries-website/assets/img/und-og.svg">
+  <link rel="canonical"     href="https://universalnetworkdevelopment.github.io/und-industries-website/security.html">
+  <title>Security Disclaimer | UND Tyzen</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body data-page="security">
+
+  <nav class="nav" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">U.N.D <span>Industries</span></a>
+      <ul class="nav-links" id="nav-links" role="list">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="music.html">Music</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+      <div class="nav-cta">
+        <a href="login.html" class="btn btn-outline btn-sm">Login</a>
+      </div>
+      <button class="nav-hamburger" id="nav-hamburger" aria-label="Toggle navigation" aria-expanded="false" type="button">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+    </div>
+  </nav>
+
+  <main>
+
+    <section class="section pt-nav" data-section="hero">
+      <div class="container">
+        <p class="section-label">Legal</p>
+        <h1 class="legal-title">Security <span class="accent">Disclaimer</span></h1>
+        <div class="divider"></div>
+        <p class="legal-date">Effective date: May 19, 2026</p>
+      </div>
+    </section>
+
+    <section class="section-sm" data-section="security-body">
+      <div class="container">
+        <div class="privacy-body">
+
+          <!-- 1 -->
+          <div class="privacy-section">
+            <div class="privacy-warning">
+              <h2 class="privacy-heading">1. Authentication Scope</h2>
+              <p><strong class="text-strong">This site uses Supabase for account authentication.</strong> Passwords are hashed server-side using bcrypt — they are never stored in plaintext. However, this is an artist fan site, not a financial, medical, or enterprise security platform.</p>
+              <p>While authentication is real and passwords are protected, this site is not designed or audited as a high-security service. Do not use it to store sensitive personal data, financial credentials, or anything requiring bank-grade security protection.</p>
+            </div>
+          </div>
+
+          <!-- 2 -->
+          <div class="privacy-section">
+            <h2 class="privacy-heading">2. Password Security</h2>
+            <p>Your password is hashed using bcrypt before being stored in Supabase's database. This means:</p>
+            <ul class="privacy-list">
+              <li>Your plaintext password is never stored or logged anywhere.</li>
+              <li>Supabase's authentication system handles the hashing and verification process.</li>
+              <li>Row Level Security (RLS) ensures users can only access their own data.</li>
+            </ul>
+            <p class="mt-16"><strong class="text-strong">Still, use a unique password not shared with other services</strong> — standard practice for any online account.</p>
+          </div>
+
+          <!-- 3 -->
+          <div class="privacy-section">
+            <h2 class="privacy-heading">3. Infrastructure</h2>
+            <p>Account credentials and contact messages are stored in a Supabase-managed Postgres database on AWS servers located in the US East region by default. Supabase is a third-party infrastructure provider; this site does not operate its own servers. The frontend code is served statically from GitHub Pages and communicates with Supabase via its public client library.</p>
+            <p>Account credentials and contact messages are actively stored in the Supabase database. The frontend communicates with Supabase via its public client library using Row Level Security to restrict data access.</p>
+          </div>
+
+          <!-- 4 -->
+          <div class="privacy-section">
+            <h2 class="privacy-heading">4. User Responsibility</h2>
+            <p>By using this site's account or contact features, you acknowledge that:</p>
+            <ul class="privacy-list">
+              <li>You will not enter financial information, government IDs, medical data, or other sensitive personal information.</li>
+              <li>You will use a unique password not shared with other services.</li>
+              <li>You are solely responsible for the information you choose to submit.</li>
+            </ul>
+          </div>
+
+          <!-- 5 -->
+          <div class="privacy-section">
+            <h2 class="privacy-heading">5. No Liability</h2>
+            <p>U.N.D Industries is not responsible for any damages, data loss, or consequences resulting from a user entering sensitive data on this site contrary to the warnings stated here. This site is an artist platform and is provided as-is with reasonable effort but no security guarantees beyond those described above.</p>
+          </div>
+
+          <!-- 6 -->
+          <div class="privacy-section">
+            <h2 class="privacy-heading">6. Intended Use</h2>
+            <p>This site is an artist fan and community platform. Its account system exists to support community features, not to protect highly sensitive data. No financial, medical, legal, or enterprise-grade security is implied or guaranteed.</p>
+          </div>
+
+          <!-- 7 -->
+          <div class="privacy-section">
+            <h2 class="privacy-heading">7. Data Collection Modes</h2>
+            <p>Logged-in users may select a data collection mode in their dashboard:</p>
+            <ul class="privacy-list">
+              <li><strong class="text-strong">Standard (default):</strong> Only data you actively submit is stored. No passive collection, no behavioral tracking, no analytics.</li>
+              <li><strong class="text-strong">Advanced:</strong> Your preference is saved and enables optional personalization features as they become available. Advanced mode does not add third-party services, trackers, or analytics of any kind.</li>
+            </ul>
+            <p class="mt-16">Neither mode weakens the security of your account credentials. Passwords are always hashed with bcrypt regardless of mode. Your setting can be changed or revoked from your dashboard at any time.</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div>
+          <div class="footer-brand">U.N.D <span>Industries</span></div>
+          <p class="footer-desc">Universal Network Development Industries.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Pages</h4>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="music.html">Music</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Music</h4>
+          <ul class="footer-links">
+            <li><a href="https://open.spotify.com/artist/09cvXQPxvhR6oRSv964gAh" target="_blank" rel="noopener noreferrer">Spotify</a></li>
+            <li><a href="https://music.apple.com/us/artist/und-tyzen/1826707894" target="_blank" rel="noopener noreferrer">Apple Music</a></li>
+            <li><a href="https://www.youtube.com/@UNDTyzen" target="_blank" rel="noopener noreferrer">YouTube</a></li>
+            <li><a href="https://www.bandlab.com/und_tyzen" target="_blank" rel="noopener noreferrer">BandLab</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p class="footer-copy">&copy; <span data-year>2026</span> U.N.D Industries. All rights reserved.</p>
+        <div class="footer-legal-row">
+          <a href="privacy.html" class="footer-legal-link">Privacy Policy</a>
+          <a href="terms.html" class="footer-legal-link">Terms of Use</a>
+          <a href="security.html" class="footer-copy footer-legal-link" aria-current="page">Security Disclaimer</a>
+          <a href="cookie.html" class="footer-legal-link">Cookie Policy</a>
+          <a href="dmca.html" class="footer-legal-link">DMCA</a>
+          <a href="copyright.html" class="footer-legal-link">Copyright</a>
+        </div>
+        <p class="footer-copy">UND Tyzen</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
+

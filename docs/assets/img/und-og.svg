@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg-g" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#04040f"/>
+      <stop offset="100%" stop-color="#080818"/>
+    </linearGradient>
+    <radialGradient id="glow-g" cx="28%" cy="45%" r="55%" gradientUnits="userSpaceOnUse"
+      fx="336" fy="283" cx="336" cy="283">
+      <stop offset="0%" stop-color="rgba(124,58,237,0.18)"/>
+      <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
+    </radialGradient>
+    <linearGradient id="text-g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a78bfa"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg-g)"/>
+  <rect width="1200" height="630" fill="url(#glow-g)"/>
+
+  <!-- Outer frame -->
+  <rect x="32" y="32" width="1136" height="566" rx="20" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+
+  <!-- Geometric hex — right side visual -->
+  <!-- Outer hex: center (950, 315), r=190 -->
+  <polygon points="950,125 1014.6,162 1114.6,217 1140,315 1114.6,413 1014.6,468 950,505 885.4,468 785.4,413 760,315 785.4,217 885.4,162" fill="none" stroke="rgba(124,58,237,0.22)" stroke-width="1.5"/>
+  <!-- Mid hex: center (950,315), r=120 -->
+  <polygon points="950,195 1053.9,255 1053.9,375 950,435 846.1,375 846.1,255" fill="none" stroke="rgba(167,139,250,0.15)" stroke-width="1.5"/>
+  <!-- Inner hex: center (950,315), r=64 -->
+  <polygon points="950,251 1005.4,283 1005.4,347 950,379 894.6,347 894.6,283" fill="rgba(124,58,237,0.07)" stroke="rgba(167,139,250,0.35)" stroke-width="1.5"/>
+
+  <!-- Vertex dots outer -->
+  <circle cx="950" cy="125" r="5" fill="rgba(167,139,250,0.7)"/>
+  <circle cx="1140" cy="315" r="5" fill="rgba(124,58,237,0.7)"/>
+  <circle cx="950"  cy="505" r="5" fill="rgba(167,139,250,0.7)"/>
+  <circle cx="760"  cy="315" r="5" fill="rgba(124,58,237,0.7)"/>
+
+  <!-- Vertex dots mid -->
+  <circle cx="1053.9" cy="255" r="3.5" fill="rgba(6,182,212,0.55)"/>
+  <circle cx="1053.9" cy="375" r="3.5" fill="rgba(6,182,212,0.55)"/>
+  <circle cx="846.1"  cy="375" r="3.5" fill="rgba(6,182,212,0.55)"/>
+  <circle cx="846.1"  cy="255" r="3.5" fill="rgba(6,182,212,0.55)"/>
+
+  <!-- Connector dashes -->
+  <line x1="950" y1="125" x2="950" y2="195" stroke="rgba(124,58,237,0.3)" stroke-width="1" stroke-dasharray="4,5"/>
+  <line x1="1140" y1="315" x2="1053.9" y2="315" stroke="rgba(124,58,237,0.3)" stroke-width="1" stroke-dasharray="4,5"/>
+  <line x1="950" y1="505" x2="950" y2="435" stroke="rgba(124,58,237,0.3)" stroke-width="1" stroke-dasharray="4,5"/>
+  <line x1="760" y1="315" x2="846.1" y2="315" stroke="rgba(124,58,237,0.3)" stroke-width="1" stroke-dasharray="4,5"/>
+
+  <!-- Orbital ring -->
+  <ellipse cx="950" cy="315" rx="155" ry="155" fill="none" stroke="rgba(124,58,237,0.08)" stroke-width="1" stroke-dasharray="6,9"/>
+
+  <!-- Center U monogram -->
+  <text x="950" y="330" font-family="Space Grotesk, system-ui, sans-serif" font-size="80" font-weight="800" fill="url(#text-g)" text-anchor="middle" dominant-baseline="middle" opacity="0.9">U</text>
+
+  <!-- Left content: logo + tagline -->
+  <text x="100" y="240" font-family="Space Grotesk, system-ui, sans-serif" font-size="80" font-weight="800" fill="#f8fafc" letter-spacing="-2">U.N.D</text>
+  <text x="100" y="340" font-family="Space Grotesk, system-ui, sans-serif" font-size="80" font-weight="800" fill="url(#text-g)" letter-spacing="-2">Industries</text>
+
+  <!-- Accent bar under logo -->
+  <rect x="100" y="360" width="56" height="4" rx="2" fill="#7c3aed"/>
+
+  <!-- Tagline -->
+  <text x="100" y="415" font-family="Inter, system-ui, sans-serif" font-size="22" font-weight="400" fill="rgba(148,163,184,0.85)">Universal Network Development Industries</text>
+
+  <!-- Artist name chip -->
+  <rect x="99" y="450" width="152" height="36" rx="18" fill="rgba(124,58,237,0.18)" stroke="rgba(167,139,250,0.3)" stroke-width="1"/>
+  <text x="175" y="473" font-family="Inter, system-ui, sans-serif" font-size="14" font-weight="600" fill="rgba(167,139,250,0.9)" text-anchor="middle" letter-spacing="1.5">UND TYZEN</text>
+
+  <!-- Vertical separator line -->
+  <line x1="680" y1="80" x2="680" y2="550" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+</svg>

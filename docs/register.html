@@ -1,0 +1,56 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0d0d0f">
+  <meta name="robots" content="noindex, nofollow">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://challenges.cloudflare.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; frame-src https://challenges.cloudflare.com; base-uri 'self'; form-action 'self'; frame-ancestors 'none';">
+  <title>Create Account — U.N.D Industries</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body data-page="register" data-auth-page="true">
+  <div class="auth-page">
+    <div class="auth-box">
+      <div class="auth-logo">U.N.D <span>Industries</span></div>
+      <h1 class="auth-title">Create account</h1>
+      <p class="auth-sub">Set up your U.N.D Industries access.</p>
+      <div id="auth-status-banner"></div>
+      <div id="reg-alert" class="auth-alert" role="alert"></div>
+      <form id="register-form" class="form" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="reg-name">Name</label>
+          <input class="form-input" type="text" id="reg-name" placeholder="Your name" required maxlength="120" autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="reg-email">Email</label>
+          <input class="form-input" type="email" id="reg-email" placeholder="your@email.com" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="reg-password">Password</label>
+          <input class="form-input" type="password" id="reg-password" placeholder="Min. 8 characters" required minlength="8" autocomplete="new-password">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="reg-confirm">Confirm Password</label>
+          <input class="form-input" type="password" id="reg-confirm" placeholder="Repeat password" required autocomplete="new-password">
+        </div>
+        <div class="auth-terms-check">
+          <label>
+            <input type="checkbox" id="agree-terms">
+            I agree to the <a href="terms.html" target="_blank">Terms of Use</a> and <a href="privacy.html" target="_blank">Privacy Policy</a>
+          </label>
+        </div>
+        <div class="cf-turnstile mt-8" data-sitekey="0x4AAAAAADaGp_-rFwn39q-z" data-theme="dark"></div>
+        <button type="submit" class="btn btn-primary btn-full mt-8">Create Account</button>
+      </form>
+      <p class="auth-switch">Already have an account? <a href="login.html">Log in</a>.</p>
+      <p class="auth-footer-text mt-8"><a href="index.html" class="auth-link-muted">← Back to site</a></p>
+      <p class="auth-footer-text auth-footer-legal"><a href="privacy.html" class="auth-link-muted">Privacy Policy</a> &middot; <a href="terms.html" class="auth-link-muted">Terms of Use</a></p>
+    </div>
+  </div>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

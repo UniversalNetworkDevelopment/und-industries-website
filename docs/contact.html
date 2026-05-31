@@ -1,0 +1,180 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; connect-src 'self' https://*.supabase.co wss://*.supabase.co; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; base-uri 'self'; form-action 'self'; frame-ancestors 'none';">
+  <meta name="theme-color" content="#0d0d0f">
+  <meta name="description" content="Contact UND Tyzen for bookings, collaborations, and business inquiries.">
+  <meta property="og:type"  content="website">
+  <meta property="og:title" content="Contact | UND Tyzen">
+  <meta property="og:url"   content="https://universalnetworkdevelopment.github.io/und-industries-website/contact.html">
+  <meta property="og:image" content="https://universalnetworkdevelopment.github.io/und-industries-website/assets/img/und-og.svg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://universalnetworkdevelopment.github.io/und-industries-website/assets/img/und-og.svg">
+  <link rel="canonical"     href="https://universalnetworkdevelopment.github.io/und-industries-website/contact.html">
+  <title>Contact | UND Tyzen</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body data-page="contact">
+
+  <nav class="nav" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">U.N.D <span>Industries</span></a>
+      <ul class="nav-links" id="nav-links" role="list">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="music.html">Music</a></li>
+        <li><a href="store.html">Store</a></li>
+        <li><a href="contact.html" class="active" aria-current="page">Contact</a></li>
+      </ul>
+      <div class="nav-cta">
+        <a href="login.html" class="btn btn-outline btn-sm">Login</a>
+      </div>
+      <button class="nav-hamburger" id="nav-hamburger" aria-label="Toggle navigation" aria-expanded="false" type="button">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+    </div>
+  </nav>
+
+  <main>
+
+    <section class="section pt-nav" data-section="hero">
+      <div class="container">
+        <p class="section-label">Get in Touch</p>
+        <h1>Contact <span class="accent">U.N.D Industries</span></h1>
+        <div class="divider"></div>
+        <p class="hero-desc">Bookings, features, collaborations, and business inquiries.</p>
+      </div>
+    </section>
+
+    <!-- Promo area — owner-managed; hidden until JS loads active promos for 'contact' -->
+    <section class="section-sm" id="contact-promo-section" hidden>
+      <div class="container">
+        <p class="section-label">Featured</p>
+        <div id="contact-promo-area" class="promo-area"></div>
+      </div>
+    </section>
+
+    <section class="section-sm" data-section="contact-body">
+      <div class="container">
+        <div class="contact-grid">
+
+          <div class="contact-info">
+            <div class="contact-item">
+              <div class="contact-icon">✉</div>
+              <div>
+                <h4>Email</h4>
+                <a href="mailto:officialtyzen@gmail.com">officialtyzen@gmail.com</a>
+              </div>
+            </div>
+            <div class="contact-item">
+              <div class="contact-icon">🎵</div>
+              <div>
+                <h4>Music Inquiries</h4>
+                <p>Features, hooks, verses, and collaboration terms.</p>
+              </div>
+            </div>
+            <div class="contact-item">
+              <div class="contact-icon">📅</div>
+              <div>
+                <h4>Bookings</h4>
+                <p>Live performance and event booking via email.</p>
+              </div>
+            </div>
+            <div class="mt-16">
+              <h4 class="contact-platforms-label">Platforms</h4>
+              <div class="contact-platforms-list">
+                <a href="https://www.instagram.com/officialundtyzen/" target="_blank" rel="noopener noreferrer" class="platform-link platform-link-start"><span>📸</span> Instagram</a>
+                <a href="https://www.tiktok.com/@therealundtyzen" target="_blank" rel="noopener noreferrer" class="platform-link platform-link-start"><span>🎬</span> TikTok</a>
+                <a href="https://www.youtube.com/@UNDTyzen" target="_blank" rel="noopener noreferrer" class="platform-link platform-link-start"><span>▶</span> YouTube</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="mb-24">Send a Message</h3>
+            <div id="contact-offline-notice" class="form-notice" hidden>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <p>This form is currently offline. For a guaranteed response, email <a href="mailto:officialtyzen@gmail.com">officialtyzen@gmail.com</a> directly or reach out via the social links on the left.</p>
+            </div>
+            <div id="contact-alert" class="auth-alert" role="alert"></div>
+            <form id="contact-form" class="form" novalidate>
+              <div class="form-group">
+                <label class="form-label" for="c-name">Name</label>
+                <input class="form-input" type="text" id="c-name" name="name" placeholder="Your name" required maxlength="120">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="c-email">Email</label>
+                <input class="form-input" type="email" id="c-email" name="email" placeholder="your@email.com" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="c-subject">Subject</label>
+                <input class="form-input" type="text" id="c-subject" name="subject" placeholder="Booking / Feature / Collab / Other" required maxlength="200">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="c-message">Message</label>
+                <textarea class="form-input" id="c-message" name="message" placeholder="Tell us what you have in mind…" required maxlength="2000"></textarea>
+              </div>
+              <p class="form-sensitive-warning">
+                Do not send passwords, financial details, government ID numbers, or other sensitive personal information through this form.
+              </p>
+              <button type="submit" class="btn btn-primary btn-full">Send Message</button>
+            </form>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div>
+          <div class="footer-brand">U.N.D <span>Industries</span></div>
+          <p class="footer-desc">Universal Network Development Industries.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Pages</h4>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="music.html">Music</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Social</h4>
+          <ul class="footer-links">
+            <li><a href="https://www.instagram.com/officialundtyzen/" target="_blank" rel="noopener noreferrer">Instagram</a></li>
+            <li><a href="https://www.tiktok.com/@therealundtyzen" target="_blank" rel="noopener noreferrer">TikTok</a></li>
+            <li><a href="https://www.youtube.com/@UNDTyzen" target="_blank" rel="noopener noreferrer">YouTube</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p class="footer-copy">&copy; <span data-year>2026</span> U.N.D Industries. All rights reserved.</p>
+        <div class="footer-legal-row">
+          <a href="privacy.html" class="footer-legal-link">Privacy Policy</a>
+          <a href="terms.html" class="footer-legal-link">Terms of Use</a>
+          <a href="security.html" class="footer-legal-link">Security Disclaimer</a>
+          <a href="cookie.html" class="footer-legal-link">Cookie Policy</a>
+          <a href="dmca.html" class="footer-legal-link">DMCA</a>
+          <a href="copyright.html" class="footer-legal-link">Copyright</a>
+        </div>
+        <p class="footer-copy">UND Tyzen</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,218 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; connect-src 'self' https://*.supabase.co wss://*.supabase.co; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; base-uri 'self'; form-action 'self'; frame-ancestors 'none';">
+  <meta name="theme-color" content="#0d0d0f">
+  <meta name="description" content="Privacy Policy for the UND Industries website. Supabase-backed auth — no tracking, no ads.">
+  <meta property="og:type"  content="website">
+  <meta property="og:title" content="Privacy Policy | UND Tyzen">
+  <meta property="og:url"   content="https://universalnetworkdevelopment.github.io/und-industries-website/privacy.html">
+  <meta property="og:image" content="https://universalnetworkdevelopment.github.io/und-industries-website/assets/img/und-og.svg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://universalnetworkdevelopment.github.io/und-industries-website/assets/img/und-og.svg">
+  <link rel="canonical"     href="https://universalnetworkdevelopment.github.io/und-industries-website/privacy.html">
+  <title>Privacy Policy | UND Tyzen</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body data-page="privacy">
+
+  <nav class="nav" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">U.N.D <span>Industries</span></a>
+      <ul class="nav-links" id="nav-links" role="list">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="music.html">Music</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+      <div class="nav-cta">
+        <a href="login.html" class="btn btn-outline btn-sm">Login</a>
+      </div>
+      <button class="nav-hamburger" id="nav-hamburger" aria-label="Toggle navigation" aria-expanded="false" type="button">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+    </div>
+  </nav>
+
+  <main>
+
+    <section class="section pt-nav" data-section="hero">
+      <div class="container">
+        <p class="section-label">Legal</p>
+        <h1 class="legal-title">Privacy <span class="accent">Policy</span></h1>
+        <div class="divider"></div>
+        <p class="legal-date">Effective date: May 19, 2026</p>
+      </div>
+    </section>
+
+    <section class="section-sm" data-section="policy-body">
+      <div class="container">
+        <div class="privacy-body">
+
+          <!-- 1 -->
+          <div class="privacy-section">
+            <h2 class="privacy-heading">1. About This Site</h2>
+            <p>U.N.D Industries operates this website as a static front-end hosted on GitHub Pages, backed by <strong class="text-strong">Supabase</strong> for account authentication and contact message storage. The frontend code runs in your browser; account data and contact messages are stored on Supabase-managed servers.</p>
+            <p>Supabase is a third-party infrastructure provider. See the <a href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer">Supabase Privacy Policy</a> for details on how they handle infrastructure-level data.</p>
+          </div>
+
+          <!-- 2 -->
+          <div class="privacy-section">
+            <h2 class="privacy-heading">2. Information We Collect</h2>
+            <p>We do not automatically collect any personal information. The only data stored is data you voluntarily provide:</p>
+            <ul class="privacy-list">
+              <li>A display name and email address if you register for an account.</li>
+              <li>Your email, subject, and message if you submit the contact form.</li>
+            </ul>
+            <p class="mt-16">Contact form submissions are stored in our Supabase database and are accessible only to site administrators (U.N.D Industries). They are used solely to respond to your inquiry.</p>
+          </div>
+
+          <!-- 3 -->
+          <div class="privacy-section">
+            <h2 class="privacy-heading">3. How and Where Data Is Stored</h2>
+            <p>Account credentials and contact messages are stored in a <strong class="text-strong">Supabase Postgres database</strong>. This means:</p>
+            <ul class="privacy-list">
+              <li>Your password is hashed using bcrypt before storage — it is never stored in plaintext.</li>
+              <li>Data is stored on Supabase-managed servers (AWS, US East region by default) and is accessible from any device after you log in.</li>
+              <li>Row Level Security (RLS) policies ensure each user can only access their own data.</li>
+              <li>Contact messages are visible only to site administrators.</li>
+              <li>Authentication and data storage are only active once the backend has been configured. Until then, no data is transmitted or stored by this site.</li>
+            </ul>
+          </div>
+
+          <!-- 4 -->
+          <div class="privacy-section">
+            <h2 class="privacy-heading">4. What We Do Not Collect</h2>
+            <p>U.N.D Industries does not collect, use, or integrate any of the following:</p>
+            <ul class="privacy-list">
+              <li>Behavioral analytics or usage tracking of any kind.</li>
+              <li>Third-party advertising networks or ad-targeting technologies.</li>
+              <li>Third-party analytics tools (such as Google Analytics or similar).</li>
+              <li>Cookies used for tracking, advertising, or persistent session management.</li>
+              <li>Device fingerprinting or browser profiling.</li>
+              <li>IP address logging.</li>
+            </ul>
+          </div>
+
+          <!-- 5 — warning card -->
+          <div class="privacy-section">
+            <div class="privacy-warning">
+              <h2 class="privacy-heading">5. Sensitive Data Warning</h2>
+              <p><strong class="text-strong">This site is not a secure data storage platform.</strong> You must not enter sensitive personal information, including but not limited to:</p>
+              <ul class="privacy-list">
+                <li>Passwords used on other services or platforms.</li>
+                <li>Financial information (credit card numbers, bank account details, etc.).</li>
+                <li>Government-issued identification numbers (Social Security, passport, driver's licence, etc.).</li>
+                <li>Medical or health information.</li>
+                <li>Any information you consider private or confidential.</li>
+              </ul>
+              <p class="mt-20"><strong class="text-strong">U.N.D Industries is not responsible for any consequences arising from a user entering sensitive data on this site contrary to this warning.</strong></p>
+            </div>
+          </div>
+
+          <!-- 6 -->
+          <div class="privacy-section">
+            <h2 class="privacy-heading">6. Your Control &amp; Data Deletion</h2>
+            <p>Because account data and contact messages are stored in a Supabase-managed database, you may request deletion by contacting us directly. To request removal of your account or any submitted contact message:</p>
+            <ul class="privacy-list">
+              <li>Email <a href="mailto:officialtyzen@gmail.com" class="accent">officialtyzen@gmail.com</a> with the subject "Data Deletion Request" and the email address associated with your account.</li>
+              <li>Your account and all associated data will be permanently deleted within a reasonable time.</li>
+            </ul>
+            <p class="mt-16">The Supabase client may also store a session token in your browser's localStorage to maintain your login state. You can clear this at any time through your browser's site data settings (Settings → Privacy → Site Data or similar), which will sign you out locally.</p>
+          </div>
+
+          <!-- 7 -->
+          <div class="privacy-section">
+            <h2 class="privacy-heading">7. Data Sharing</h2>
+            <p>U.N.D Industries does not sell, rent, or trade your data. Account credentials and contact form submissions are transmitted to and stored by <strong class="text-strong">Supabase</strong>, which acts solely as our infrastructure provider. Supabase does not use your data for advertising, profiling, or any purpose beyond providing database services to this site. No data is shared with any other third party.</p>
+          </div>
+
+          <!-- 8 -->
+          <div class="privacy-section">
+            <h2 class="privacy-heading">8. External Links</h2>
+            <p>This site contains links to third-party platforms including Spotify, Apple Music, YouTube, BandLab, Instagram, and TikTok. These are independently operated services with their own privacy policies and data practices.</p>
+            <p>U.N.D Industries has no control over, and accepts no responsibility for, the privacy practices or content of any third-party service. Clicking a link to a third-party platform means leaving this site and entering a service governed by that platform's own terms and privacy policy.</p>
+          </div>
+
+          <!-- 9 — Data modes -->
+          <div class="privacy-section">
+            <h2 class="privacy-heading">9. Data Collection Modes</h2>
+            <p>Logged-in users can choose their data collection mode from the dashboard. There are two options:</p>
+            <ul class="privacy-list">
+              <li><strong class="text-strong">Standard (default):</strong> Only the data you actively submit is stored — your account credentials, display name, and any contact messages you send. Nothing is collected passively. This is the default for all accounts.</li>
+              <li><strong class="text-strong">Advanced:</strong> Your preference is recorded and will enable optional personalization features as they become available on this platform. Advanced mode does not activate any third-party trackers, analytics services, or advertising networks now or in the future. The only difference from Standard is that your preference is stored and future optional features may use it.</li>
+            </ul>
+            <p class="mt-16">Your mode is stored in your account profile in the Supabase database. You can change it at any time from your dashboard. Switching back to Standard removes any opt-in status immediately.</p>
+          </div>
+
+          <!-- 10 -->
+          <div class="privacy-section">
+            <h2 class="privacy-heading">10. Changes to This Policy</h2>
+            <p>U.N.D Industries may update this Privacy Policy at any time without prior notice. The most current version will always be available at this page (<code>/privacy.html</code>). Continued use of the site after a policy update constitutes acceptance of the revised policy.</p>
+          </div>
+
+          <!-- 11 -->
+          <div class="privacy-section">
+            <h2 class="privacy-heading">11. Contact</h2>
+            <p>If you have questions or concerns about this Privacy Policy, you may contact us at:</p>
+            <a href="mailto:officialtyzen@gmail.com" class="privacy-contact-link">officialtyzen@gmail.com</a>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div>
+          <div class="footer-brand">U.N.D <span>Industries</span></div>
+          <p class="footer-desc">Universal Network Development Industries.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Pages</h4>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="music.html">Music</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Music</h4>
+          <ul class="footer-links">
+            <li><a href="https://open.spotify.com/artist/09cvXQPxvhR6oRSv964gAh" target="_blank" rel="noopener noreferrer">Spotify</a></li>
+            <li><a href="https://music.apple.com/us/artist/und-tyzen/1826707894" target="_blank" rel="noopener noreferrer">Apple Music</a></li>
+            <li><a href="https://www.youtube.com/@UNDTyzen" target="_blank" rel="noopener noreferrer">YouTube</a></li>
+            <li><a href="https://www.bandlab.com/und_tyzen" target="_blank" rel="noopener noreferrer">BandLab</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p class="footer-copy">&copy; <span data-year>2026</span> U.N.D Industries. All rights reserved.</p>
+        <div class="footer-legal-row">
+          <a href="privacy.html" class="footer-copy footer-legal-link" aria-current="page">Privacy Policy</a>
+          <a href="terms.html" class="footer-legal-link">Terms of Use</a>
+          <a href="security.html" class="footer-legal-link">Security Disclaimer</a>
+          <a href="cookie.html" class="footer-legal-link">Cookie Policy</a>
+          <a href="dmca.html" class="footer-legal-link">DMCA</a>
+          <a href="copyright.html" class="footer-legal-link">Copyright</a>
+        </div>
+        <p class="footer-copy">UND Tyzen</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
+
