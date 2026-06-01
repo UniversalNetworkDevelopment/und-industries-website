@@ -648,6 +648,23 @@
       });
   }
 
+  // Convert a Spotify / Apple Music / YouTube link into its official embed
+  // player URL so a promo can auto-preview a song (cover, title, play button)
+  // straight from the link — no manual data entry. Returns null if not embeddable.
+  function toPromoEmbed(url) {
+    if (!url) return null;
+    try {
+      var sp = url.match(/open\.spotify\.com\/(track|album|artist|playlist|episode|show)\/([A-Za-z0-9]+)/);
+      if (sp) return { src: 'https://open.spotify.com/embed/' + sp[1] + '/' + sp[2] + '?theme=0', height: 152, label: 'Spotify' };
+      if (/(^|\.)music\.apple\.com\//.test(url)) {
+        return { src: url.replace('music.apple.com', 'embed.music.apple.com'), height: 175, label: 'Apple Music' };
+      }
+      var yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([A-Za-z0-9_-]{11})/);
+      if (yt) return { src: 'https://www.youtube.com/embed/' + yt[1], height: 200, label: 'YouTube' };
+    } catch (_) {}
+    return null;
+  }
+
   // ── Promo Links — public page loader ──────────────────────
   // Called on home / music / contact pages to display active promos.
   function loadPromoLinks(pageLocation, containerId, sectionId) {
@@ -679,6 +696,23 @@
           var hasImg = p.image_url && /^https?:\/\//i.test(p.image_url);
           var cta    = escapeHtml(p.cta_label || 'Listen Now');
           var badge  = escapeHtml(p.badge || 'Featured');
+          // If the link is a song (Spotify/Apple/YouTube), preview the real player
+          var embed = toPromoEmbed(p.url);
+          if (embed) {
+            return '<div class="promo-banner promo-banner-embed">' +
+              '<div class="promo-banner-body promo-embed-head">' +
+                '<span class="promo-banner-tag">' + badge + '</span>' +
+                (p.title ? '<h3 class="promo-banner-title">' + escapeHtml(p.title) + '</h3>' : '') +
+                (p.subtitle ? '<p class="promo-banner-sub">' + escapeHtml(p.subtitle) + '</p>' : '') +
+                (p.description ? '<p class="promo-banner-desc">' + escapeHtml(p.description) + '</p>' : '') +
+              '</div>' +
+              '<div class="promo-embed-frame">' +
+                '<iframe src="' + escapeHtml(embed.src) + '" height="' + embed.height + '" width="100%" frameborder="0" ' +
+                  'loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" ' +
+                  'title="' + escapeHtml((p.title || 'Featured') + ' — ' + embed.label) + '"></iframe>' +
+              '</div>' +
+            '</div>';
+          }
           var body =
             '<div class="promo-banner-body">' +
               '<span class="promo-banner-tag">' + badge + '</span>' +
