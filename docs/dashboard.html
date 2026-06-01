@@ -291,9 +291,10 @@
             <p class="inbox-empty">Loading&hellip;</p>
           </div>
           <div class="card mt-20">
-            <h4 class="mb-12">Add Promo Link</h4>
+            <h4 class="mb-12" id="op-promo-form-title">Add Promo Link</h4>
             <div id="op-promo-alert" class="auth-alert" role="alert"></div>
             <form id="op-promo-form" class="form" novalidate>
+              <input type="hidden" id="op-promo-id">
               <div class="form-group">
                 <label class="form-label" for="op-promo-title">Title <span class="form-label-hint">(song, release, or product name)</span></label>
                 <input class="form-input" type="text" id="op-promo-title" placeholder="e.g. Song / release / product name" maxlength="120" required>
@@ -334,7 +335,10 @@
                 <label class="form-label" for="op-promo-order">Sort Order</label>
                 <input class="form-input" type="number" id="op-promo-order" value="0" min="0" max="99">
               </div>
-              <button type="submit" class="btn btn-outline btn-sm">Add Promo</button>
+              <div style="display:flex;gap:8px;align-items:center">
+                <button type="submit" class="btn btn-outline btn-sm">Add Promo</button>
+                <button type="button" id="op-promo-cancel" class="btn btn-ghost btn-sm" hidden>Cancel</button>
+              </div>
             </form>
           </div>
         </div>

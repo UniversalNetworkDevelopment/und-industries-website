@@ -706,7 +706,7 @@
     listEl.innerHTML = '<p class="inbox-empty">Loading…</p>';
     supabase
       .from('promo_links')
-      .select('id, title, url, location, is_active, sort_order')
+      .select('id, title, url, location, is_active, sort_order, subtitle, image_url, cta_label, badge, description')
       .order('location', { ascending: true })
       .order('sort_order', { ascending: true })
       .then(function (res) {
@@ -734,10 +734,14 @@
               '<button type="button" class="owner-promo-toggle op-promo-toggle" data-active="' + p.is_active + '">' +
                 (p.is_active ? 'Active' : 'Inactive') +
               '</button>' +
+              '<button type="button" class="btn btn-outline btn-sm op-promo-edit">Edit</button>' +
               '<button type="button" class="btn-danger-sm op-promo-delete">Delete</button>' +
             '</div>';
           row.querySelector('.op-promo-toggle').addEventListener('click', function () {
             togglePromoActive(p.id, p.is_active, row);
+          });
+          row.querySelector('.op-promo-edit').addEventListener('click', function () {
+            editPromo(p);
           });
           row.querySelector('.op-promo-delete').addEventListener('click', function () {
             deletePromoLink(p.id, row);
@@ -745,6 +749,43 @@
           listEl.appendChild(row);
         });
       });
+  }
+
+  // Load an existing promo into the form for editing
+  function editPromo(p) {
+    var f = function (id) { return document.getElementById(id); };
+    var idEl = f('op-promo-id');
+    if (idEl) idEl.value = p.id;
+    if (f('op-promo-title'))    f('op-promo-title').value    = p.title || '';
+    if (f('op-promo-subtitle')) f('op-promo-subtitle').value = p.subtitle || '';
+    if (f('op-promo-desc'))     f('op-promo-desc').value     = p.description || '';
+    if (f('op-promo-badge'))    f('op-promo-badge').value    = p.badge || '';
+    if (f('op-promo-image'))    f('op-promo-image').value    = p.image_url || '';
+    if (f('op-promo-url'))      f('op-promo-url').value      = p.url || '';
+    if (f('op-promo-cta'))      f('op-promo-cta').value      = p.cta_label || '';
+    if (f('op-promo-location')) f('op-promo-location').value = p.location || 'home';
+    if (f('op-promo-order'))    f('op-promo-order').value    = p.sort_order || 0;
+    var titleEl = document.getElementById('op-promo-form-title');
+    if (titleEl) titleEl.textContent = 'Edit Promo';
+    var btn = document.querySelector('#op-promo-form [type="submit"]');
+    if (btn) btn.textContent = 'Update Promo';
+    var cancel = document.getElementById('op-promo-cancel');
+    if (cancel) cancel.hidden = false;
+    var form = document.getElementById('op-promo-form');
+    if (form) form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function resetPromoForm() {
+    var form = document.getElementById('op-promo-form');
+    if (form) form.reset();
+    var idEl = document.getElementById('op-promo-id');
+    if (idEl) idEl.value = '';
+    var titleEl = document.getElementById('op-promo-form-title');
+    if (titleEl) titleEl.textContent = 'Add Promo Link';
+    var btn = document.querySelector('#op-promo-form [type="submit"]');
+    if (btn) btn.textContent = 'Add Promo';
+    var cancel = document.getElementById('op-promo-cancel');
+    if (cancel) cancel.hidden = true;
   }
 
   function togglePromoActive(id, currentState, rowEl) {
@@ -1961,26 +2002,33 @@
                 return;
               }
               if (image && !/^https?:\/\//i.test(image)) {
-                if (promoAlert) { promoAlert.textContent = 'Banner image URL must start with https://'; promoAlert.className = 'auth-alert error visible'; }
+                if (promoAlert) { promoAlert.textContent = 'Cover/image URL must start with https://'; promoAlert.className = 'auth-alert error visible'; }
                 return;
               }
-              supabase.from('promo_links').insert({
-                title: title, url: url, location: location, sort_order: order, is_active: true,
+              var promoIdEl = document.getElementById('op-promo-id');
+              var editId    = promoIdEl ? promoIdEl.value.trim() : '';
+              var fields = {
+                title: title, url: url, location: location, sort_order: order,
                 subtitle: subtitle || null, image_url: image || null, cta_label: ctaLabel || null,
                 badge: badge || null, description: descr || null
-              })
-                .then(function (res) {
-                  if (res.error) {
-                    _trackError('Promo insert: ' + res.error.message);
-                    if (promoAlert) { promoAlert.textContent = 'Could not add promo.'; promoAlert.className = 'auth-alert error visible'; }
-                    return;
-                  }
-                  if (promoAlert) { promoAlert.textContent = 'Promo link added.'; promoAlert.className = 'auth-alert success visible'; setTimeout(function () { promoAlert.className = 'auth-alert'; }, 2500); }
-                  promoForm.reset();
-                  loadOwnerPromo();
-                });
+              };
+              var op = editId
+                ? supabase.from('promo_links').update(fields).eq('id', editId)
+                : supabase.from('promo_links').insert(Object.assign({ is_active: true }, fields));
+              op.then(function (res) {
+                if (res.error) {
+                  _trackError('Promo save: ' + res.error.message);
+                  if (promoAlert) { promoAlert.textContent = 'Could not save promo.'; promoAlert.className = 'auth-alert error visible'; }
+                  return;
+                }
+                if (promoAlert) { promoAlert.textContent = editId ? 'Promo updated.' : 'Promo link added.'; promoAlert.className = 'auth-alert success visible'; setTimeout(function () { promoAlert.className = 'auth-alert'; }, 2500); }
+                resetPromoForm();
+                loadOwnerPromo();
+              });
             });
           }
+          var promoCancelBtn = document.getElementById('op-promo-cancel');
+          if (promoCancelBtn) promoCancelBtn.addEventListener('click', resetPromoForm);
 
           // Announcements form
           var annForm  = document.getElementById('op-ann-form');
