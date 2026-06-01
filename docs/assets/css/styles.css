@@ -2714,8 +2714,7 @@ button.sidebar-link {
 .promo-banner {
   position: relative;
   display: flex;
-  align-items: stretch;
-  min-height: 150px;
+  align-items: center;
   border-radius: var(--radius-lg);
   overflow: hidden;
   text-decoration: none;
@@ -2731,6 +2730,11 @@ button.sidebar-link {
   border-color: var(--accent);
   box-shadow: 0 16px 60px rgba(124,58,237,0.28);
 }
+/* No-artwork promo: compact, centered announcement (no dead space) */
+.promo-banner-noimg { justify-content: center; text-align: center; min-height: 0; }
+.promo-banner-noimg .promo-banner-body { align-items: center; padding: 26px 28px; }
+/* With-artwork promo: release card, content sits next to the cover */
+.promo-banner-withimg { min-height: 150px; }
 
 /* Image variant — media on the left, text on the right */
 .promo-banner-media {
