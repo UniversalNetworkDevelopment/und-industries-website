@@ -2733,6 +2733,9 @@ button.sidebar-link {
 /* No-artwork promo: compact, centered announcement (no dead space) */
 .promo-banner-noimg { justify-content: center; text-align: center; min-height: 0; }
 .promo-banner-noimg .promo-banner-body { align-items: center; padding: 26px 28px; }
+/* Override the default left-stick on the badge + button so it's truly centered */
+.promo-banner-noimg .promo-banner-tag,
+.promo-banner-noimg .promo-banner-cta { align-self: center; }
 /* With-artwork promo: release card, content sits next to the cover */
 .promo-banner-withimg { min-height: 150px; }
 
