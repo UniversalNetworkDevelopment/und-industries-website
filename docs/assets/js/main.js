@@ -654,7 +654,7 @@
     if (!supabase) return;
     supabase
       .from('promo_links')
-      .select('id, title, url')
+      .select('id, title, url, subtitle, image_url, cta_label')
       .eq('location', pageLocation)
       .eq('is_active', true)
       .order('sort_order', { ascending: true })
@@ -675,9 +675,21 @@
           return;
         }
         container.innerHTML = res.data.map(function (p) {
-          if (!/^https?:\/\//i.test(p.url)) return ''; // block javascript: and other non-http URIs
-          return '<a href="' + escapeHtml(p.url) + '" class="promo-card" target="_blank" rel="noopener noreferrer">' +
-            escapeHtml(p.title) + '</a>';
+          if (!/^https?:\/\//i.test(p.url)) return ''; // block non-http URIs
+          var hasImg = p.image_url && /^https?:\/\//i.test(p.image_url);
+          var media  = hasImg
+            ? '<div class="promo-banner-media"><img src="' + escapeHtml(p.image_url) + '" alt="' + escapeHtml(p.title) + '" loading="lazy"></div>'
+            : '';
+          var cta = escapeHtml(p.cta_label || 'Learn More');
+          return '<a href="' + escapeHtml(p.url) + '" class="promo-banner' + (hasImg ? ' promo-banner-hasimg' : '') + '" target="_blank" rel="noopener noreferrer">' +
+            media +
+            '<div class="promo-banner-body">' +
+              '<span class="promo-banner-tag">Featured</span>' +
+              '<h3 class="promo-banner-title">' + escapeHtml(p.title) + '</h3>' +
+              (p.subtitle ? '<p class="promo-banner-sub">' + escapeHtml(p.subtitle) + '</p>' : '') +
+              '<span class="promo-banner-cta">' + cta + ' <span aria-hidden="true">→</span></span>' +
+            '</div>' +
+          '</a>';
         }).join('');
         if (section) section.removeAttribute('hidden');
       });
@@ -1926,15 +1938,28 @@
               var url      = document.getElementById('op-promo-url').value.trim();
               var location = document.getElementById('op-promo-location').value;
               var order    = parseInt(document.getElementById('op-promo-order').value, 10) || 0;
+              var subEl    = document.getElementById('op-promo-subtitle');
+              var imgEl    = document.getElementById('op-promo-image');
+              var ctaEl    = document.getElementById('op-promo-cta');
+              var subtitle = subEl ? subEl.value.trim() : '';
+              var image    = imgEl ? imgEl.value.trim() : '';
+              var ctaLabel = ctaEl ? ctaEl.value.trim() : '';
               if (!title || !url) {
                 if (promoAlert) { promoAlert.textContent = 'Title and URL are required.'; promoAlert.className = 'auth-alert error visible'; }
                 return;
               }
               if (!/^https?:\/\//i.test(url)) {
-                if (promoAlert) { promoAlert.textContent = 'URL must start with https:// or http://'; promoAlert.className = 'auth-alert error visible'; }
+                if (promoAlert) { promoAlert.textContent = 'Link URL must start with https:// or http://'; promoAlert.className = 'auth-alert error visible'; }
                 return;
               }
-              supabase.from('promo_links').insert({ title: title, url: url, location: location, sort_order: order, is_active: true })
+              if (image && !/^https?:\/\//i.test(image)) {
+                if (promoAlert) { promoAlert.textContent = 'Banner image URL must start with https://'; promoAlert.className = 'auth-alert error visible'; }
+                return;
+              }
+              supabase.from('promo_links').insert({
+                title: title, url: url, location: location, sort_order: order, is_active: true,
+                subtitle: subtitle || null, image_url: image || null, cta_label: ctaLabel || null
+              })
                 .then(function (res) {
                   if (res.error) {
                     _trackError('Promo insert: ' + res.error.message);
