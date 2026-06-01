@@ -2821,3 +2821,13 @@ button.sidebar-link {
   .promo-banner-media { width: 120px; margin: 18px auto 0; }
   .promo-banner-body { padding: 22px 22px 26px; }
 }
+
+/* Promo banner description — the informational blurb */
+.promo-banner-desc {
+  font-size: 0.92rem;
+  color: var(--text-soft);
+  line-height: 1.55;
+  margin: 6px 0 2px;
+  max-width: 62ch;
+}
+.promo-banner-noimg .promo-banner-desc { margin-left: auto; margin-right: auto; }

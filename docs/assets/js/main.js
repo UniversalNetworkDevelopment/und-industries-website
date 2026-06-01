@@ -654,7 +654,7 @@
     if (!supabase) return;
     supabase
       .from('promo_links')
-      .select('id, title, url, subtitle, image_url, cta_label, badge')
+      .select('id, title, url, subtitle, image_url, cta_label, badge, description')
       .eq('location', pageLocation)
       .eq('is_active', true)
       .order('sort_order', { ascending: true })
@@ -684,6 +684,7 @@
               '<span class="promo-banner-tag">' + badge + '</span>' +
               '<h3 class="promo-banner-title">' + escapeHtml(p.title) + '</h3>' +
               (p.subtitle ? '<p class="promo-banner-sub">' + escapeHtml(p.subtitle) + '</p>' : '') +
+              (p.description ? '<p class="promo-banner-desc">' + escapeHtml(p.description) + '</p>' : '') +
               '<span class="promo-banner-cta">' + cta + ' <span aria-hidden="true">→</span></span>' +
             '</div>';
           if (hasImg) {
@@ -1945,10 +1946,12 @@
               var imgEl    = document.getElementById('op-promo-image');
               var ctaEl    = document.getElementById('op-promo-cta');
               var badgeEl  = document.getElementById('op-promo-badge');
+              var descEl   = document.getElementById('op-promo-desc');
               var subtitle = subEl ? subEl.value.trim() : '';
               var image    = imgEl ? imgEl.value.trim() : '';
               var ctaLabel = ctaEl ? ctaEl.value.trim() : '';
               var badge    = badgeEl ? badgeEl.value.trim() : '';
+              var descr    = descEl ? descEl.value.trim() : '';
               if (!title || !url) {
                 if (promoAlert) { promoAlert.textContent = 'Title and URL are required.'; promoAlert.className = 'auth-alert error visible'; }
                 return;
@@ -1964,7 +1967,7 @@
               supabase.from('promo_links').insert({
                 title: title, url: url, location: location, sort_order: order, is_active: true,
                 subtitle: subtitle || null, image_url: image || null, cta_label: ctaLabel || null,
-                badge: badge || null
+                badge: badge || null, description: descr || null
               })
                 .then(function (res) {
                   if (res.error) {
