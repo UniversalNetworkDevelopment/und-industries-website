@@ -654,7 +654,7 @@
     if (!supabase) return;
     supabase
       .from('promo_links')
-      .select('id, title, url, subtitle, image_url, cta_label')
+      .select('id, title, url, subtitle, image_url, cta_label, badge')
       .eq('location', pageLocation)
       .eq('is_active', true)
       .order('sort_order', { ascending: true })
@@ -678,13 +678,15 @@
           if (!/^https?:\/\//i.test(p.url)) return ''; // block non-http URIs
           var hasImg = p.image_url && /^https?:\/\//i.test(p.image_url);
           var media  = hasImg
-            ? '<div class="promo-banner-media"><img src="' + escapeHtml(p.image_url) + '" alt="' + escapeHtml(p.title) + '" loading="lazy"></div>'
-            : '';
-          var cta = escapeHtml(p.cta_label || 'Learn More');
-          return '<a href="' + escapeHtml(p.url) + '" class="promo-banner' + (hasImg ? ' promo-banner-hasimg' : '') + '" target="_blank" rel="noopener noreferrer">' +
+            ? '<div class="promo-banner-media"><img src="' + escapeHtml(p.image_url) + '" alt="' + escapeHtml(p.title) + '" loading="lazy">' +
+                '<span class="promo-banner-play" aria-hidden="true">▶</span></div>'
+            : '<div class="promo-banner-media promo-banner-media-empty" aria-hidden="true">♪</div>';
+          var cta   = escapeHtml(p.cta_label || 'Listen Now');
+          var badge = escapeHtml(p.badge || 'Featured');
+          return '<a href="' + escapeHtml(p.url) + '" class="promo-banner" target="_blank" rel="noopener noreferrer">' +
             media +
             '<div class="promo-banner-body">' +
-              '<span class="promo-banner-tag">Featured</span>' +
+              '<span class="promo-banner-tag">' + badge + '</span>' +
               '<h3 class="promo-banner-title">' + escapeHtml(p.title) + '</h3>' +
               (p.subtitle ? '<p class="promo-banner-sub">' + escapeHtml(p.subtitle) + '</p>' : '') +
               '<span class="promo-banner-cta">' + cta + ' <span aria-hidden="true">→</span></span>' +
@@ -1941,9 +1943,11 @@
               var subEl    = document.getElementById('op-promo-subtitle');
               var imgEl    = document.getElementById('op-promo-image');
               var ctaEl    = document.getElementById('op-promo-cta');
+              var badgeEl  = document.getElementById('op-promo-badge');
               var subtitle = subEl ? subEl.value.trim() : '';
               var image    = imgEl ? imgEl.value.trim() : '';
               var ctaLabel = ctaEl ? ctaEl.value.trim() : '';
+              var badge    = badgeEl ? badgeEl.value.trim() : '';
               if (!title || !url) {
                 if (promoAlert) { promoAlert.textContent = 'Title and URL are required.'; promoAlert.className = 'auth-alert error visible'; }
                 return;
@@ -1958,7 +1962,8 @@
               }
               supabase.from('promo_links').insert({
                 title: title, url: url, location: location, sort_order: order, is_active: true,
-                subtitle: subtitle || null, image_url: image || null, cta_label: ctaLabel || null
+                subtitle: subtitle || null, image_url: image || null, cta_label: ctaLabel || null,
+                badge: badge || null
               })
                 .then(function (res) {
                   if (res.error) {

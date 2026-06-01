@@ -2734,15 +2734,35 @@ button.sidebar-link {
 
 /* Image variant — media on the left, text on the right */
 .promo-banner-media {
-  flex: 0 0 38%;
-  max-width: 320px;
+  position: relative;
+  flex: 0 0 auto;
+  width: 150px;
+  aspect-ratio: 1 / 1;
+  align-self: center;
+  margin: 18px 0 18px 18px;
+  border-radius: var(--radius-md);
   overflow: hidden;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.45);
 }
 .promo-banner-media img {
   width: 100%; height: 100%;
   object-fit: cover;
   display: block;
 }
+.promo-banner-media-empty {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.6rem; color: var(--accent-light);
+  background: linear-gradient(135deg, rgba(124,58,237,0.22), rgba(124,58,237,0.05));
+}
+.promo-banner-play {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem; color: #fff;
+  background: rgba(5,5,6,0.4);
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+.promo-banner:hover .promo-banner-play { opacity: 1; }
 
 .promo-banner-body {
   flex: 1;
@@ -2794,6 +2814,6 @@ button.sidebar-link {
 
 @media (max-width: 700px) {
   .promo-banner { flex-direction: column; }
-  .promo-banner-media { flex: none; max-width: none; height: 160px; }
+  .promo-banner-media { width: 120px; margin: 18px auto 0; }
   .promo-banner-body { padding: 22px 22px 26px; }
 }

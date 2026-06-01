@@ -295,24 +295,28 @@
             <div id="op-promo-alert" class="auth-alert" role="alert"></div>
             <form id="op-promo-form" class="form" novalidate>
               <div class="form-group">
-                <label class="form-label" for="op-promo-title">Title</label>
-                <input class="form-input" type="text" id="op-promo-title" placeholder="e.g. New Single Out Now" maxlength="120" required>
+                <label class="form-label" for="op-promo-title">Title <span class="form-label-hint">(song, release, or product name)</span></label>
+                <input class="form-input" type="text" id="op-promo-title" placeholder="e.g. Wired Future" maxlength="120" required>
               </div>
               <div class="form-group">
-                <label class="form-label" for="op-promo-url">Link URL</label>
+                <label class="form-label" for="op-promo-subtitle">Artist / Subtitle <span class="form-label-hint">(who it's by, or a tagline)</span></label>
+                <input class="form-input" type="text" id="op-promo-subtitle" placeholder="e.g. UND Tyzen · New Single" maxlength="160">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="op-promo-badge">Badge / Type <span class="form-label-hint">(the chip — e.g. New Single, Sample, Sponsored)</span></label>
+                <input class="form-input" type="text" id="op-promo-badge" placeholder="New Single" maxlength="40">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="op-promo-image">Cover Art / Image URL <span class="form-label-hint">(square artwork looks best)</span></label>
+                <input class="form-input" type="url" id="op-promo-image" placeholder="https://…/cover.jpg" maxlength="500">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="op-promo-url">Link URL <span class="form-label-hint">(where the button goes — Spotify, Itch, etc.)</span></label>
                 <input class="form-input" type="url" id="op-promo-url" placeholder="https://…" maxlength="500" required>
               </div>
               <div class="form-group">
-                <label class="form-label" for="op-promo-subtitle">Subtitle <span class="form-label-hint">(one line under the title)</span></label>
-                <input class="form-input" type="text" id="op-promo-subtitle" placeholder="e.g. Out now on all platforms" maxlength="160">
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="op-promo-image">Banner Image URL <span class="form-label-hint">(optional — makes it a full banner)</span></label>
-                <input class="form-input" type="url" id="op-promo-image" placeholder="https://…/banner.jpg" maxlength="500">
-              </div>
-              <div class="form-group">
                 <label class="form-label" for="op-promo-cta">Button Label</label>
-                <input class="form-input" type="text" id="op-promo-cta" placeholder="Learn More" maxlength="40">
+                <input class="form-input" type="text" id="op-promo-cta" placeholder="Listen Now" maxlength="40">
               </div>
               <div class="form-group">
                 <label class="form-label" for="op-promo-location">Page</label>
