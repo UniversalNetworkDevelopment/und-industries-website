@@ -55,6 +55,12 @@
   var SUPABASE_URL      = 'https://wgcgzuflpxijhzlpphab.supabase.co';
   var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndnY2d6dWZscHhpamh6bHBwaGFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMTc3MTgsImV4cCI6MjA5NDc5MzcxOH0.y96jBpi9ECy1RU76q4AuZQFlqPVrS6CJDwNyx__2K9A';
 
+  // Portable base URL — the directory this site is served from, derived at runtime.
+  // Works on github.io (subpath), a custom domain (root), or localhost WITHOUT edits,
+  // so auth redirects below are NOT locked to any one host. (Supabase must also have
+  // each domain in its Auth → URL Configuration "Redirect URLs" allow-list.)
+  var SITE_BASE = window.location.origin + window.location.pathname.replace(/[^\/]*$/, '');
+
   var supabase = null;
   if (window.supabase) {
     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -159,7 +165,7 @@
             agreed_terms_version: TERMS_VERSION,
             agreed_terms_at:      new Date().toISOString()
           },
-          emailRedirectTo: 'https://universalnetworkdevelopment.github.io/und-industries-website/verified.html',
+          emailRedirectTo: SITE_BASE + 'verified.html',
           captchaToken: captchaToken || undefined
         }
       });
@@ -206,7 +212,7 @@
 
     requestPasswordReset: async function (email, captchaToken) {
       if (!supabase) return { ok: false, msg: 'Password reset is currently unavailable.' };
-      var redirectUrl = 'https://universalnetworkdevelopment.github.io/und-industries-website/reset-password.html';
+      var redirectUrl = SITE_BASE + 'reset-password.html';
       var res = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: redirectUrl,
         captchaToken: captchaToken || undefined
