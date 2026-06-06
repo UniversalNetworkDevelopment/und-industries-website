@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; connect-src 'self' https://*.supabase.co wss://*.supabase.co; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; base-uri 'self'; form-action 'self'; frame-ancestors 'none';">
+  <meta name="theme-color" content="#0d0d0f">
+  <meta name="description" content="Thank you for your purchase from U.N.D Industries.">
+  <title>Thank You — U.N.D Industries</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="icon" type="image/png"     href="assets/favicon.png">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <style>
+    .pc-main { min-height: 70vh; display: flex; align-items: center; padding: 4rem 0; }
+    .pc-card {
+      max-width: 640px;
+      margin: 0 auto;
+      background: #15151a;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 2.5rem;
+      text-align: center;
+    }
+    .pc-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 1.25rem;
+      border-radius: 50%;
+      background: rgba(80, 200, 120, 0.12);
+      color: #4ade80;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+    }
+    .pc-title { font-size: 1.75rem; margin: 0 0 0.5rem; }
+    .pc-sub { color: var(--text-muted); margin: 0 0 1.75rem; }
+    .pc-status { margin: 1.5rem 0; text-align: left; }
+    .pc-summary {
+      background: #0d0d0f;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin: 0 0 1.5rem;
+    }
+    .pc-summary-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.4rem 0;
+    }
+    .pc-summary-row span:first-child { color: var(--text-muted); }
+    .pc-summary-row span:last-child { font-weight: 600; text-align: right; }
+    .pc-license { margin: 1.25rem 0 0; text-align: left; }
+    .pc-license-label { color: var(--text-muted); font-size: 0.85rem; margin: 0 0 0.4rem; }
+    .pc-license-box {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #0d0d0f;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      padding: 0.5rem 0.75rem;
+    }
+    .pc-license-box code {
+      flex: 1;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.95rem;
+      word-break: break-all;
+      color: #e8e8ec;
+    }
+    .pc-spinner {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-top-color: var(--text);
+      border-radius: 50%;
+      animation: pc-spin 0.8s linear infinite;
+      vertical-align: middle;
+      margin-right: 0.5rem;
+    }
+    @keyframes pc-spin { to { transform: rotate(360deg); } }
+    .pc-loading-text { display: flex; align-items: center; justify-content: center; color: var(--text-muted); }
+    .pc-actions { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; margin-top: 1.75rem; }
+    .pc-note { color: var(--text-muted); font-size: 0.9rem; }
+    .pc-access { color: #4ade80; font-weight: 600; }
+  </style>
+</head>
+<body data-page="purchase-complete">
+
+  <nav class="nav" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">U.N.D <span>Industries</span></a>
+      <ul class="nav-links" id="nav-links" role="list">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="music.html">Music</a></li>
+        <li><a href="store.html">Store</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li class="nav-mobile-auth"><a href="login.html">Login</a></li>
+        <li class="nav-mobile-auth"><a href="register.html">Sign Up</a></li>
+      </ul>
+      <div class="nav-cta">
+        <a href="login.html" class="btn btn-outline btn-sm">Login</a>
+        <a href="register.html" class="btn btn-primary btn-sm">Sign Up</a>
+      </div>
+      <button class="nav-hamburger" id="nav-hamburger" aria-label="Toggle navigation" aria-expanded="false" type="button">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+    </div>
+  </nav>
+
+  <main class="pc-main">
+    <div class="container">
+      <div class="pc-card">
+        <div class="pc-icon" aria-hidden="true">&#10003;</div>
+        <h1 class="pc-title">Thank you for your purchase</h1>
+        <p class="pc-sub">Your order is confirmed. A summary is below.</p>
+
+        <div id="pc-status" class="pc-status" aria-live="polite" role="status">
+          <p class="pc-loading-text"><span class="pc-spinner" aria-hidden="true"></span>Confirming your order&hellip;</p>
+        </div>
+
+        <div class="pc-actions">
+          <a href="dashboard.html" class="btn btn-primary">Go to Dashboard</a>
+          <a href="store.html" class="btn btn-outline">Back to Store</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div>
+          <div class="footer-brand">U.N.D <span>Industries</span></div>
+          <p class="footer-desc">Universal Network Development Industries.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Pages</h4>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="store.html">Store</a></li>
+            <li><a href="music.html">Music</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Support</h4>
+          <ul class="footer-links">
+            <li><a href="customer-service.html">Customer Service</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="login.html">Account</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p class="footer-copy">&copy; <span data-year>2026</span> U.N.D Industries. All rights reserved.</p>
+        <div class="footer-legal-row">
+          <a href="customer-service.html" class="footer-legal-link">Support</a>
+          <a href="privacy.html" class="footer-legal-link">Privacy Policy</a>
+          <a href="terms.html" class="footer-legal-link">Terms of Use</a>
+          <a href="security.html" class="footer-legal-link">Security Disclaimer</a>
+          <a href="cookie.html" class="footer-legal-link">Cookie Policy</a>
+          <a href="dmca.html" class="footer-legal-link">DMCA</a>
+          <a href="copyright.html" class="footer-legal-link">Copyright</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
+  <script src="assets/js/main.js"></script>
+  <script>
+    (function () {
+      var SUPABASE_URL = 'https://wgcgzuflpxijhzlpphab.supabase.co';
+      var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndnY2d6dWZscHhpamh6bHBwaGFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMTc3MTgsImV4cCI6MjA5NDc5MzcxOH0.y96jBpi9ECy1RU76q4AuZQFlqPVrS6CJDwNyx__2K9A';
+
+      var statusEl = document.getElementById('pc-status');
+
+      function esc(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      function formatAmount(cents, currency) {
+        try {
+          return new Intl.NumberFormat('en-US', {
+            style: 'currency', currency: (currency || 'USD').toUpperCase()
+          }).format((cents || 0) / 100);
+        } catch (_) {
+          return '$' + ((cents || 0) / 100).toFixed(2);
+        }
+      }
+
+      function sleep(ms) {
+        return new Promise(function (resolve) { setTimeout(resolve, ms); });
+      }
+
+      var sessionId = new URLSearchParams(location.search).get('session_id');
+
+      // 1. No session_id → generic thank-you, no lookup.
+      if (!sessionId) {
+        statusEl.innerHTML = '<p class="pc-note">Your payment was received. View your orders and any license keys on your Dashboard.</p>';
+        return;
+      }
+
+      if (!window.supabase || !window.supabase.createClient) {
+        statusEl.innerHTML = '<p class="pc-note">Your payment was received. Visit your Dashboard to view your order.</p>';
+        return;
+      }
+
+      var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+      function renderSummary(purchase, entitlement) {
+        var html = '<div class="pc-summary">';
+        html += '<div class="pc-summary-row"><span>Product</span><span>' + esc(purchase.title || purchase.product_slug) + '</span></div>';
+        html += '<div class="pc-summary-row"><span>Amount</span><span>' + esc(formatAmount(purchase.amount_cents, purchase.currency)) + '</span></div>';
+        html += '<div class="pc-summary-row"><span>Status</span><span>' + esc(purchase.status || 'paid') + '</span></div>';
+        html += '</div>';
+
+        if (entitlement && entitlement.license_key) {
+          html += '<div class="pc-license">';
+          html += '<p class="pc-license-label">Your license key</p>';
+          html += '<div class="pc-license-box">';
+          html += '<code id="pc-license-key">' + esc(entitlement.license_key) + '</code>';
+          html += '<button type="button" class="btn btn-outline btn-sm" id="pc-copy-btn">Copy</button>';
+          html += '</div>';
+          html += '</div>';
+        } else {
+          html += '<p class="pc-access">Access unlocked. Find your purchase on your Dashboard.</p>';
+        }
+
+        statusEl.innerHTML = html;
+
+        var copyBtn = document.getElementById('pc-copy-btn');
+        if (copyBtn) {
+          copyBtn.addEventListener('click', function () {
+            var key = entitlement.license_key;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(key).then(function () {
+                copyBtn.textContent = 'Copied';
+                setTimeout(function () { copyBtn.textContent = 'Copy'; }, 2000);
+              }).catch(function () {
+                copyBtn.textContent = 'Copy failed';
+              });
+            }
+          });
+        }
+      }
+
+      function renderTimeout() {
+        statusEl.innerHTML =
+          '<p class="pc-note">Payment received &mdash; your order is being finalized. ' +
+          'Refresh in a moment or check your Dashboard.</p>' +
+          '<div class="pc-actions"><button type="button" class="btn btn-outline" id="pc-refresh-btn">Refresh</button></div>';
+        var refreshBtn = document.getElementById('pc-refresh-btn');
+        if (refreshBtn) {
+          refreshBtn.addEventListener('click', function () { location.reload(); });
+        }
+      }
+
+      (async function () {
+        var sessionRes = await sb.auth.getSession();
+        var session = sessionRes && sessionRes.data ? sessionRes.data.session : null;
+
+        // 3. Signed out → prompt to sign in.
+        if (!session) {
+          statusEl.innerHTML =
+            '<p class="pc-note">Your payment was received. ' +
+            'Sign in to view your order and license key.</p>' +
+            '<div class="pc-actions"><a href="login.html" class="btn btn-primary">Sign In</a></div>';
+          return;
+        }
+
+        // 4. Poll for the purchase row (webhook lag 1–5s).
+        var maxAttempts = 10;
+        for (var i = 0; i < maxAttempts; i++) {
+          try {
+            var pRes = await sb
+              .from('purchases')
+              .select('product_slug,title,amount_cents,currency,status,created_at')
+              .eq('stripe_session_id', sessionId)
+              .maybeSingle();
+
+            if (pRes && pRes.data) {
+              var entitlement = null;
+              try {
+                var eRes = await sb
+                  .from('entitlements')
+                  .select('product_slug,license_key,status')
+                  .eq('stripe_session_id', sessionId);
+                if (eRes && eRes.data && eRes.data.length) {
+                  entitlement = eRes.data[0];
+                }
+              } catch (_) {}
+
+              renderSummary(pRes.data, entitlement);
+              return;
+            }
+          } catch (_) {}
+
+          if (i < maxAttempts - 1) await sleep(1500);
+        }
+
+        // 5. Timed out — payment still succeeded.
+        renderTimeout();
+      })();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+# ============================================================================
+# .dev.vars.example — TEMPLATE for local Cloudflare Pages Functions dev
+# ============================================================================
+#
+# HOW TO USE
+#   1. Copy this file to ".dev.vars" (no ".example"):
+#        cp .dev.vars.example .dev.vars      # macOS/Linux
+#        Copy-Item .dev.vars.example .dev.vars   # PowerShell
+#   2. Fill in real TEST-MODE values.
+#   3. Run:  npx wrangler pages dev docs
+#      Wrangler loads .dev.vars automatically into context.env for the
+#      functions in functions/.
+#
+# SECURITY — READ THIS
+#   * NEVER commit the real ".dev.vars". It is gitignored on purpose.
+#   * Use TEST-mode keys here (rk_test_... / sk_test_... / whsec_... from the
+#     Stripe CLI). Do NOT put live keys in a local file.
+#   * SUPABASE_SERVICE_ROLE_KEY bypasses Row-Level Security. Treat it like a
+#     root password: server-only, never in the browser, never in git.
+#   * Values are quoted strings. wrangler reads them verbatim (no shell expansion).
+# ============================================================================
+
+# --- Stripe ----------------------------------------------------------------
+# Prefer a RESTRICTED key (rk_test_...) with least-privilege scopes over a full
+# secret key (sk_test_...). See PAYMENTS-SETUP.md for the exact scopes.
+STRIPE_SECRET_KEY="rk_test_..."
+
+# From `stripe listen` (it prints a "whsec_..." for the local forward) OR from a
+# dashboard test endpoint. This must match the secret the running listener uses.
+STRIPE_WEBHOOK_SECRET="whsec_..."
+
+# "true" or "false" (string). Keep "false" locally unless Stripe Tax + a business
+# address are configured in your Stripe account, otherwise checkout creation errors.
+STRIPE_TAX_ENABLED="false"
+
+# Optional. Code defaults to "2026-05-27.dahlia" if unset. Pin it to match prod.
+STRIPE_API_VERSION="2026-05-27.dahlia"
+
+# --- Supabase --------------------------------------------------------------
+SUPABASE_URL="https://wgcgzuflpxijhzlpphab.supabase.co"
+
+# Public anon key — used only to verify the caller's JWT (/auth/v1/user).
+SUPABASE_ANON_KEY="<anon key>"
+
+# service_role JWT — SECRET. Bypasses RLS. Server-only. Never ship to a browser.
+SUPABASE_SERVICE_ROLE_KEY="<service_role key — secret>"
+
+# --- CORS ------------------------------------------------------------------
+# Optional, comma-separated. Locally, wrangler serves on http://localhost:8788;
+# same-origin browser calls work without this. Include your pages.dev origin so
+# the value mirrors production.
+ALLOWED_ORIGINS="https://und-industries-website.pages.dev"

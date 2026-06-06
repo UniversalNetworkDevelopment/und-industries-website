@@ -1210,20 +1210,83 @@
       '<div class="store-modal-desc">' + escapeHtml(product.long_description || product.short_description) + '</div>' +
       '<div class="store-modal-footer">' +
         '<span class="store-modal-price">' + escapeHtml(price) + '</span>' +
-        (product.external_url && /^https?:\/\//i.test(product.external_url)
-          ? '<a href="' + escapeHtml(product.external_url) + '" class="btn btn-primary" target="_blank" rel="noopener noreferrer">' + escapeHtml(externalLabel) + '</a>'
-          : '<button type="button" class="btn btn-outline" disabled>Not available</button>') +
+        (typeof product.price_cents === 'number' && product.price_cents > 0
+          ? ((product.external_url && /^https?:\/\//i.test(product.external_url)
+              ? '<a href="' + escapeHtml(product.external_url) + '" class="btn btn-outline" target="_blank" rel="noopener noreferrer">' + escapeHtml(externalLabel) + '</a>'
+              : '') +
+             '<button type="button" class="btn btn-primary store-buy-btn" data-checkout-slug="' + escapeHtml(product.slug) + '">Buy &mdash; ' + escapeHtml(price) + '</button>')
+          : (product.external_url && /^https?:\/\//i.test(product.external_url)
+              ? '<a href="' + escapeHtml(product.external_url) + '" class="btn btn-primary" target="_blank" rel="noopener noreferrer">' + escapeHtml(externalLabel) + '</a>'
+              : '<button type="button" class="btn btn-outline" disabled>Not available</button>')) +
       '</div>';
 
     modal.removeAttribute('hidden');
     if (closeEl) closeEl.focus();
     document.body.style.overflow = 'hidden';
+
+    var _buyBtn = bodyEl.querySelector('.store-buy-btn');
+    if (_buyBtn) {
+      _buyBtn.addEventListener('click', function () {
+        startCheckout(_buyBtn.getAttribute('data-checkout-slug'), _buyBtn);
+      });
+    }
   }
 
   function closeStoreModal() {
     var modal = document.getElementById('store-modal');
     if (modal) modal.setAttribute('hidden', '');
     document.body.style.overflow = '';
+  }
+
+  // ── Store — start Stripe checkout ─────────────────────────
+  async function startCheckout(slug, btnEl) {
+    if (!supabase) {
+      alert('Checkout is unavailable right now.');
+      return;
+    }
+
+    var sessionRes = await supabase.auth.getSession();
+    var session = sessionRes && sessionRes.data ? sessionRes.data.session : null;
+    if (!session) {
+      window.location.href = 'login.html';
+      return;
+    }
+
+    var originalText = btnEl ? btnEl.textContent : '';
+    if (btnEl) {
+      btnEl.disabled = true;
+      btnEl.textContent = 'Starting…';
+    }
+
+    try {
+      var res = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + session.access_token
+        },
+        body: JSON.stringify({ slug: slug })
+      });
+
+      var data = await res.json();
+
+      if (res.ok && data.url) {
+        window.location.href = data.url;
+        return;
+      }
+
+      alert(data.error || 'Could not start checkout.');
+      if (btnEl) {
+        btnEl.disabled = false;
+        btnEl.textContent = originalText;
+      }
+    } catch (_) {
+      alert('Could not start checkout. Please try again.');
+      if (btnEl) {
+        btnEl.disabled = false;
+        btnEl.textContent = originalText;
+      }
+    }
   }
 
   // ── Store — init public page ──────────────────────────────

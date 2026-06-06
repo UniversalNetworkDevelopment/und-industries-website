@@ -16,6 +16,12 @@ MASTERPLAN.md
 *.secret
 secrets/
 
+# Local Cloudflare Pages / wrangler dev secrets — NEVER commit the real file.
+# Use .dev.vars.example as the committed template instead.
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+
 # Dev and admin tools — local only
 studio.html
 dev.html
