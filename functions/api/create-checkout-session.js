@@ -23,6 +23,15 @@ export async function onRequestOptions({ request, env }) {
 export async function onRequestPost(context) {
   const { request, env } = context;
 
+  // 0. Fail clearly if the server isn't configured yet, naming the missing var,
+  //    instead of throwing an opaque runtime error.
+  const required = ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_ROLE_KEY', 'STRIPE_SECRET_KEY'];
+  for (let i = 0; i < required.length; i++) {
+    if (!env[required[i]]) {
+      return json({ error: 'Payments not configured yet — missing ' + required[i] + '.' }, 503, request, env);
+    }
+  }
+
   // 1. Authenticate from the Supabase JWT — never trust a client-sent user id.
   const authHeader = request.headers.get('Authorization') || '';
   const token = authHeader.indexOf('Bearer ') === 0 ? authHeader.slice(7) : '';

@@ -32,14 +32,19 @@ async function rest(env, path, init) {
 // than trusting any user id sent by the client.
 export async function getUserFromToken(env, accessToken) {
   if (!accessToken) return null;
-  const res = await fetch(env.SUPABASE_URL + '/auth/v1/user', {
-    headers: {
-      apikey: env.SUPABASE_ANON_KEY,
-      Authorization: 'Bearer ' + accessToken,
-    },
-  });
-  if (!res.ok) return null;
-  return res.json(); // { id, email, ... }
+  if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY) return null;
+  try {
+    const res = await fetch(env.SUPABASE_URL + '/auth/v1/user', {
+      headers: {
+        apikey: env.SUPABASE_ANON_KEY,
+        Authorization: 'Bearer ' + accessToken,
+      },
+    });
+    if (!res.ok) return null;
+    return res.json(); // { id, email, ... }
+  } catch (e) {
+    return null; // never crash the request on a transient/verify error
+  }
 }
 
 export async function getProductBySlug(env, slug) {
