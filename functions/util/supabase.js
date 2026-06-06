@@ -45,8 +45,8 @@ export async function getUserFromToken(env, accessToken) {
 export async function getProductBySlug(env, slug) {
   const rows = await rest(
     env,
-    'products?slug=eq.' + encodeURIComponent(slug) +
-      '&select=id,slug,title,price_cents,currency,type&limit=1',
+    'store_products?slug=eq.' + encodeURIComponent(slug) +
+      '&is_published=eq.true&select=id,slug,title,price_cents,currency,type&limit=1',
     { headers: adminHeaders(env) }
   );
   return rows && rows[0] ? rows[0] : null;
@@ -101,7 +101,9 @@ export async function markEventProcessed(env, eventId, type) {
 }
 
 export async function recordPurchase(env, row) {
-  await rest(env, 'purchases', {
+  // Upsert on the unique session id => one order row per checkout session,
+  // safe under Stripe retries.
+  await rest(env, 'purchases?on_conflict=stripe_session_id', {
     method: 'POST',
     headers: adminHeaders(env, { Prefer: 'resolution=merge-duplicates' }),
     body: JSON.stringify(row),
@@ -109,7 +111,9 @@ export async function recordPurchase(env, row) {
 }
 
 export async function grantEntitlement(env, row) {
-  await rest(env, 'entitlements', {
+  // Upsert on (user_id, product_id) => re-granting the same product is a no-op
+  // update rather than a duplicate-key error.
+  await rest(env, 'entitlements?on_conflict=user_id,product_id', {
     method: 'POST',
     headers: adminHeaders(env, { Prefer: 'resolution=merge-duplicates' }),
     body: JSON.stringify(row),

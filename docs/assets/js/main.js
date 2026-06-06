@@ -1079,6 +1079,9 @@
           '<span class="store-card-price">' + escapeHtml(price) + '</span>' +
           '<button type="button" class="btn btn-outline btn-sm store-view-btn" ' +
             'data-slug="' + escapeHtml(p.slug) + '" aria-label="View ' + escapeHtml(p.title) + '">View</button>' +
+          (typeof p.price_cents === 'number' && p.price_cents > 0
+            ? '<button type="button" class="btn btn-primary btn-sm store-card-add" data-add-slug="' + escapeHtml(p.slug) + '" aria-label="Add ' + escapeHtml(p.title) + ' to cart">Add</button>'
+            : '') +
         '</div>' +
       '</div>';
     }).join('');
@@ -1089,6 +1092,16 @@
         var slug = btn.dataset.slug;
         var product = storeAllProducts.filter(function (p) { return p.slug === slug; })[0];
         if (product) openStoreModal(product);
+      });
+    });
+
+    // Wire add-to-cart buttons
+    grid.querySelectorAll('.store-card-add').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        addToCart(btn.getAttribute('data-add-slug'));
+        var t = btn.textContent;
+        btn.textContent = '✓';
+        setTimeout(function () { btn.textContent = t; }, 900);
       });
     });
   }
@@ -1211,10 +1224,8 @@
       '<div class="store-modal-footer">' +
         '<span class="store-modal-price">' + escapeHtml(price) + '</span>' +
         (typeof product.price_cents === 'number' && product.price_cents > 0
-          ? ((product.external_url && /^https?:\/\//i.test(product.external_url)
-              ? '<a href="' + escapeHtml(product.external_url) + '" class="btn btn-outline" target="_blank" rel="noopener noreferrer">' + escapeHtml(externalLabel) + '</a>'
-              : '') +
-             '<button type="button" class="btn btn-primary store-buy-btn" data-checkout-slug="' + escapeHtml(product.slug) + '">Buy &mdash; ' + escapeHtml(price) + '</button>')
+          ? ('<button type="button" class="btn btn-outline store-buy-btn" data-checkout-slug="' + escapeHtml(product.slug) + '">Buy Now</button>' +
+             '<button type="button" class="btn btn-primary store-add-btn" data-add-slug="' + escapeHtml(product.slug) + '">Add to Cart</button>')
           : (product.external_url && /^https?:\/\//i.test(product.external_url)
               ? '<a href="' + escapeHtml(product.external_url) + '" class="btn btn-primary" target="_blank" rel="noopener noreferrer">' + escapeHtml(externalLabel) + '</a>'
               : '<button type="button" class="btn btn-outline" disabled>Not available</button>')) +
@@ -1228,6 +1239,14 @@
     if (_buyBtn) {
       _buyBtn.addEventListener('click', function () {
         startCheckout(_buyBtn.getAttribute('data-checkout-slug'), _buyBtn);
+      });
+    }
+    var _addBtn = bodyEl.querySelector('.store-add-btn');
+    if (_addBtn) {
+      _addBtn.addEventListener('click', function () {
+        addToCart(_addBtn.getAttribute('data-add-slug'));
+        _addBtn.textContent = 'Added ✓';
+        setTimeout(function () { _addBtn.textContent = 'Add to Cart'; }, 1200);
       });
     }
   }
@@ -1289,6 +1308,158 @@
     }
   }
 
+  // ── Store — cart (localStorage) ───────────────────────────
+  var CART_KEY = 'und_cart';
+
+  function cartLoad() {
+    try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; }
+    catch (_) { return []; }
+  }
+  function cartSave(items) {
+    try { localStorage.setItem(CART_KEY, JSON.stringify(items)); } catch (_) {}
+  }
+  function cartFindProduct(slug) {
+    for (var i = 0; i < storeAllProducts.length; i++) {
+      if (storeAllProducts[i].slug === slug) return storeAllProducts[i];
+    }
+    return null;
+  }
+  function addToCart(slug) {
+    var product = cartFindProduct(slug);
+    if (!product) return;
+    if (!(typeof product.price_cents === 'number' && product.price_cents > 0)) return;
+    var items = cartLoad();
+    var found = false;
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].slug === slug) {
+        items[i].qty = Math.min((items[i].qty || 1) + 1, 20);
+        found = true;
+        break;
+      }
+    }
+    if (!found) items.push({ slug: slug, qty: 1 });
+    cartSave(items);
+    renderCart();
+  }
+  function cartSetQty(slug, delta) {
+    var items = cartLoad();
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].slug === slug) {
+        items[i].qty = (items[i].qty || 1) + delta;
+        if (items[i].qty < 1) items.splice(i, 1);
+        else if (items[i].qty > 20) items[i].qty = 20;
+        break;
+      }
+    }
+    cartSave(items);
+    renderCart();
+  }
+  function cartRemove(slug) {
+    cartSave(cartLoad().filter(function (it) { return it.slug !== slug; }));
+    renderCart();
+  }
+  function cartClear() {
+    cartSave([]);
+    renderCart();
+  }
+  function renderCart() {
+    var itemsEl   = document.getElementById('store-cart-items');
+    var emptyEl   = document.getElementById('store-cart-empty');
+    var summaryEl = document.getElementById('store-cart-summary');
+    var totalEl   = document.getElementById('store-cart-total');
+    var countEl   = document.getElementById('store-cart-count');
+    if (!itemsEl) return; // not on the store page
+
+    var items = cartLoad();
+    var resolved = [];
+    var totalCents = 0;
+    var currency = 'USD';
+    items.forEach(function (it) {
+      var p = cartFindProduct(it.slug);
+      if (!p) return; // product no longer available — skip
+      var qty = it.qty || 1;
+      totalCents += (p.price_cents || 0) * qty;
+      currency = p.currency || currency;
+      resolved.push({ p: p, qty: qty });
+    });
+
+    if (countEl) {
+      countEl.textContent = String(resolved.reduce(function (a, b) { return a + b.qty; }, 0));
+    }
+
+    // The totals/checkout box stays hidden until the cart has something in it.
+    if (!resolved.length) {
+      itemsEl.innerHTML = '';
+      if (emptyEl) emptyEl.hidden = false;
+      if (summaryEl) summaryEl.hidden = true;
+      return;
+    }
+    if (emptyEl) emptyEl.hidden = true;
+    if (summaryEl) summaryEl.hidden = false;
+
+    itemsEl.innerHTML = resolved.map(function (r) {
+      var p = r.p;
+      var thumb = p.cover_image_url
+        ? '<img class="store-cart-item-thumb" src="' + escapeHtml(p.cover_image_url) + '" alt="">'
+        : '<div class="store-cart-item-thumb" aria-hidden="true"></div>';
+      return '<div class="store-cart-item" data-slug="' + escapeHtml(p.slug) + '">' +
+        thumb +
+        '<div class="store-cart-item-body">' +
+          '<p class="store-cart-item-title">' + escapeHtml(p.title) + '</p>' +
+          '<span class="store-cart-item-price">' + escapeHtml(formatPrice(p.price_cents, p.currency)) + '</span>' +
+          '<span class="store-cart-qty">' +
+            '<button type="button" class="cart-qty-dec" aria-label="Decrease quantity">−</button>' +
+            '<span class="cart-qty-val">' + r.qty + '</span>' +
+            '<button type="button" class="cart-qty-inc" aria-label="Increase quantity">+</button>' +
+          '</span>' +
+        '</div>' +
+        '<button type="button" class="store-cart-remove" aria-label="Remove from cart">&times;</button>' +
+      '</div>';
+    }).join('');
+
+    if (totalEl) totalEl.textContent = formatPrice(totalCents, currency);
+
+    itemsEl.querySelectorAll('.store-cart-item').forEach(function (row) {
+      var slug = row.getAttribute('data-slug');
+      var dec = row.querySelector('.cart-qty-dec');
+      var inc = row.querySelector('.cart-qty-inc');
+      var rem = row.querySelector('.store-cart-remove');
+      if (dec) dec.addEventListener('click', function () { cartSetQty(slug, -1); });
+      if (inc) inc.addEventListener('click', function () { cartSetQty(slug, 1); });
+      if (rem) rem.addEventListener('click', function () { cartRemove(slug); });
+    });
+  }
+  async function cartCheckout(btnEl) {
+    if (!supabase) { alert('Checkout is unavailable right now.'); return; }
+    var items = cartLoad();
+    if (!items.length) return;
+
+    var sessionRes = await supabase.auth.getSession();
+    var session = sessionRes && sessionRes.data ? sessionRes.data.session : null;
+    if (!session) { window.location.href = 'login.html'; return; }
+
+    var original = btnEl ? btnEl.textContent : '';
+    if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Starting…'; }
+    try {
+      var res = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + session.access_token
+        },
+        body: JSON.stringify({
+          items: items.map(function (it) { return { slug: it.slug, quantity: it.qty || 1 }; })
+        })
+      });
+      var data = await res.json();
+      if (res.ok && data.url) { window.location.href = data.url; return; }
+      alert(data.error || 'Could not start checkout.');
+    } catch (_) {
+      alert('Could not reach checkout. Please try again.');
+    }
+    if (btnEl) { btnEl.disabled = false; btnEl.textContent = original; }
+  }
+
   // ── Store — init public page ──────────────────────────────
   function initStorePage() {
     var searchInput = document.getElementById('store-search');
@@ -1298,6 +1469,13 @@
     var subcatWrap  = document.getElementById('store-subcat-wrap');
 
     if (subcatWrap) subcatWrap.hidden = true;
+
+    // Cart controls + initial render (re-rendered after products load).
+    var cartCheckoutBtn = document.getElementById('store-cart-checkout');
+    var cartClearBtn    = document.getElementById('store-cart-clear');
+    if (cartCheckoutBtn) cartCheckoutBtn.addEventListener('click', function () { cartCheckout(cartCheckoutBtn); });
+    if (cartClearBtn)    cartClearBtn.addEventListener('click', cartClear);
+    renderCart();
 
     if (modalClose) modalClose.addEventListener('click', closeStoreModal);
     if (modalBdrop) modalBdrop.addEventListener('click', closeStoreModal);
@@ -1354,6 +1532,7 @@
       renderStoreTagFilter();
       renderStoreSubcatFilter();
       applyStoreFilters();
+      renderCart(); // resolve cart items now that products are loaded
     }).catch(function () {
       if (grid) grid.innerHTML = '<p class="store-empty">Could not load products. Please try again later.</p>';
     });

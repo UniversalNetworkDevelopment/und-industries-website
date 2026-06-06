@@ -67,48 +67,67 @@ export async function onRequestPost(context) {
       automatic_tax: { enabled: taxEnabled },
       allow_promotion_codes: true,
     };
-  } else if (payload.slug) {
-    // --- One-time digital goods (current store) ---------------------------
-    const product = await getProductBySlug(env, payload.slug);
-    if (!product) {
-      return json({ error: 'Product not found.' }, 404, request, env);
+  } else if (payload.slug || (payload.items && payload.items.length)) {
+    // --- One-time digital goods: single "Buy Now" OR a multi-item cart ----
+    // Accept either { slug } (one item) or { items: [{ slug, quantity }] }.
+    const requested = (payload.items && payload.items.length)
+      ? payload.items
+      : [{ slug: payload.slug, quantity: 1 }];
+
+    const lineItems = [];
+    const metaItems = [];
+    for (let n = 0; n < requested.length; n++) {
+      const reqSlug = requested[n] && requested[n].slug;
+      if (!reqSlug) continue;
+      let qty = parseInt(requested[n].quantity, 10);
+      if (!(qty > 0)) qty = 1;
+      if (qty > 20) qty = 20;
+
+      // Price is resolved server-side — the client never sets it.
+      const product = await getProductBySlug(env, reqSlug);
+      if (!product) {
+        return json({ error: 'Product not found: ' + reqSlug }, 404, request, env);
+      }
+      if (!product.price_cents || product.price_cents <= 0) {
+        return json({ error: 'Not for sale: ' + product.title }, 400, request, env);
+      }
+
+      lineItems.push({
+        quantity: qty,
+        price_data: {
+          currency: (product.currency || 'usd').toLowerCase(),
+          unit_amount: product.price_cents,
+          product_data: { name: product.title, metadata: { product_id: product.id } },
+        },
+      });
+      metaItems.push({ i: product.id, s: product.slug, t: product.type || '', q: qty });
     }
-    if (!product.price_cents || product.price_cents <= 0) {
-      return json({ error: 'This product is not for sale.' }, 400, request, env);
+
+    if (!lineItems.length) {
+      return json({ error: 'No valid items to check out.' }, 400, request, env);
     }
-    const currency = (product.currency || 'usd').toLowerCase();
+
     sessionParams = {
       mode: 'payment',
       customer: customerId,
-      line_items: [
-        {
-          quantity: 1,
-          price_data: {
-            currency: currency,
-            unit_amount: product.price_cents,
-            product_data: { name: product.title, metadata: { product_id: product.id } },
-          },
-        },
-      ],
+      line_items: lineItems,
       success_url: origin + '/purchase-complete.html?session_id={CHECKOUT_SESSION_ID}',
       cancel_url: origin + '/store.html?checkout=cancelled',
       client_reference_id: user.id,
       metadata: {
         supabase_user_id: user.id,
         kind: 'one_time',
-        product_id: product.id,
-        product_slug: product.slug,
-        product_type: product.type || '',
-        title: product.title,
+        // Compact item list for the webhook to fulfil each line.
+        items: JSON.stringify(metaItems),
       },
       payment_intent_data: {
-        metadata: { supabase_user_id: user.id, product_id: product.id },
+        metadata: { supabase_user_id: user.id },
       },
       automatic_tax: { enabled: taxEnabled },
       allow_promotion_codes: true,
     };
   } else {
-    return json({ error: 'Provide a product slug or a priceId.' }, 400, request, env);
+    return json({ error: 'Provide a product slug, items, or a priceId.' }, 400, request, env);
   }
 
   try {

@@ -86,15 +86,23 @@ async function handleCheckoutCompleted(env, session) {
   // One-time purchase — only fulfil paid sessions.
   if (session.payment_status && session.payment_status !== 'paid') return;
 
-  const productId = md.product_id || null;
-  const productSlug = md.product_slug || null;
-  const productType = md.product_type || '';
+  // Cart items live in metadata.items ([{i:id, s:slug, t:type, q:qty}]).
+  // Fall back to the original single-item shape for older sessions.
+  let items = [];
+  if (md.items) {
+    try { items = JSON.parse(md.items); } catch (e) { items = []; }
+  }
+  if (!items.length && md.product_id) {
+    items = [{ i: md.product_id, s: md.product_slug, t: md.product_type, q: 1 }];
+  }
+  if (!items.length) return;
 
+  // One order row per session (purchases.stripe_session_id is unique).
   await recordPurchase(env, {
     user_id: userId,
-    product_id: productId,
-    product_slug: productSlug,
-    title: md.title || null,
+    product_id: items.length === 1 ? (items[0].i || null) : null,
+    product_slug: items.length === 1 ? (items[0].s || null) : null,
+    title: items.length > 1 ? (items.length + ' items') : (md.title || (items[0] && items[0].s) || null),
     amount_cents: session.amount_total,
     currency: session.currency,
     stripe_session_id: session.id,
@@ -102,19 +110,21 @@ async function handleCheckoutCompleted(env, session) {
     status: 'paid',
   });
 
-  // Software gets a generated license key; everything else is a plain grant.
-  const licenseKey = productType === 'software' ? generateLicenseKey('ECAM') : null;
-
-  await grantEntitlement(env, {
-    user_id: userId,
-    product_id: productId,
-    product_slug: productSlug,
-    kind: 'purchase',
-    license_key: licenseKey,
-    status: 'active',
-    source: 'stripe',
-    stripe_session_id: session.id,
-  });
+  // One entitlement per item; software items also get a license key.
+  for (let n = 0; n < items.length; n++) {
+    const it = items[n];
+    const licenseKey = it.t === 'software' ? generateLicenseKey('ECAM') : null;
+    await grantEntitlement(env, {
+      user_id: userId,
+      product_id: it.i || null,
+      product_slug: it.s || null,
+      kind: 'purchase',
+      license_key: licenseKey,
+      status: 'active',
+      source: 'stripe',
+      stripe_session_id: session.id,
+    });
+  }
 }
 
 async function handleSubscriptionChange(env, sub) {

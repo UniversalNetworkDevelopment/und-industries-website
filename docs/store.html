@@ -10,6 +10,47 @@
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <link rel="icon" type="image/png"     href="assets/favicon.png">
   <link rel="stylesheet" href="assets/css/styles.css">
+  <style>
+    /* Cart — adds a 3rd column to the store grid on wide screens */
+    @media (min-width: 980px) {
+      .store-layout { grid-template-columns: 220px 1fr 320px; }
+    }
+    .store-cart {
+      position: sticky;
+      top: calc(var(--nav-h) + 16px);
+      align-self: start;
+      background: #15151a;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 18px;
+    }
+    .store-cart-title { font-size: 1.1rem; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; }
+    .store-cart-count {
+      background: #7c5cff; color: #fff; font-size: 0.72rem; font-weight: 700;
+      min-width: 20px; height: 20px; border-radius: 10px; padding: 0 6px;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .store-cart-empty { color: var(--text-muted); font-size: 0.9rem; margin: 8px 0 0; }
+    .store-cart-items { display: flex; flex-direction: column; gap: 12px; }
+    .store-cart-item { display: flex; gap: 10px; align-items: flex-start; }
+    .store-cart-item-thumb { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; flex: 0 0 auto; background: #0d0d0f; }
+    .store-cart-item-body { flex: 1; min-width: 0; }
+    .store-cart-item-title { font-size: 0.9rem; font-weight: 600; margin: 0 0 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .store-cart-item-price { color: var(--text-muted); font-size: 0.85rem; }
+    .store-cart-qty { display: inline-flex; align-items: center; gap: 8px; margin-top: 6px; }
+    .store-cart-qty button {
+      width: 22px; height: 22px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.15);
+      background: transparent; color: var(--text); cursor: pointer; line-height: 1;
+    }
+    .store-cart-qty button:hover { border-color: #7c5cff; }
+    .store-cart-remove { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem; line-height: 1; padding: 0 2px; }
+    .store-cart-remove:hover { color: #ff6b6b; }
+    .store-cart-summary { margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.08); }
+    .store-cart-total-row { display: flex; justify-content: space-between; font-weight: 700; font-size: 1.05rem; margin-bottom: 12px; }
+    .store-cart-clear { width: 100%; margin-top: 8px; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.85rem; }
+    .store-cart-clear:hover { color: #ff6b6b; }
+    .store-card-footer .store-card-add { margin-left: 6px; }
+  </style>
 </head>
 <body data-page="store">
 
@@ -99,6 +140,22 @@
         </div>
 
       </div>
+
+      <!-- Cart (right column) -->
+      <aside class="store-cart" id="store-cart" aria-label="Your cart">
+        <h2 class="store-cart-title">Cart <span id="store-cart-count" class="store-cart-count">0</span></h2>
+        <div id="store-cart-items" class="store-cart-items"></div>
+        <p id="store-cart-empty" class="store-cart-empty">Your cart is empty.</p>
+        <div id="store-cart-summary" class="store-cart-summary" hidden>
+          <div class="store-cart-total-row">
+            <span>Total</span>
+            <span id="store-cart-total">$0.00</span>
+          </div>
+          <button type="button" id="store-cart-checkout" class="btn btn-primary btn-full">Checkout</button>
+          <button type="button" id="store-cart-clear" class="store-cart-clear">Clear cart</button>
+        </div>
+      </aside>
+
     </div>
 
   </main>
