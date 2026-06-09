@@ -67,7 +67,9 @@ export async function verifyStripeSignature(payload, sigHeader, secret, toleranc
   if (!timestamp || !expected) return false;
 
   const now = typeof nowSeconds === 'number' ? nowSeconds : Math.floor(Date.now() / 1000);
-  if (Math.abs(now - Number(timestamp)) > tolerance) return false; // replay defense
+  const ts = Number(timestamp);
+  if (!Number.isFinite(ts)) return false; // garbage timestamp -> reject (don't fail open)
+  if (Math.abs(now - ts) > tolerance) return false; // replay defense
 
   const enc = new TextEncoder();
   const key = await crypto.subtle.importKey(

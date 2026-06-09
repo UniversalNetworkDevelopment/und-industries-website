@@ -89,8 +89,22 @@ export async function getUserIdByCustomer(env, stripeCustomerId) {
   return rows && rows[0] ? rows[0].user_id : null;
 }
 
-// --- Idempotency: returns true only if this event id is NEW ----------------
-// A duplicate primary key (Stripe retry) returns 409 -> already handled.
+// --- Idempotency -----------------------------------------------------------
+// A row in webhook_events means this event id has ALREADY been fulfilled.
+// We only insert it AFTER fulfilment succeeds, so its presence is proof of
+// completed side effects (not merely "received"). Returns true if a row exists.
+export async function hasEventBeenProcessed(env, eventId) {
+  const rows = await rest(
+    env,
+    'webhook_events?id=eq.' + encodeURIComponent(eventId) + '&select=id&limit=1',
+    { headers: adminHeaders(env) }
+  );
+  return !!(rows && rows[0]);
+}
+
+// Record an event id as fully processed. Call this ONLY after fulfilment has
+// succeeded. A duplicate primary key (concurrent/raced retry) returns 409,
+// which we treat as success — someone else already recorded it.
 export async function markEventProcessed(env, eventId, type) {
   const res = await fetch(env.SUPABASE_URL + '/rest/v1/webhook_events', {
     method: 'POST',

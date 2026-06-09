@@ -49,7 +49,7 @@
         <p class="section-label">Legal</p>
         <h1 class="legal-title">Privacy <span class="accent">Policy</span></h1>
         <div class="divider"></div>
-        <p class="legal-date">Effective date: May 31, 2026</p>
+        <p class="legal-date">Effective date: [effective date]</p>
       </div>
     </section>
 
@@ -57,114 +57,114 @@
       <div class="container">
         <div class="privacy-body">
 
+          <!-- Draft / not legal advice notice -->
+          <div class="privacy-section">
+            <div class="privacy-warning">
+              <p><strong class="text-strong">Draft notice.</strong> This document is a professional draft provided for convenience. It is not legal advice. Have a licensed attorney review it before you rely on it, as privacy obligations vary by jurisdiction. <em>[attorney review]</em></p>
+            </div>
+          </div>
+
           <!-- 1 -->
           <div class="privacy-section">
-            <h2 class="privacy-heading">1. About This Site &amp; Who We Are</h2>
-            <p>This website is operated by <strong class="text-strong">Universal Network Development LLC</strong> (doing business as &ldquo;U.N.D Industries&rdquo;), a limited liability company. We operate this site as a static front-end hosted on GitHub Pages, backed by <strong class="text-strong">Supabase</strong> for account authentication, community features, storefront data, and contact message storage. The frontend code runs in your browser; account data, store data, and contact messages are stored on Supabase-managed servers.</p>
-            <p>For privacy questions or data requests, contact <a href="mailto:contact.undindustries@gmail.com" class="accent">contact.undindustries@gmail.com</a>.</p>
-            <p>Supabase is a third-party infrastructure provider. See the <a href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer">Supabase Privacy Policy</a> for details on how they handle infrastructure-level data.</p>
+            <h2 class="privacy-heading">1. Who We Are</h2>
+            <p>This website (<code>universalnetworkdevelopment.com</code>) is operated by <strong class="text-strong">Universal Network Development LLC</strong>, doing business as &ldquo;U.N.D Industries&rdquo;, a limited liability company organized under the laws of the State of <strong class="text-strong">Florida, United States</strong> (&ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;). We are the controller of personal data described in this policy. For privacy questions or data requests, contact <a href="mailto:[legal/support contact email]" class="accent">[legal/support contact email]</a>.</p>
           </div>
 
           <!-- 2 -->
           <div class="privacy-section">
             <h2 class="privacy-heading">2. Information We Collect</h2>
-            <p>We do not automatically collect any personal information. The only data stored is data you voluntarily provide:</p>
+            <p>We collect the following categories of information:</p>
             <ul class="privacy-list">
-              <li>A display name and email address if you register for an account.</li>
-              <li>Your email, subject, and message if you submit the contact form.</li>
+              <li><strong class="text-strong">Account data:</strong> your email address, a password (stored only as a salted hash by our authentication provider — we never see it in plaintext), your display name, and profile preferences.</li>
+              <li><strong class="text-strong">Purchase &amp; entitlement data:</strong> records of your orders, the digital products and license keys associated with your account, and entitlement status. Payment card details are entered directly with our payment processor — <strong class="text-strong">we never receive or store your full card number.</strong></li>
+              <li><strong class="text-strong">Community &amp; contact data:</strong> messages you send through the community chat and the contact form.</li>
+              <li><strong class="text-strong">Basic usage data:</strong> limited technical information necessary to operate, secure, and protect the site (for example, request and bot-protection signals handled by our hosting and security provider).</li>
             </ul>
-            <p class="mt-16">Contact form submissions are stored in our Supabase database and are accessible only to site administrators (U.N.D Industries). They are used solely to respond to your inquiry.</p>
+            <p class="mt-16">We do not use third-party advertising networks, ad-targeting technologies, or cross-site behavioral tracking.</p>
           </div>
 
           <!-- 3 -->
           <div class="privacy-section">
-            <h2 class="privacy-heading">3. How and Where Data Is Stored</h2>
-            <p>Account credentials and contact messages are stored in a <strong class="text-strong">Supabase Postgres database</strong>. This means:</p>
+            <h2 class="privacy-heading">3. How We Use Information</h2>
+            <p>We use the information we collect to:</p>
             <ul class="privacy-list">
-              <li>Your password is hashed using bcrypt before storage — it is never stored in plaintext.</li>
-              <li>Data is stored on Supabase-managed servers (AWS, US East region by default) and is accessible from any device after you log in.</li>
-              <li>Row Level Security (RLS) policies ensure each user can only access their own data.</li>
-              <li>Contact messages are visible only to site administrators.</li>
-              <li>Authentication and data storage are only active once the backend has been configured. Until then, no data is transmitted or stored by this site.</li>
+              <li>Create and manage your account and authenticate your sign-in.</li>
+              <li>Process purchases, deliver digital products and license keys, and maintain your entitlement records.</li>
+              <li>Operate the community chat and respond to contact-form inquiries.</li>
+              <li>Secure the site, prevent fraud and abuse, and enforce our <a href="terms.html">Terms of Use</a>.</li>
+              <li>Comply with legal obligations and resolve disputes.</li>
             </ul>
           </div>
 
-          <!-- 4 -->
+          <!-- 4 — Processors -->
           <div class="privacy-section">
-            <h2 class="privacy-heading">4. What We Do Not Collect</h2>
-            <p>U.N.D Industries does not collect, use, or integrate any of the following:</p>
+            <h2 class="privacy-heading">4. Service Providers &amp; Sub-Processors</h2>
+            <p>We share personal data with the following service providers only as needed to operate the site. We do not sell, rent, or trade your personal data.</p>
             <ul class="privacy-list">
-              <li>Behavioral analytics or usage tracking of any kind.</li>
-              <li>Third-party advertising networks or ad-targeting technologies.</li>
-              <li>Third-party analytics tools (such as Google Analytics or similar).</li>
-              <li>Cookies used for tracking, advertising, or persistent session management.</li>
-              <li>Device fingerprinting or browser profiling.</li>
-              <li>IP address logging.</li>
+              <li><strong class="text-strong">Supabase</strong> — database and authentication. Stores account, profile, entitlement, and message data. See the <a href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer">Supabase Privacy Policy</a>.</li>
+              <li><strong class="text-strong">Stripe</strong> — payment processing. Handles card data directly; we never store card numbers. See the <a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer">Stripe Privacy Policy</a>.</li>
+              <li><strong class="text-strong">Cloudflare</strong> — hosting, content delivery (CDN), and Turnstile bot protection. See the <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer">Cloudflare Privacy Policy</a>.</li>
+              <li><strong class="text-strong">Google Fonts</strong> — web font delivery, which may involve your browser requesting font files from Google. See the <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google Privacy Policy</a>.</li>
             </ul>
+            <p class="mt-16">We may also disclose information where required by law, to enforce our agreements, or in connection with a merger, acquisition, or sale of assets.</p>
           </div>
 
-          <!-- 5 — warning card -->
+          <!-- 5 — Cookies -->
+          <div class="privacy-section">
+            <h2 class="privacy-heading">5. Cookies &amp; Local Storage</h2>
+            <p>We use only strictly necessary cookies and local storage: an authentication session token to keep you signed in, Cloudflare Turnstile (CAPTCHA) signals to distinguish humans from bots, and rate-limit flags to protect our forms. We do not use third-party advertising or analytics tracking. For full details, see our <a href="cookie.html">Cookie Policy</a>.</p>
+          </div>
+
+          <!-- 6 — Retention -->
+          <div class="privacy-section">
+            <h2 class="privacy-heading">6. Data Retention</h2>
+            <p>We retain account, purchase, and entitlement records for as long as your account is active and as needed to provide the service, comply with legal, tax, and accounting obligations, resolve disputes, and enforce our agreements. Contact-form and chat messages are retained for as long as reasonably necessary to address your inquiry and maintain the community. When data is no longer needed, we delete or anonymize it. <em>[attorney review — set specific retention periods if desired.]</em></p>
+          </div>
+
+          <!-- 7 — Security warning card -->
           <div class="privacy-section">
             <div class="privacy-warning">
-              <h2 class="privacy-heading">5. Sensitive Data Warning</h2>
-              <p><strong class="text-strong">This site is not a secure data storage platform.</strong> You must not enter sensitive personal information, including but not limited to:</p>
-              <ul class="privacy-list">
-                <li>Passwords used on other services or platforms.</li>
-                <li>Financial information (credit card numbers, bank account details, etc.).</li>
-                <li>Government-issued identification numbers (Social Security, passport, driver's licence, etc.).</li>
-                <li>Medical or health information.</li>
-                <li>Any information you consider private or confidential.</li>
-              </ul>
-              <p class="mt-20"><strong class="text-strong">U.N.D Industries is not responsible for any consequences arising from a user entering sensitive data on this site contrary to this warning.</strong></p>
+              <h2 class="privacy-heading">7. Security &amp; Sensitive Data Warning</h2>
+              <p>We use reasonable technical and organizational measures to protect your data, including transport encryption (HTTPS), salted password hashing by our authentication provider, and access controls. No method of transmission or storage is completely secure, and we cannot guarantee absolute security.</p>
+              <p class="mt-16"><strong class="text-strong">Do not enter sensitive personal information</strong> such as passwords used on other services, financial account details, government-issued identification numbers, or medical information into the chat, contact form, or any free-text field on this site. <strong class="text-strong">U.N.D Industries is not responsible for consequences arising from a user entering sensitive data contrary to this warning.</strong></p>
             </div>
           </div>
 
-          <!-- 6 -->
+          <!-- 8 — Rights -->
           <div class="privacy-section">
-            <h2 class="privacy-heading">6. Your Control &amp; Data Deletion</h2>
-            <p>Because account data and contact messages are stored in a Supabase-managed database, you may request deletion by contacting us directly. To request removal of your account or any submitted contact message:</p>
+            <h2 class="privacy-heading">8. Your Rights &amp; Choices</h2>
+            <p>Depending on your jurisdiction, you may have the right to access, correct, update, or delete your personal data, to object to or restrict certain processing, and to data portability. To exercise these rights:</p>
             <ul class="privacy-list">
-              <li>Email <a href="mailto:contact.undindustries@gmail.com" class="accent">contact.undindustries@gmail.com</a> with the subject "Data Deletion Request" and the email address associated with your account.</li>
-              <li>Your account and all associated data will be permanently deleted within a reasonable time.</li>
+              <li>Update your email, display name, and preferences from your account dashboard.</li>
+              <li>Email <a href="mailto:[legal/support contact email]" class="accent">[legal/support contact email]</a> with the subject &ldquo;Data Request&rdquo; and the email associated with your account. We will respond within a reasonable time and as required by applicable law.</li>
             </ul>
-            <p class="mt-16">The Supabase client may also store a session token in your browser's localStorage to maintain your login state. You can clear this at any time through your browser's site data settings (Settings → Privacy → Site Data or similar), which will sign you out locally.</p>
+            <p class="mt-16">You can clear your local session token at any time by signing out or clearing site data in your browser. Note that we may retain certain records where required for legal or fraud-prevention purposes.</p>
           </div>
 
-          <!-- 7 -->
+          <!-- 9 — Children -->
           <div class="privacy-section">
-            <h2 class="privacy-heading">7. Data Sharing</h2>
-            <p>U.N.D Industries does not sell, rent, or trade your data. Account credentials and contact form submissions are transmitted to and stored by <strong class="text-strong">Supabase</strong>, which acts solely as our infrastructure provider. Supabase does not use your data for advertising, profiling, or any purpose beyond providing database services to this site. No data is shared with any other third party.</p>
+            <h2 class="privacy-heading">9. Children's Privacy</h2>
+            <p>The site is not directed to children under <strong class="text-strong">[minimum age]</strong>, and we do not knowingly collect personal data from children under that age. If you believe a child has provided us personal data, contact us and we will take appropriate steps to delete it.</p>
           </div>
 
-          <!-- 8 -->
+          <!-- 10 — Intl -->
           <div class="privacy-section">
-            <h2 class="privacy-heading">8. External Links</h2>
-            <p>This site contains links to third-party platforms including Spotify, Apple Music, YouTube, BandLab, Instagram, and TikTok. These are independently operated services with their own privacy policies and data practices.</p>
-            <p>U.N.D Industries has no control over, and accepts no responsibility for, the privacy practices or content of any third-party service. Clicking a link to a third-party platform means leaving this site and entering a service governed by that platform's own terms and privacy policy.</p>
+            <h2 class="privacy-heading">10. International Users</h2>
+            <p>We are based in the United States, and your data may be processed in the United States and other countries where our service providers operate. By using the site, you understand that your information may be transferred to and processed in jurisdictions that may have different data-protection rules than your own. <em>[attorney review — confirm transfer mechanisms if you serve EU/UK users.]</em></p>
           </div>
 
-          <!-- 9 — Data modes -->
+          <!-- 11 — Changes -->
           <div class="privacy-section">
-            <h2 class="privacy-heading">9. Data Collection Modes</h2>
-            <p>Logged-in users can choose their data collection mode from the dashboard. There are two options:</p>
-            <ul class="privacy-list">
-              <li><strong class="text-strong">Standard (default):</strong> Only the data you actively submit is stored — your account credentials, display name, and any contact messages you send. Nothing is collected passively. This is the default for all accounts.</li>
-              <li><strong class="text-strong">Advanced:</strong> Your preference is recorded and will enable optional personalization features as they become available on this platform. Advanced mode does not activate any third-party trackers, analytics services, or advertising networks now or in the future. The only difference from Standard is that your preference is stored and future optional features may use it.</li>
-            </ul>
-            <p class="mt-16">Your mode is stored in your account profile in the Supabase database. You can change it at any time from your dashboard. Switching back to Standard removes any opt-in status immediately.</p>
+            <h2 class="privacy-heading">11. Changes to This Policy</h2>
+            <p>We may update this Privacy Policy from time to time. The most current version will always be available at this page (<code>/privacy.html</code>) with an updated effective date. Continued use of the site after an update constitutes acceptance of the revised policy.</p>
           </div>
 
-          <!-- 10 -->
+          <!-- 12 — Contact -->
           <div class="privacy-section">
-            <h2 class="privacy-heading">10. Changes to This Policy</h2>
-            <p>U.N.D Industries may update this Privacy Policy at any time without prior notice. The most current version will always be available at this page (<code>/privacy.html</code>). Continued use of the site after a policy update constitutes acceptance of the revised policy.</p>
-          </div>
-
-          <!-- 11 -->
-          <div class="privacy-section">
-            <h2 class="privacy-heading">11. Contact</h2>
+            <h2 class="privacy-heading">12. Contact</h2>
             <p>If you have questions or concerns about this Privacy Policy, you may contact us at:</p>
-            <a href="mailto:contact.undindustries@gmail.com" class="privacy-contact-link">contact.undindustries@gmail.com</a>
+            <a href="mailto:[legal/support contact email]" class="privacy-contact-link">[legal/support contact email]</a>
+            <p class="mt-16">Universal Network Development LLC (d/b/a U.N.D Industries)<br>[business mailing address or registered agent]<br>Florida, United States</p>
           </div>
 
         </div>
@@ -202,8 +202,10 @@
       <div class="footer-bottom">
         <p class="footer-copy">&copy; <span data-year>2026</span> U.N.D Industries. All rights reserved.</p>
         <div class="footer-legal-row">
+          <a href="customer-service.html" class="footer-legal-link">Support</a>
           <a href="privacy.html" class="footer-copy footer-legal-link" aria-current="page">Privacy Policy</a>
           <a href="terms.html" class="footer-legal-link">Terms of Use</a>
+          <a href="refund.html" class="footer-legal-link">Refund Policy</a>
           <a href="security.html" class="footer-legal-link">Security Disclaimer</a>
           <a href="cookie.html" class="footer-legal-link">Cookie Policy</a>
           <a href="dmca.html" class="footer-legal-link">DMCA</a>

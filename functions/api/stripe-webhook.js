@@ -10,6 +10,7 @@
 // idempotent, so retries are safe.
 
 import {
+  hasEventBeenProcessed,
   markEventProcessed,
   recordPurchase,
   grantEntitlement,
@@ -36,17 +37,27 @@ export async function onRequestPost(context) {
     return new Response('Bad payload', { status: 400 });
   }
 
-  // Idempotency — if we've already handled this event id, ack and stop.
-  let isNew;
+  // Idempotency (fast path) — a webhook_events row is written ONLY after a
+  // prior delivery fulfilled completely, so its presence proves the side
+  // effects already happened. Short-circuit those without re-doing work.
+  // NOTE: this is an optimisation, not the safety net. The real guarantee is
+  // that fulfilment itself is idempotent (purchases upsert on stripe_session_id,
+  // entitlements upsert on user_id,product_id) AND we only mark-processed AFTER
+  // fulfilment succeeds. A storage error here must NOT block fulfilment, so we
+  // swallow it and let the idempotent fulfilment run.
   try {
-    isNew = await markEventProcessed(env, event.id, event.type);
+    if (await hasEventBeenProcessed(env, event.id)) {
+      return new Response(JSON.stringify({ duplicate: true }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
   } catch (err) {
-    return new Response('Storage error', { status: 500 }); // let Stripe retry
-  }
-  if (!isNew) {
-    return new Response(JSON.stringify({ duplicate: true }), { status: 200 });
+    // fall through — re-running idempotent fulfilment is safe.
   }
 
+  // Fulfil FIRST. If any step throws, return non-2xx WITHOUT marking the event
+  // processed, so Stripe retries and the retry actually completes the grant.
   try {
     switch (event.type) {
       case 'checkout.session.completed':
@@ -64,7 +75,19 @@ export async function onRequestPost(context) {
         break; // unhandled types are acknowledged, not errors
     }
   } catch (err) {
-    return new Response('Provisioning failed', { status: 500 });
+    return new Response('Provisioning failed', { status: 500 }); // let Stripe retry
+  }
+
+  // Fulfilment succeeded — NOW record the event so future retries short-circuit.
+  // A failure to record is non-fatal: returning 500 here would make Stripe retry
+  // an already-fulfilled event, and the idempotent upserts would no-op anyway.
+  // But recording is what makes the fast-path work, so we still try and only
+  // ack 200 regardless (the grant is already durably done).
+  try {
+    await markEventProcessed(env, event.id, event.type);
+  } catch (err) {
+    // Already fulfilled; dedupe bookkeeping failed. Safe to ack — a future
+    // retry re-runs idempotent fulfilment without double-granting.
   }
 
   return new Response(JSON.stringify({ received: true }), {
