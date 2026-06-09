@@ -9,4 +9,4 @@ Disallow: /dashboard-alt.html
 Disallow: /reset-password.html
 Disallow: /verified.html
 
-Sitemap: https://universalnetworkdevelopment.github.io/und-industries-website/sitemap.xml
+Sitemap: https://universalnetworkdevelopment.com/sitemap.xml
