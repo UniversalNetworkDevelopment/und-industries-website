@@ -495,6 +495,7 @@
 
     send: async function (content, displayName) {
       if (!supabase) return { ok: false, msg: 'Chat unavailable.' };
+      if (!content || content.length > 4000) return { ok: false, msg: 'Message must be 1–4000 characters.' };
       var sessionRes = await supabase.auth.getSession();
       if (!sessionRes.data.session) return { ok: false, msg: 'Not signed in.' };
       var res = await supabase.from('chat_messages').insert({
@@ -2066,7 +2067,7 @@
         var termsBox = document.getElementById('agree-terms');
 
         if (termsBox && !termsBox.checked) {
-          alertEl.textContent = 'You must agree to the Terms of Use and Privacy Policy.';
+          alertEl.textContent = 'You must confirm you are 18+ and agree to the Terms of Use, Privacy Policy, and Refund Policy.';
           alertEl.className   = 'auth-alert error visible';
           return;
         }
@@ -2684,6 +2685,50 @@
       });
     }
 
+    // ── Change email form (dashboard settings tab) ────────────
+    var changeEmailForm = document.getElementById('change-email-form');
+    if (changeEmailForm) {
+      changeEmailForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        var alertEl  = document.getElementById('change-email-alert');
+        var btn      = document.getElementById('change-email-submit');
+        var newEmail = document.getElementById('change-email-new').value.trim().toLowerCase();
+
+        if (!supabase) {
+          alertEl.textContent = 'Authentication service is unavailable.';
+          alertEl.className   = 'auth-alert error visible';
+          return;
+        }
+        if (!newEmail || !newEmail.includes('@')) {
+          alertEl.textContent = 'Please enter a valid email address.';
+          alertEl.className   = 'auth-alert error visible';
+          return;
+        }
+        if (!applyRateLimit('change-email', 60000)) {
+          alertEl.textContent = 'Please wait before trying again.';
+          alertEl.className   = 'auth-alert error visible';
+          return;
+        }
+
+        btn.disabled    = true;
+        btn.textContent = 'Sending…';
+
+        var result = await supabase.auth.updateUser({ email: newEmail });
+
+        btn.disabled    = false;
+        btn.textContent = 'Send Confirmation';
+
+        if (result.error) {
+          alertEl.textContent = result.error.message || 'Could not send confirmation email.';
+          alertEl.className   = 'auth-alert error visible';
+        } else {
+          alertEl.textContent = 'Confirmation sent to ' + newEmail + '. Click the link in that email to confirm the change.';
+          alertEl.className   = 'auth-alert success visible';
+          changeEmailForm.reset();
+        }
+      });
+    }
+
     // ── Reset password request form ───────────────────────────
     var resetForm = document.getElementById('reset-form');
     if (resetForm) {
@@ -2744,12 +2789,6 @@
         var alertEl = document.getElementById('contact-alert');
         var btn     = contactForm.querySelector('[type="submit"]');
 
-        if (!supabase) {
-          alertEl.textContent = 'This form is currently offline. Please email us directly.';
-          alertEl.className   = 'auth-alert offline visible';
-          return;
-        }
-
         if (!applyRateLimit('contact', 60000)) {
           alertEl.textContent = 'Please wait a moment before sending another message.';
           alertEl.className   = 'auth-alert error visible';
@@ -2764,25 +2803,36 @@
         var subject = document.getElementById('c-subject').value.trim();
         var message = document.getElementById('c-message').value.trim();
 
-        var user   = await Auth.getUser();
-        var insert = await supabase.from('contact_messages').insert({
-          user_id: user ? user.id : null,
-          name:    name,
-          email:   email,
-          subject: subject,
-          message: message
-        });
+        var headers = { 'Content-Type': 'application/json' };
+        if (supabase) {
+          var sessionRes = await supabase.auth.getSession();
+          var session    = sessionRes && sessionRes.data ? sessionRes.data.session : null;
+          if (session) headers['Authorization'] = 'Bearer ' + session.access_token;
+        }
+
+        var fetchRes;
+        try {
+          fetchRes = await fetch('/api/contact', {
+            method:  'POST',
+            headers: headers,
+            body:    JSON.stringify({ name: name, email: email, subject: subject, message: message })
+          });
+        } catch (_) {
+          fetchRes = null;
+        }
 
         btn.disabled    = false;
         btn.textContent = 'Send Message';
 
-        if (insert.error) {
-          alertEl.textContent = 'Message could not be sent. Please email us directly.';
-          alertEl.className   = 'auth-alert error visible';
-        } else {
+        if (fetchRes && fetchRes.ok) {
           alertEl.textContent = 'Message sent. We\'ll reply to ' + escapeHtml(email) + ' soon.';
           alertEl.className   = 'auth-alert success visible';
           contactForm.reset();
+        } else {
+          var errData = {};
+          try { if (fetchRes) errData = await fetchRes.json(); } catch (_) {}
+          alertEl.textContent = errData.error || 'Message could not be sent. Please email us directly.';
+          alertEl.className   = 'auth-alert error visible';
         }
       });
     }

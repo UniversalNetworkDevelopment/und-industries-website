@@ -17,22 +17,7 @@
   <title>U.N.D Industries — Creative Technology</title>
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <link rel="stylesheet" href="assets/css/styles.css">
-  <script>
-    // If Supabase redirects an auth email link to the homepage (allowlist fallback),
-    // forward the code to the correct handler before any page content renders.
-    (function () {
-      var s = window.location.search, h = window.location.hash;
-      if (s.indexOf('code=') !== -1) {
-        window.location.replace('verified.html' + s + h); return;
-      }
-      if (h.indexOf('type=recovery') !== -1) {
-        window.location.replace('reset-password.html' + h); return;
-      }
-      if (h.indexOf('type=signup') !== -1 || h.indexOf('type=email_change') !== -1) {
-        window.location.replace('verified.html' + h); return;
-      }
-    }());
-  </script>
+  <script src="assets/js/auth-redirect.js"></script>
 </head>
 <body data-page="home">
 
@@ -161,7 +146,7 @@
       <div class="footer-inner">
         <div>
           <div class="footer-brand">U.N.D <span>Industries</span></div>
-          <p class="footer-desc">Universal Network Development Industries — a multidisciplinary creative and technology organization.</p>
+          <p class="footer-desc">U.N.D Industries — Universal Network Development LLC.</p>
         </div>
         <div class="footer-col">
           <h4>Pages</h4>
@@ -194,6 +179,7 @@
           <a href="cookie.html" class="footer-legal-link">Cookie Policy</a>
           <a href="dmca.html" class="footer-legal-link">DMCA</a>
           <a href="copyright.html" class="footer-legal-link">Copyright</a>
+          <a href="disclaimer.html" class="footer-legal-link">Disclaimer</a>
         </div>
       </div>
     </div>

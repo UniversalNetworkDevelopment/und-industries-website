@@ -18,9 +18,9 @@
       <nav class="sidebar-nav">
         <p class="sidebar-section-label">Dashboard</p>
         <button type="button" class="sidebar-link sidebar-tab-btn active" data-tab="overview"><span class="sidebar-link-icon">⊞</span> Overview</button>
+        <button type="button" class="sidebar-link sidebar-tab-btn" data-tab="admin" id="sidebar-tab-admin" hidden><span class="sidebar-link-icon">🔑</span> Owner Panel</button>
         <button type="button" class="sidebar-link sidebar-tab-btn" data-tab="chat"><span class="sidebar-link-icon">💬</span> Community</button>
         <button type="button" class="sidebar-link sidebar-tab-btn" data-tab="settings"><span class="sidebar-link-icon">⚙</span> Settings</button>
-        <button type="button" class="sidebar-link sidebar-tab-btn" data-tab="admin" id="sidebar-tab-admin" hidden><span class="sidebar-link-icon">🔑</span> Owner Panel</button>
         <p class="sidebar-section-label">Site</p>
         <a href="music.html"  class="sidebar-link"><span class="sidebar-link-icon">🎵</span> Music</a>
         <a href="store.html"  class="sidebar-link"><span class="sidebar-link-icon">🛒</span> Store</a>
@@ -47,9 +47,9 @@
 
       <div class="dash-tab-nav" role="tablist">
         <button type="button" class="dash-tab-btn active" data-tab="overview" role="tab" aria-selected="true">Overview</button>
+        <button type="button" class="dash-tab-btn" data-tab="admin" id="mobile-tab-admin" role="tab" aria-selected="false" hidden>Owner Panel</button>
         <button type="button" class="dash-tab-btn" data-tab="chat" role="tab" aria-selected="false">Community</button>
         <button type="button" class="dash-tab-btn" data-tab="settings" role="tab" aria-selected="false">Settings</button>
-        <button type="button" class="dash-tab-btn" data-tab="admin" id="mobile-tab-admin" role="tab" aria-selected="false" hidden>Owner Panel</button>
       </div>
 
       <!-- TAB: Overview -->
@@ -181,6 +181,19 @@
               <span class="account-info-value" id="account-mode-display">—</span>
             </div>
           </div>
+        </div>
+
+        <div class="card mb-20">
+          <h4 class="mb-8">Change Email</h4>
+          <p class="text-sm mb-16">Update the email address on your account. A confirmation link will be sent to the new address — the change takes effect when you click it.</p>
+          <div id="change-email-alert" class="auth-alert" role="alert"></div>
+          <form id="change-email-form" class="form" novalidate>
+            <div class="form-group">
+              <label class="form-label" for="change-email-new">New Email Address</label>
+              <input class="form-input" type="email" id="change-email-new" placeholder="new@example.com" autocomplete="email">
+            </div>
+            <button type="submit" class="btn btn-outline btn-sm" id="change-email-submit">Send Confirmation</button>
+          </form>
         </div>
 
         <div class="card mb-20" id="profile-edit-wrap">
