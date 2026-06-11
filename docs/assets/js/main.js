@@ -348,6 +348,8 @@
           btn.setAttribute('aria-selected', String(active));
         }
       });
+      // persist active tab in URL hash so refresh restores it
+      if (history.replaceState) history.replaceState(null, '', '#' + tabName);
     }
 
     allTabBtns.forEach(function (btn) {
@@ -355,6 +357,11 @@
         if (!btn.hidden) switchTab(btn.dataset.tab);
       });
     });
+
+    // restore tab from URL hash on load/refresh
+    var hash = window.location.hash.replace('#', '');
+    var validTabs = Array.from(allTabBtns).map(function (b) { return b.dataset.tab; }).filter(Boolean);
+    if (hash && validTabs.indexOf(hash) !== -1) switchTab(hash);
   }
 
   // ── HTML escaping ─────────────────────────────────────────
@@ -2719,9 +2726,11 @@
         btn.textContent = 'Send Confirmation';
 
         if (result.error) {
+          console.error('[email-change] Supabase error:', result.error);
           alertEl.textContent = result.error.message || 'Could not send confirmation email.';
           alertEl.className   = 'auth-alert error visible';
         } else {
+          console.log('[email-change] Success — confirmation queued for', newEmail);
           alertEl.textContent = 'Confirmation sent to ' + newEmail + '. Click the link in that email to confirm the change.';
           alertEl.className   = 'auth-alert success visible';
           changeEmailForm.reset();
