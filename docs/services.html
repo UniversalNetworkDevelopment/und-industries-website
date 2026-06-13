@@ -180,9 +180,9 @@
     // Until a link is set, the button routes to contact.html so you still capture the lead.
     // PayPal.me is instant to set up; Cash App ($cashtag) is instant; Stripe Payment Link ~2 min.
     const PAY = {
-      quick:   "",   // e.g. "https://buy.stripe.com/xxxx"  or  "https://paypal.me/UNDIndustries/99"
-      bundle:  "",   // e.g. "https://buy.stripe.com/yyyy"  or  "https://paypal.me/UNDIndustries/199"
-      cleanup: "",   // e.g. "https://buy.stripe.com/zzzz"  or  "https://paypal.me/UNDIndustries/349"
+      quick:   "https://www.paypal.com/ncp/payment/SCTUJTJ77AK6Q",   // Website Quick Fix — $99
+      bundle:  "https://www.paypal.com/ncp/payment/2H8HXYU2JMHPG",   // Website Fix Bundle — $199
+      cleanup: "https://www.paypal.com/ncp/payment/XFGQG3RN3MMS8",   // Website Full Cleanup — $349
     };
     document.querySelectorAll('[data-pay]').forEach(function (a) {
       var link = PAY[a.getAttribute('data-pay')];
