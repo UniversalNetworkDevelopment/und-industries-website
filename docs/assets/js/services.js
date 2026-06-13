@@ -327,6 +327,63 @@
     }(dbtns[j]));
   }
 
+  // ---- AI / custom-build quote request (logs to the owner inbox via /api/contact) ----
+  function showQuote() {
+    buildModal();
+    mTitle.textContent = 'Request a custom quote';
+    mBody.innerHTML =
+      '<p class="svc-modal-p svc-modal-muted">AI, automation, chatbots, custom tools, AI-in-Unity — tell me what you need and I’ll reply with a plan + a flat quote. No obligation.</p>' +
+      '<input class="svc-modal-input" id="q-name" type="text" placeholder="Your name" autocomplete="name">' +
+      '<input class="svc-modal-input" id="q-email" type="email" placeholder="Email I should reply to" autocomplete="email">' +
+      '<input class="svc-modal-input" id="q-budget" type="text" placeholder="Rough budget (optional)">' +
+      '<textarea class="svc-modal-input" id="q-msg" rows="4" placeholder="What do you want built? What problem are you solving?"></textarea>';
+    showErr('');
+    mCancel.textContent = 'Cancel'; mCancel.onclick = closeModal;
+    mGo.disabled = false; mGo.textContent = 'Send request';
+    mGo.onclick = submitQuote;
+    openModal();
+  }
+  function submitQuote() {
+    var name   = ((document.getElementById('q-name')   || {}).value || '').trim();
+    var email  = ((document.getElementById('q-email')  || {}).value || '').trim();
+    var budget = ((document.getElementById('q-budget') || {}).value || '').trim();
+    var msg    = ((document.getElementById('q-msg')    || {}).value || '').trim();
+    if (!name) { showErr('Please add your name.'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { showErr('Please enter a valid email.'); return; }
+    if (msg.length < 5) { showErr('Tell me a bit about what you need.'); return; }
+    mGo.disabled = true; mGo.textContent = 'Sending…'; showErr('');
+    var payload = {
+      name: name, email: email,
+      subject: 'AI / Custom Build — Quote Request',
+      message: msg + (budget ? '\n\nRough budget: ' + budget : '')
+    };
+    function send(token) {
+      var headers = { 'Content-Type': 'application/json' };
+      if (token) headers.Authorization = 'Bearer ' + token;
+      fetch('/api/contact', { method: 'POST', headers: headers, body: JSON.stringify(payload) })
+        .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+        .then(function (res) {
+          if (!res.ok) {
+            showErr((res.d && res.d.error) || 'Could not send — please try again.');
+            mGo.disabled = false; mGo.textContent = 'Send request';
+            return;
+          }
+          mBody.innerHTML = '<p class="svc-modal-p"><strong>Got it.</strong> I’ll reply to ' + esc(email) + ' within 1 business day with a plan + flat quote.</p>';
+          mGo.style.display = 'none';
+          mCancel.textContent = 'Close'; mCancel.onclick = closeModal;
+        })
+        .catch(function () { showErr('Network error — please try again.'); mGo.disabled = false; mGo.textContent = 'Send request'; });
+    }
+    if (sb) { sb.auth.getSession().then(function (r) { send(r && r.data && r.data.session ? r.data.session.access_token : null); }); }
+    else { send(null); }
+  }
+  var qbtns = document.querySelectorAll('[data-quote]');
+  for (var k = 0; k < qbtns.length; k++) {
+    (function (a) {
+      a.addEventListener('click', function (e) { e.preventDefault(); showQuote(); });
+    }(qbtns[k]));
+  }
+
   // ---- resume after login: if we stored an intent and the user is now signed
   // in, reopen the consent modal automatically so they don't lose their place.
   if (sb) {
