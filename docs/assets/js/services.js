@@ -266,6 +266,67 @@
     }(btns[i]));
   }
 
+  // ---- package details ("What's included" → popup, then Book flows from it) ----
+  var DETAILS = {
+    quick: {
+      name: 'Quick Fix', price: 9900, eta: 'Delivered in 24 hours',
+      includes: [
+        'One specific, defined problem — fixed',
+        'Broken page, form, or link · mobile layout glitch · error / 500 / blank page',
+        'Done on a copy first, then applied — I never break what works',
+        'Before & after proof (screenshots at real screen sizes)'
+      ],
+      excludes: 'More than one issue (that\'s the Bundle), new features, redesigns, or new pages',
+      note: 'Best when you know the one thing that\'s wrong.'
+    },
+    bundle: {
+      name: 'Fix Bundle', price: 19900, eta: 'Delivered in 48 hours',
+      includes: [
+        'Up to 3 issues fixed',
+        'A full once-over of your site (I look for what you missed)',
+        'Mobile + speed check · broken-link sweep',
+        'Before & after proof on each fix'
+      ],
+      excludes: 'More than 3 issues, full redesigns, or brand-new pages/features',
+      note: 'Most popular — the best value if more than one thing is off.'
+    },
+    cleanup: {
+      name: 'Full Cleanup', price: 34900, eta: 'Delivered in 72 hours',
+      includes: [
+        'Everything in the Bundle',
+        'Speed optimization (image compression, load cleanup)',
+        'SEO basics + a working contact form',
+        'Mobile-perfect pass on every page',
+        '30-day fix guarantee — if something I touched breaks, I fix it free'
+      ],
+      excludes: 'New features, custom builds, or a full redesign (those are a custom quote)',
+      note: 'The whole-site tune-up.'
+    }
+  };
+  function showDetails(key) {
+    var d = DETAILS[key];
+    if (!d) return;
+    buildModal();
+    mTitle.textContent = d.name;
+    var html = '<div class="svc-modal-price">' + esc(money(d.price)) + ' · <span style="font-size:1rem;color:#4de8ff;font-weight:600">' + esc(d.eta) + '</span></div>';
+    html += '<ul class="svc-modal-terms">' + d.includes.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>';
+    html += '<p class="svc-modal-p svc-modal-muted"><strong>Not included:</strong> ' + esc(d.excludes) + '. ' + esc(d.note) + '</p>';
+    mBody.innerHTML = html;
+    showErr('');
+    mCancel.textContent = 'Close';
+    mCancel.onclick = closeModal;
+    mGo.disabled = false;
+    mGo.textContent = 'Book ' + d.name + ' →';
+    mGo.onclick = function () { closeModal(); book(key); };
+    openModal();
+  }
+  var dbtns = document.querySelectorAll('[data-details]');
+  for (var j = 0; j < dbtns.length; j++) {
+    (function (a) {
+      a.addEventListener('click', function (e) { e.preventDefault(); showDetails(a.getAttribute('data-details')); });
+    }(dbtns[j]));
+  }
+
   // ---- resume after login: if we stored an intent and the user is now signed
   // in, reopen the consent modal automatically so they don't lose their place.
   if (sb) {
