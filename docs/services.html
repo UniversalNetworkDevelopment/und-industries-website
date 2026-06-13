@@ -37,6 +37,12 @@
     .svc-modal-input:focus { outline: none; border-color: #7c5cff; }
     .svc-modal-input::placeholder { color: #6b6b78; }
     textarea.svc-modal-input { resize: vertical; }
+    .svc-referral { display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; margin: 4px 0; }
+    .svc-referral input { padding: 9px 13px; background: #0e0e12; border: 1px solid rgba(255,255,255,.12); border-radius: 10px; color: #fff; font-size: .9rem; max-width: 220px; }
+    .svc-referral input:focus { outline: none; border-color: #7c5cff; }
+    .ref-note { font-size: .85rem; }
+    .ref-note.ref-ok { color: #39ff9d; }
+    .ref-note.ref-bad { color: #ff8a8a; }
 
     /* Booking consent modal */
     .svc-modal { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(8,8,12,.78); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
@@ -148,6 +154,12 @@
           <a class="btn btn-outline btn-full svc-paybtn" data-pay="cleanup" href="contact.html">Book Full Cleanup</a>
           <button type="button" class="svc-details-link" data-details="cleanup">What's included →</button>
         </div>
+      </div>
+
+      <div class="svc-referral">
+        <input type="text" id="ref-input" placeholder="Referral code (optional)" autocomplete="off" aria-label="Referral code">
+        <button type="button" id="ref-apply" class="btn btn-outline btn-sm">Apply</button>
+        <span class="ref-note" id="ref-note" role="status" aria-live="polite"></span>
       </div>
 
       <p class="svc-pay-note" id="svc-pay-note">New here? Pick a package — you'll make a free account, agree to the terms, and pay the flat rate securely. Then tell me what's broken and I get started (if it's not something I can do, you're refunded). Custom or larger build — AI, automation, integrations? <a href="contact.html" data-quote>Get a quote →</a></p>

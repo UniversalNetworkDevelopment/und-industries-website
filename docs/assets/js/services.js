@@ -23,6 +23,37 @@
     cleanup: { slug: 'website-fix-cleanup',  name: 'Website Full Cleanup', cents: 34900, pay: 'https://www.paypal.com/ncp/payment/XFGQG3RN3MMS8' }
   };
 
+  // Referral codes → a discount + the discounted PayPal links you create.
+  // TO ACTIVATE: make discounted PayPal links (e.g. 10% off) the same way you
+  // made the originals, then fill `pay` + `cents` below and uncomment a code.
+  // Until then, codes simply won't validate (no broken half-discounts).
+  var REFERRAL = {
+    // 'FRIEND10': {
+    //   off: 0.10, label: '10% off', referrer: 'launch-promo',
+    //   pay:   { quick: '', bundle: '', cleanup: '' },          // discounted PayPal links
+    //   cents: { quick: 8900, bundle: 17900, cleanup: 31400 }   // discounted amounts (display + record)
+    // }
+  };
+  var activeRef = null;
+  // Effective price + pay link for a package, honoring an applied referral.
+  function effective(key) {
+    var s = SERVICES[key] || {};
+    if (activeRef && activeRef.pay && activeRef.pay[key]) {
+      return { pay: activeRef.pay[key], cents: (activeRef.cents && activeRef.cents[key]) || s.cents, code: activeRef.code, off: activeRef.off, label: activeRef.label };
+    }
+    return { pay: s.pay, cents: s.cents, code: null, off: 0, label: '' };
+  }
+  function applyReferral(raw) {
+    var code = (raw || '').trim().toUpperCase();
+    var note = document.getElementById('ref-note');
+    if (!code) { activeRef = null; try { sessionStorage.removeItem('svc_ref'); } catch (e) {} if (note) { note.textContent = ''; note.className = 'ref-note'; } return; }
+    var r = REFERRAL[code];
+    if (!r) { activeRef = null; if (note) { note.textContent = 'That code isn’t valid.'; note.className = 'ref-note ref-bad'; } return; }
+    activeRef = { code: code, off: r.off, label: r.label, referrer: r.referrer, pay: r.pay || {}, cents: r.cents || {} };
+    try { sessionStorage.setItem('svc_ref', code); } catch (e) {}
+    if (note) { note.textContent = '✓ ' + code + ' applied — ' + (r.label || (Math.round(r.off * 100) + '% off')) + ' at checkout.'; note.className = 'ref-note ref-ok'; }
+  }
+
   var sb = (window.supabase && window.supabase.createClient)
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
     : null;
@@ -119,8 +150,11 @@
     var dupes  = recent.filter(function (t) { return t.service_slug === svc.slug; });
     var others = recent.filter(function (t) { return t.service_slug !== svc.slug; });
 
+    var eff = effective(currentKey);
     mTitle.textContent = 'Book ' + svc.name;
-    var html = '<div class="svc-modal-price">' + esc(money(svc.cents)) + '</div>';
+    var html = '<div class="svc-modal-price">' + esc(money(eff.cents));
+    if (eff.code) html += ' <span style="font-size:.85rem;color:#39ff9d;font-weight:600">' + esc(eff.label || (Math.round(eff.off * 100) + '% off')) + ' · ' + esc(eff.code) + '</span>';
+    html += '</div>';
 
     if (dupes.length) {
       html += '<div class="svc-modal-warn"><strong>⚠ You already started this order.</strong><br>' +
@@ -182,6 +216,7 @@
         return;
       }
       var user = session.user;
+      var eff = effective(currentKey);
       clientIp().then(function (ip) {
         var ua = navigator.userAgent;
         var consentRow = {
@@ -190,7 +225,8 @@
           version: TERMS_VERSION,
           detail: {
             service_name: svc.name,
-            amount_cents: svc.cents,
+            amount_cents: eff.cents,
+            referral_code: eff.code,
             accepted: ['terms', 'privacy', 'refund'],
             non_refundable_ack: true,
             payment_final_ack: true,
@@ -212,9 +248,9 @@
             service_slug: svc.slug,
             service_name: svc.name,
             status: 'checkout_started',
-            amount_cents: svc.cents,
+            amount_cents: eff.cents,
             consent_id: consentId,
-            detail: { source: 'services_page', duplicate_ack: dupes.length > 0 }
+            detail: { source: 'services_page', duplicate_ack: dupes.length > 0, referral_code: eff.code }
           }).select('ticket_number').single();
         }).then(function (tIns) {
           if (tIns.error || !tIns.data) throw new Error(tIns.error ? tIns.error.message : 'ticket insert failed');
@@ -223,7 +259,7 @@
             'Taking you to secure PayPal checkout…</p>';
           mGo.style.display = 'none';
           mCancel.style.display = 'none';
-          setTimeout(function () { window.location.href = svc.pay; }, 900);
+          setTimeout(function () { window.location.href = eff.pay; }, 900);
         }).catch(function () {
           // Fail CLOSED: no proof recorded => do not send them to pay.
           showErr('We couldn’t record your agreement, so we did not send you to pay. Please try again, or contact us if it keeps happening.');
@@ -383,6 +419,15 @@
       a.addEventListener('click', function (e) { e.preventDefault(); showQuote(); });
     }(qbtns[k]));
   }
+
+  // ---- referral code (applies a discount + discounted PayPal link if configured) ----
+  var refInput = document.getElementById('ref-input');
+  var refBtn   = document.getElementById('ref-apply');
+  if (refBtn && refInput) {
+    refBtn.addEventListener('click', function (e) { e.preventDefault(); applyReferral(refInput.value); });
+    refInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); applyReferral(refInput.value); } });
+  }
+  try { var savedRef = sessionStorage.getItem('svc_ref'); if (savedRef && refInput) { refInput.value = savedRef; applyReferral(savedRef); } } catch (e) {}
 
   // ---- resume after login: if we stored an intent and the user is now signed
   // in, reopen the consent modal automatically so they don't lose their place.
