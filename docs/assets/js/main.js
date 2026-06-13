@@ -93,7 +93,7 @@
 
       // A normal sign-in clears any stale recovery flag so a user who
       // previously abandoned a reset flow can log in and navigate freely.
-      if (event === 'SIGNED_IN') {
+      if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
         localStorage.removeItem('und_recovery_pending');
         var pendingEl = document.getElementById('verified-pending');
         var successEl = document.getElementById('verified-success');
@@ -148,8 +148,10 @@
     try { if (window.turnstile) window.turnstile.reset(); } catch (_) {}
   }
 
-  // Current Terms of Use version — bump when the terms materially change
-  var TERMS_VERSION = '2026-05-31';
+  // Current Terms of Use version — bump when the terms materially change.
+  // Must match the live legal pages' effective date so recorded consent names
+  // the exact terms the user agreed to.
+  var TERMS_VERSION = '2026-06-10';
 
   var Auth = {
     register: async function (email, password, displayName, captchaToken) {
@@ -2720,7 +2722,10 @@
         btn.disabled    = true;
         btn.textContent = 'Sending…';
 
-        var result = await supabase.auth.updateUser({ email: newEmail });
+        var result = await supabase.auth.updateUser(
+          { email: newEmail },
+          { emailRedirectTo: SITE_BASE + 'verified.html' }
+        );
 
         btn.disabled    = false;
         btn.textContent = 'Send Confirmation';
