@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; connect-src 'self' https://*.supabase.co wss://*.supabase.co; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; base-uri 'self'; form-action 'self'; frame-ancestors 'none';">
+  <meta name="theme-color" content="#0d0d0f">
+  <meta name="description" content="Same-day website fixes and AI/automation development by U.N.D Industries. Flat rates, fast turnaround, U.S.-based developer.">
+  <title>Services — Website Fixes & AI Development | U.N.D Industries</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="icon" type="image/png"     href="assets/favicon.png">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <style>
+    .svc-hero { padding: calc(var(--nav-h) + 56px) 0 40px; text-align: center; }
+    .svc-hero h1 { font-size: clamp(2rem, 5vw, 3.2rem); margin: 0 0 12px; }
+    .svc-hero p { color: var(--text-muted); max-width: 640px; margin: 0 auto; font-size: 1.05rem; }
+    .svc-badges { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 18px; }
+    .svc-badge { background: #15151a; border: 1px solid rgba(255,255,255,.1); border-radius: 999px; padding: 6px 14px; font-size: .85rem; color: var(--text-muted); }
+    .svc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 36px 0; }
+    .svc-card { background: #15151a; border: 1px solid rgba(255,255,255,.08); border-radius: 16px; padding: 26px; display: flex; flex-direction: column; position: relative; }
+    .svc-card.featured { border-color: #7c5cff; box-shadow: 0 0 0 1px #7c5cff, 0 12px 40px rgba(124,92,255,.18); }
+    .svc-card .tag { position: absolute; top: -11px; left: 50%; transform: translateX(-50%); background: #7c5cff; color: #fff; font-size: .72rem; font-weight: 700; padding: 4px 12px; border-radius: 999px; letter-spacing: .5px; }
+    .svc-card h3 { margin: 0 0 4px; font-size: 1.25rem; }
+    .svc-price { font-size: 2.4rem; font-weight: 800; margin: 8px 0 2px; }
+    .svc-price span { font-size: .9rem; font-weight: 500; color: var(--text-muted); }
+    .svc-eta { color: #4de8ff; font-size: .85rem; margin-bottom: 14px; }
+    .svc-list { list-style: none; padding: 0; margin: 0 0 22px; flex: 1; }
+    .svc-list li { padding: 7px 0 7px 26px; position: relative; color: #cfcfe0; font-size: .94rem; }
+    .svc-list li::before { content: "✓"; position: absolute; left: 0; color: #39ff9d; font-weight: 700; }
+    .svc-paybtn { width: 100%; }
+    .svc-how { background: #121216; border: 1px solid rgba(255,255,255,.07); border-radius: 16px; padding: 30px; margin: 10px 0 36px; }
+    .svc-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 18px; margin-top: 18px; }
+    .svc-step b { display: block; color: #7c5cff; font-size: 1.4rem; margin-bottom: 4px; }
+    .svc-pay-note { text-align: center; color: var(--text-muted); font-size: .9rem; margin-top: 8px; }
+  </style>
+</head>
+<body data-page="services">
+
+  <nav class="nav" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">U.N.D <span>Industries</span></a>
+      <ul class="nav-links" id="nav-links" role="list">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="services.html" class="active" aria-current="page">Services</a></li>
+        <li><a href="store.html">Store</a></li>
+        <li><a href="music.html">Music</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li class="nav-mobile-auth"><a href="login.html">Login</a></li>
+        <li class="nav-mobile-auth"><a href="register.html">Sign Up</a></li>
+      </ul>
+      <div class="nav-cta">
+        <a href="login.html" class="btn btn-outline btn-sm">Login</a>
+        <a href="register.html" class="btn btn-primary btn-sm">Sign Up</a>
+      </div>
+      <button class="nav-hamburger" id="nav-hamburger" aria-label="Toggle navigation" aria-expanded="false" type="button">
+        <span class="hamburger-line"></span><span class="hamburger-line"></span><span class="hamburger-line"></span>
+      </button>
+    </div>
+  </nav>
+
+  <main>
+    <header class="svc-hero">
+      <div class="container">
+        <h1>Website Fixes &amp; AI Development</h1>
+        <p>Got a broken website or need something built? I'm a U.S.-based developer who fixes the stuff costing you customers — fast, flat-rate, and I confirm exactly what I'll do before touching anything live.</p>
+        <div class="svc-badges">
+          <span class="svc-badge">⚡ Same-to-next-day</span>
+          <span class="svc-badge">💳 Flat rates, no surprises</span>
+          <span class="svc-badge">🇺🇸 U.S.-based (Orlando, FL)</span>
+          <span class="svc-badge">🔒 I never break what works</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="container">
+      <div class="svc-grid">
+        <div class="svc-card">
+          <h3>Quick Fix</h3>
+          <div class="svc-price">$99</div>
+          <div class="svc-eta">Delivered in 24 hours</div>
+          <ul class="svc-list">
+            <li>One specific problem fixed</li>
+            <li>Broken page, form, or link</li>
+            <li>Mobile layout glitch</li>
+            <li>Error message / 500 / blank page</li>
+            <li>Before &amp; after proof</li>
+          </ul>
+          <a class="btn btn-outline btn-full svc-paybtn" data-pay="quick" href="contact.html">Book Quick Fix</a>
+        </div>
+
+        <div class="svc-card featured">
+          <span class="tag">MOST POPULAR</span>
+          <h3>Fix Bundle</h3>
+          <div class="svc-price">$199</div>
+          <div class="svc-eta">Delivered in 48 hours</div>
+          <ul class="svc-list">
+            <li>Up to 3 issues fixed</li>
+            <li>Full once-over of your site</li>
+            <li>Mobile + speed check</li>
+            <li>Broken-link sweep</li>
+            <li>Before &amp; after proof</li>
+          </ul>
+          <a class="btn btn-primary btn-full svc-paybtn" data-pay="bundle" href="contact.html">Book Fix Bundle</a>
+        </div>
+
+        <div class="svc-card">
+          <h3>Full Cleanup</h3>
+          <div class="svc-price">$349</div>
+          <div class="svc-eta">Delivered in 72 hours</div>
+          <ul class="svc-list">
+            <li>Everything in the Bundle</li>
+            <li>Speed optimization</li>
+            <li>SEO basics + working contact form</li>
+            <li>Mobile-perfect pass</li>
+            <li>30-day fix guarantee</li>
+          </ul>
+          <a class="btn btn-outline btn-full svc-paybtn" data-pay="cleanup" href="contact.html">Book Full Cleanup</a>
+        </div>
+      </div>
+
+      <p class="svc-pay-note" id="svc-pay-note">New here? Tap a package and tell me what's broken — I'll confirm the price and send a secure payment link. Custom/larger build (AI, automation, integrations)? <a href="contact.html">Get a quote →</a></p>
+
+      <section class="svc-how">
+        <h2 style="margin:0;">How it works</h2>
+        <div class="svc-steps">
+          <div class="svc-step"><b>1</b>Tell me what's broken (free — message me on the contact page)</div>
+          <div class="svc-step"><b>2</b>I confirm exactly what I'll fix + the flat price</div>
+          <div class="svc-step"><b>3</b>Pay 50% to start (secure link), rest on delivery</div>
+          <div class="svc-step"><b>4</b>Fixed in 24–72h with before/after proof</div>
+        </div>
+      </section>
+
+      <div style="text-align:center; margin: 0 0 60px;">
+        <h2>Need more than a fix?</h2>
+        <p style="color:var(--text-muted); max-width:600px; margin:0 auto 18px;">AI + automation setups, chatbot integration, custom tools, AI-in-Unity builds. Rare skills, fair rates.</p>
+        <a href="contact.html" class="btn btn-primary btn-lg">Get a custom quote</a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div>
+          <div class="footer-brand">U.N.D <span>Industries</span></div>
+          <p class="footer-desc">U.N.D Industries — Universal Network Development LLC.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Pages</h4>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="store.html">Store</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Support</h4>
+          <ul class="footer-links">
+            <li><a href="customer-service.html">Customer Service</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="login.html">Account</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p class="footer-copy">&copy; <span data-year>2026</span> U.N.D Industries. All rights reserved.</p>
+        <div class="footer-legal-row">
+          <a href="terms.html" class="footer-legal-link">Terms of Use</a>
+          <a href="refund.html" class="footer-legal-link">Refund Policy</a>
+          <a href="privacy.html" class="footer-legal-link">Privacy Policy</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ── Payment links — paste your links here once (PayPal.me / Stripe Payment Link / Cash App).
+    // Until a link is set, the button routes to contact.html so you still capture the lead.
+    // PayPal.me is instant to set up; Cash App ($cashtag) is instant; Stripe Payment Link ~2 min.
+    const PAY = {
+      quick:   "",   // e.g. "https://buy.stripe.com/xxxx"  or  "https://paypal.me/UNDIndustries/99"
+      bundle:  "",   // e.g. "https://buy.stripe.com/yyyy"  or  "https://paypal.me/UNDIndustries/199"
+      cleanup: "",   // e.g. "https://buy.stripe.com/zzzz"  or  "https://paypal.me/UNDIndustries/349"
+    };
+    document.querySelectorAll('[data-pay]').forEach(function (a) {
+      var link = PAY[a.getAttribute('data-pay')];
+      if (link) { a.setAttribute('href', link); a.setAttribute('rel', 'noopener'); }
+    });
+    var y = document.querySelector('[data-year]'); if (y) y.textContent = new Date().getFullYear();
+  </script>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
