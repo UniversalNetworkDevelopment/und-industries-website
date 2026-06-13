@@ -47,6 +47,19 @@ when a session exists. A page missing `.nav-cta` (e.g. `login`, `register`, `das
 > each navigation. If we want to kill it, gate `.nav-cta` visibility until auth resolves
 > (left as a future polish item — not a correctness bug).
 
+## Dashboard ↔ site cohesion (2026-06-13)
+
+The dashboard is correctly a **gated app-shell** (sidebar) sharing the site's `styles.css`,
+brand, auth, and tokens — the architecture/relationship is right. Premium gaps fixed:
+- **Icons**: replaced mixed colored **emoji** (`🔑 🛒 🎵 🏠 📋 …`) in the sidebar and Quick
+  Links with consistent monochrome inline **SVG line-icons** (`stroke="currentColor"`),
+  matching the marketing site's icon language. No emoji in the app chrome.
+- **Stale content**: "Public Pages: 5" → **6**, and **Services** added to the overview
+  list, the sidebar "Site" section, and Quick Links.
+- Visual-QA'd via a localhost render (CSS applied, auth guard bypassed) before shipping.
+- Follow-ups (minor): `dashboard-alt.html` (Studio Panel) and the Community tab buttons
+  (`↻ 😊 ➤`) still use glyphs — lower priority, internal/secondary surfaces.
+
 ## Utility for re-checking drift
 Run from `docs/` to see which pages deviate:
 ```
