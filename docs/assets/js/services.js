@@ -217,55 +217,83 @@
       }
       var user = session.user;
       var eff = effective(currentKey);
-      clientIp().then(function (ip) {
-        var ua = navigator.userAgent;
-        var consentRow = {
-          user_id: user.id,
-          doc: 'service:' + svc.slug,
-          version: TERMS_VERSION,
-          detail: {
-            service_name: svc.name,
-            amount_cents: eff.cents,
-            referral_code: eff.code,
-            accepted: ['terms', 'privacy', 'refund'],
-            non_refundable_ack: true,
-            payment_final_ack: true,
-            duplicate_ack: dupes.length > 0,
-            duplicate_of: dupes.map(function (t) { return t.ticket_number; }),
-            recent_orders: recent.map(function (t) { return { ticket: t.ticket_number, slug: t.service_slug, at: t.created_at }; }),
-            policy_shown: 'All sales final — no refunds. If we break something that was working we fix it free. If we cannot deliver the agreed fix at all, refund for undelivered work. PayPal payment is final once submitted.',
-            page: 'services'
-          },
-          ip: ip,
-          user_agent: ua
-        };
 
-        sb.from('tos_consents').insert(consentRow).select('id').single().then(function (cIns) {
-          if (cIns.error || !cIns.data) throw new Error(cIns.error ? cIns.error.message : 'consent insert failed');
-          var consentId = cIns.data.id;
-          return sb.from('service_tickets').insert({
+      function recordAndGo() {
+        clientIp().then(function (ip) {
+          var ua = navigator.userAgent;
+          var consentRow = {
             user_id: user.id,
-            service_slug: svc.slug,
-            service_name: svc.name,
-            status: 'checkout_started',
-            amount_cents: eff.cents,
-            consent_id: consentId,
-            detail: { source: 'services_page', duplicate_ack: dupes.length > 0, referral_code: eff.code }
-          }).select('ticket_number').single();
-        }).then(function (tIns) {
-          if (tIns.error || !tIns.data) throw new Error(tIns.error ? tIns.error.message : 'ticket insert failed');
-          var ticket = tIns.data.ticket_number;
-          mBody.innerHTML = '<p class="svc-modal-p"><strong>Order ' + esc(ticket) + ' recorded.</strong> ' +
-            'Taking you to secure PayPal checkout…</p>';
-          mGo.style.display = 'none';
-          mCancel.style.display = 'none';
-          setTimeout(function () { window.location.href = eff.pay; }, 900);
-        }).catch(function () {
-          // Fail CLOSED: no proof recorded => do not send them to pay.
-          showErr('We couldn’t record your agreement, so we did not send you to pay. Please try again, or contact us if it keeps happening.');
-          mGo.disabled = false; mGo.textContent = 'Agree & Continue to PayPal';
+            doc: 'service:' + svc.slug,
+            version: TERMS_VERSION,
+            detail: {
+              service_name: svc.name,
+              amount_cents: eff.cents,
+              referral_code: eff.code,
+              accepted: ['terms', 'privacy', 'refund'],
+              non_refundable_ack: true,
+              payment_final_ack: true,
+              duplicate_ack: dupes.length > 0,
+              duplicate_of: dupes.map(function (t) { return t.ticket_number; }),
+              recent_orders: recent.map(function (t) { return { ticket: t.ticket_number, slug: t.service_slug, at: t.created_at }; }),
+              policy_shown: 'All sales final — no refunds. If we break something that was working we fix it free. If we cannot deliver the agreed fix at all, refund for undelivered work. PayPal payment is final once submitted.',
+              page: 'services'
+            },
+            ip: ip,
+            user_agent: ua
+          };
+
+          sb.from('tos_consents').insert(consentRow).select('id').single().then(function (cIns) {
+            if (cIns.error || !cIns.data) throw new Error(cIns.error ? cIns.error.message : 'consent insert failed');
+            var consentId = cIns.data.id;
+            return sb.from('service_tickets').insert({
+              user_id: user.id,
+              service_slug: svc.slug,
+              service_name: svc.name,
+              status: 'checkout_started',
+              amount_cents: eff.cents,
+              consent_id: consentId,
+              detail: { source: 'services_page', duplicate_ack: dupes.length > 0, referral_code: eff.code }
+            }).select('ticket_number').single();
+          }).then(function (tIns) {
+            if (tIns.error || !tIns.data) throw new Error(tIns.error ? tIns.error.message : 'ticket insert failed');
+            var ticket = tIns.data.ticket_number;
+            // Record the redemption — one per (account, code). The DB unique
+            // constraint is the real backstop against reuse; this is best-effort.
+            if (eff.code) {
+              sb.from('referral_redemptions').insert({ user_id: user.id, code: eff.code, ticket_number: ticket }).then(function () {}, function () {});
+            }
+            mBody.innerHTML = '<p class="svc-modal-p"><strong>Order ' + esc(ticket) + ' recorded.</strong> ' +
+              'Taking you to secure PayPal checkout…</p>';
+            mGo.style.display = 'none';
+            mCancel.style.display = 'none';
+            setTimeout(function () { window.location.href = eff.pay; }, 900);
+          }).catch(function () {
+            // Fail CLOSED: no proof recorded => do not send them to pay.
+            showErr('We couldn’t record your agreement, so we did not send you to pay. Please try again, or contact us if it keeps happening.');
+            mGo.disabled = false; mGo.textContent = 'Agree & Continue to PayPal';
+          });
         });
-      });
+      }
+
+      // Single-use per account: if this code was already redeemed by this user,
+      // drop the discount (full price) — they'd need a different code to save again.
+      if (eff.code) {
+        sb.from('referral_redemptions').select('id').eq('user_id', user.id).eq('code', eff.code).maybeSingle().then(function (rr) {
+          if (rr && rr.data) {
+            var usedCode = eff.code;
+            activeRef = null;
+            try { sessionStorage.removeItem('svc_ref'); } catch (e) {}
+            eff = effective(currentKey); // recompute at full price
+            var note = document.getElementById('ref-note');
+            if (note) { note.textContent = 'Code ' + usedCode + ' was already used on your account — booking at full price.'; note.className = 'ref-note ref-bad'; }
+            var priceEl = mBody.querySelector('.svc-modal-price');
+            if (priceEl) priceEl.textContent = money(eff.cents);
+          }
+          recordAndGo();
+        }, function () { recordAndGo(); });
+      } else {
+        recordAndGo();
+      }
     });
   }
 
