@@ -1,5 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" role="img" aria-label="U.N.D Industries emblem">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="U.N.D Industries">
   <defs>
+    <linearGradient id="undBg" x1="0" y1="0" x2="0" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1b1b22"/>
+      <stop offset="1" stop-color="#0b0b0e"/>
+    </linearGradient>
     <linearGradient id="undSilver" x1="0" y1="0" x2="200" y2="200" gradientUnits="userSpaceOnUse">
       <stop offset="0%"  stop-color="#e8eaf0"/>
       <stop offset="48%" stop-color="#b9bfca"/>
@@ -9,30 +13,20 @@
       <stop offset="0%"  stop-color="#a78bfa"/>
       <stop offset="100%" stop-color="#5b21b6"/>
     </linearGradient>
-    <filter id="undGlow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="2.2" result="b"/>
-      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
   </defs>
 
-  <!-- Hexagon containment -->
-  <polygon points="100,12 168,52 168,148 100,188 32,148 32,52"
-           stroke="url(#undSilver)" stroke-width="4" fill="none" filter="url(#undGlow)"/>
-  <polygon points="100,28 154,60 154,140 100,172 46,140 46,60"
-           stroke="url(#undPurple)" stroke-width="1.5" fill="none" opacity="0.55"/>
+  <!-- Dark rounded app-tile -->
+  <rect x="0" y="0" width="200" height="200" rx="44" fill="url(#undBg)"/>
+  <rect x="3" y="3" width="194" height="194" rx="42" fill="none" stroke="#2c2c36" stroke-width="2"/>
 
-  <!-- Circuit accents -->
-  <g stroke="url(#undPurple)" stroke-width="2" opacity="0.7">
-    <path d="M100 12 V0"/>
-    <circle cx="100" cy="2" r="3" fill="url(#undPurple)" stroke="none"/>
-    <path d="M168 148 L182 156"/>
-    <circle cx="184" cy="157" r="3" fill="url(#undPurple)" stroke="none"/>
-    <path d="M32 148 L18 156"/>
-    <circle cx="16" cy="157" r="3" fill="url(#undPurple)" stroke="none"/>
+  <!-- UND hexagon emblem, scaled to fit the tile with padding -->
+  <g transform="translate(100,100) scale(0.74) translate(-100,-100)">
+    <polygon points="100,12 168,52 168,148 100,188 32,148 32,52"
+             stroke="url(#undSilver)" stroke-width="5" fill="none"/>
+    <polygon points="100,28 154,60 154,140 100,172 46,140 46,60"
+             stroke="url(#undPurple)" stroke-width="2" fill="none" opacity="0.6"/>
+    <text x="100" y="121" text-anchor="middle"
+          font-family="'Space Grotesk', system-ui, sans-serif" font-weight="800"
+          font-size="58" letter-spacing="-2" fill="url(#undSilver)">UND</text>
   </g>
-
-  <!-- UND monogram -->
-  <text x="100" y="118" text-anchor="middle"
-        font-family="'Space Grotesk', system-ui, sans-serif" font-weight="800"
-        font-size="52" letter-spacing="-2" fill="url(#undSilver)" filter="url(#undGlow)">UND</text>
 </svg>
