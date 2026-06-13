@@ -27,6 +27,11 @@ studio.html
 dev.html
 admin.html
 
+# Dependencies + local QA tooling — NEVER tracked (this was the "3K+" untracked noise)
+node_modules/
+.qa/
+*.log
+
 # OS
 .DS_Store
 Thumbs.db
