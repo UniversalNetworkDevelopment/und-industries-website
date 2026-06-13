@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://universalnetworkdevelopment.com/</loc></url>
-  <url><loc>https://universalnetworkdevelopment.com/about.html</loc></url>
-  <url><loc>https://universalnetworkdevelopment.com/music.html</loc></url>
-  <url><loc>https://universalnetworkdevelopment.com/store.html</loc></url>
-  <url><loc>https://universalnetworkdevelopment.com/contact.html</loc></url>
-  <url><loc>https://universalnetworkdevelopment.com/customer-service.html</loc></url>
-  <url><loc>https://universalnetworkdevelopment.com/privacy.html</loc></url>
-  <url><loc>https://universalnetworkdevelopment.com/terms.html</loc></url>
-  <url><loc>https://universalnetworkdevelopment.com/security.html</loc></url>
-  <url><loc>https://universalnetworkdevelopment.com/cookie.html</loc></url>
-  <url><loc>https://universalnetworkdevelopment.com/dmca.html</loc></url>
-  <url><loc>https://universalnetworkdevelopment.com/copyright.html</loc></url>
+  <url><loc>https://universalnetworkdevelopment.com/</loc><lastmod>2026-06-13</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://universalnetworkdevelopment.com/services</loc><lastmod>2026-06-13</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://universalnetworkdevelopment.com/store</loc><lastmod>2026-06-13</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://universalnetworkdevelopment.com/about</loc><lastmod>2026-06-13</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://universalnetworkdevelopment.com/music</loc><lastmod>2026-06-13</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://universalnetworkdevelopment.com/contact</loc><lastmod>2026-06-13</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://universalnetworkdevelopment.com/customer-service</loc><lastmod>2026-06-13</lastmod><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://universalnetworkdevelopment.com/terms</loc><lastmod>2026-06-13</lastmod><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://universalnetworkdevelopment.com/refund</loc><lastmod>2026-06-13</lastmod><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://universalnetworkdevelopment.com/privacy</loc><lastmod>2026-06-13</lastmod><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://universalnetworkdevelopment.com/security</loc><lastmod>2026-06-13</lastmod><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://universalnetworkdevelopment.com/cookie</loc><lastmod>2026-06-13</lastmod><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://universalnetworkdevelopment.com/dmca</loc><lastmod>2026-06-13</lastmod><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://universalnetworkdevelopment.com/copyright</loc><lastmod>2026-06-13</lastmod><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://universalnetworkdevelopment.com/disclaimer</loc><lastmod>2026-06-13</lastmod><changefreq>yearly</changefreq><priority>0.3</priority></url>
 </urlset>
