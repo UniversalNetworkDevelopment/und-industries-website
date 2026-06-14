@@ -21,10 +21,17 @@
         <p class="auth-sub">Just a moment while we confirm your email.</p>
       </div>
 
-      <!-- State B: verification succeeded and session established -->
+      <!-- State B: signup verified — session established in this browser -->
       <div id="verified-success" hidden>
         <h1 class="auth-title">Email <span class="accent">Verified</span></h1>
         <p class="auth-sub">Your account is confirmed and you're signed in. You're all set.</p>
+        <a href="dashboard.html" class="btn btn-primary btn-full mt-8">Go to Dashboard</a>
+      </div>
+
+      <!-- State B2: email-change confirmed — new address is now active -->
+      <div id="verified-email-updated" hidden>
+        <h1 class="auth-title">Email <span class="accent">Updated</span></h1>
+        <p class="auth-sub">Your email address has been changed successfully. You're still signed in.</p>
         <a href="dashboard.html" class="btn btn-primary btn-full mt-8">Go to Dashboard</a>
       </div>
 

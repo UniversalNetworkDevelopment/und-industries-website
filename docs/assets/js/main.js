@@ -95,12 +95,21 @@
       // previously abandoned a reset flow can log in and navigate freely.
       if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
         localStorage.removeItem('und_recovery_pending');
-        var pendingEl = document.getElementById('verified-pending');
-        var successEl = document.getElementById('verified-success');
-        if (pendingEl && successEl) {
+        var pendingEl     = document.getElementById('verified-pending');
+        var successEl     = document.getElementById('verified-success');
+        var emailUpdEl    = document.getElementById('verified-email-updated');
+        var nosessionEl2  = document.getElementById('verified-nosession');
+        if (pendingEl) {
+          // Hide pending + nosession regardless of which success state we show
           pendingEl.hidden = true;
-          successEl.removeAttribute('hidden');
+          if (nosessionEl2) nosessionEl2.hidden = true;
           body.classList.remove('auth-loading');
+          // USER_UPDATED = email-change confirmation; SIGNED_IN = signup/login
+          if (event === 'USER_UPDATED' && emailUpdEl) {
+            emailUpdEl.removeAttribute('hidden');
+          } else if (successEl) {
+            successEl.removeAttribute('hidden');
+          }
         }
       }
     });
@@ -1954,13 +1963,39 @@
     }
 
     // ── Verified page fallback (no session in this browser) ──
-    var pendingEl  = document.getElementById('verified-pending');
+    var pendingEl   = document.getElementById('verified-pending');
     var nosessionEl = document.getElementById('verified-nosession');
     if (pendingEl && nosessionEl) {
-      // If SIGNED_IN event already fired, this block is never reached.
-      // Only runs when the page loaded without a ?code (different browser).
-      pendingEl.hidden = true;
-      nosessionEl.removeAttribute('hidden');
+      // When a ?code= is present the Supabase client is mid-exchange — the
+      // SIGNED_IN or USER_UPDATED event will arrive asynchronously and flip
+      // the UI to the success state (onAuthStateChange handler above).
+      // Don't short-circuit to nosession while that exchange is in flight;
+      // instead wait up to 10 s and only fall back if no event fires.
+      var hasCode = !!new URLSearchParams(window.location.search).get('code');
+      if (hasCode) {
+        // Guard: if success state already shown (event fired before initPage),
+        // don't overwrite it.  Otherwise start a timeout fallback.
+        var alreadySuccess =
+          (document.getElementById('verified-success')    && !document.getElementById('verified-success').hidden) ||
+          (document.getElementById('verified-email-updated') && !document.getElementById('verified-email-updated').hidden);
+        if (!alreadySuccess) {
+          setTimeout(function () {
+            // If a success state is now visible the event already fired — leave it.
+            var s1 = document.getElementById('verified-success');
+            var s2 = document.getElementById('verified-email-updated');
+            var doneNow = (s1 && !s1.hidden) || (s2 && !s2.hidden);
+            if (!doneNow && pendingEl && !pendingEl.hidden) {
+              pendingEl.hidden = true;
+              nosessionEl.removeAttribute('hidden');
+            }
+          }, 10000);
+        }
+      } else {
+        // No code in URL — link was opened in a different browser.
+        // Session can't be exchanged here; show the "sign in" fallback immediately.
+        pendingEl.hidden = true;
+        nosessionEl.removeAttribute('hidden');
+      }
     }
 
     // ── Set new password form ────────────────────────────────
