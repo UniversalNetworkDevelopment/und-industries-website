@@ -16,7 +16,7 @@ create or replace function public.prevent_role_self_escalation()
 returns trigger language plpgsql security definer set search_path = public as $$
 begin
   if new.role is distinct from old.role
-     and current_user not in ('postgres','service_role')
+     and session_user not in ('postgres','service_role')  -- session_user = real login; current_user is the DEFINER owner (postgres) and would disable this guard
      and coalesce(current_setting('request.jwt.claim.role', true), '') <> 'service_role' then
     raise exception 'role may only be changed by an admin';
   end if;
