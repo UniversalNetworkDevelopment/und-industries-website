@@ -64,7 +64,7 @@ begin
   -- service_role). The SQL editor has no auth.uid(), so it needs the latter.
   if not (
     exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'owner')
-    or current_user in ('postgres','service_role')
+    or session_user in ('postgres','service_role')   -- session_user = real login; current_user would be the DEFINER owner (always postgres) => bypass-for-all bug
   ) then
     raise exception 'Not authorized: owner only.';
   end if;
@@ -89,7 +89,7 @@ declare uid uuid;
 begin
   if not (
     exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'owner')
-    or current_user in ('postgres','service_role')
+    or session_user in ('postgres','service_role')   -- session_user = real login; current_user would be the DEFINER owner (always postgres) => bypass-for-all bug
   ) then
     raise exception 'Not authorized: owner only.';
   end if;
