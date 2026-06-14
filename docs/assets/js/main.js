@@ -2012,6 +2012,29 @@
       });
     }
 
+    // ── Google OAuth ─────────────────────────────────────────
+    var btnGoogleLogin = document.getElementById('btn-google-login');
+    if (btnGoogleLogin) {
+      btnGoogleLogin.addEventListener('click', function () {
+        if (!supabase) { _trackError('Auth unavailable'); return; }
+        supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: { redirectTo: SITE_BASE + 'dashboard.html' }
+        });
+      });
+    }
+
+    var btnGoogleRegister = document.getElementById('btn-google-register');
+    if (btnGoogleRegister) {
+      btnGoogleRegister.addEventListener('click', function () {
+        if (!supabase) { _trackError('Auth unavailable'); return; }
+        supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: { redirectTo: SITE_BASE + 'dashboard.html' }
+        });
+      });
+    }
+
     // ── Login form ──────────────────────────────────────────
     var loginForm = document.getElementById('login-form');
     if (loginForm) {
