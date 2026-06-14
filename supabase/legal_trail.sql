@@ -60,7 +60,12 @@ create or replace function public.user_audit_trail(target uuid)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare result jsonb;
 begin
-  if not exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'owner') then
+  -- Owner via the app (auth.uid()) OR the admin SQL editor / server (postgres,
+  -- service_role). The SQL editor has no auth.uid(), so it needs the latter.
+  if not (
+    exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'owner')
+    or current_user in ('postgres','service_role')
+  ) then
     raise exception 'Not authorized: owner only.';
   end if;
   select jsonb_build_object(
@@ -82,7 +87,10 @@ create or replace function public.user_audit_trail_by_email(target_email text)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare uid uuid;
 begin
-  if not exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'owner') then
+  if not (
+    exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'owner')
+    or current_user in ('postgres','service_role')
+  ) then
     raise exception 'Not authorized: owner only.';
   end if;
   select id into uid from auth.users where lower(email) = lower(target_email) limit 1;
