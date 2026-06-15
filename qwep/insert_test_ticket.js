@@ -43,7 +43,29 @@ async function createTestTicket() {
     if (updateError) {
         console.error('[TEST INJECTOR ERROR] Update failed:', updateError);
     } else {
-        console.log(`[TEST INJECTOR] Successfully fired UPDATE for ${ticketNumber}. Listener should catch this.`);
+        console.log(`[TEST INJECTOR] Successfully fired UPDATE for ${ticketNumber}.`);
+        
+        // Push directly to Qwep to simulate Realtime listener (since realtime publication might not be enabled on dashboard)
+        console.log(`[TEST INJECTOR] Manually pushing job packet to Qwep Store...`);
+        const jobPacket = {
+            ticket_id: ticketNumber,
+            ticket_type: 'test',
+            user_id: userId,
+            service_type: 'full_website_build_test',
+            intake_data_ref: { target_repo_name: 'web-builder-ai' },
+            status: 'intake_pending'
+        };
+        
+        try {
+            const res = await fetch('http://127.0.0.1:3133/api/jobs', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(jobPacket)
+            });
+            console.log(`[TEST INJECTOR] Qwep Response: ${res.status}`);
+        } catch(e) {
+            console.error(`[TEST INJECTOR] Failed to reach Qwep:`, e.message);
+        }
     }
 }
 
