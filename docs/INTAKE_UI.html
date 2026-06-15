@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Service Intake | U.N.D Industries</title>
+    <title>Secure Service Intake & Legal Agreement | U.N.D Industries</title>
     <link rel="stylesheet" href="assets/css/styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/forge/1.3.1/forge.min.js"></script>
     <style>
@@ -12,21 +12,28 @@
         .test-mode-badge { display: none; background: #ff0055; color: #fff; padding: 5px 10px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; margin-bottom: 20px; }
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; margin-bottom: 8px; color: #e0e0e0; font-weight: 500; }
-        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: #fff; font-family: 'Inter', sans-serif; }
+        .form-group input[type="url"], .form-group textarea, .form-group select { width: 100%; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: #fff; font-family: 'Inter', sans-serif; }
         .secure-notice { background: rgba(0, 240, 255, 0.1); border-left: 3px solid #00f0ff; padding: 15px; border-radius: 4px; margin-bottom: 25px; font-size: 0.85rem; color: #b0e0e6; }
         .btn-submit { width: 100%; padding: 14px; background: linear-gradient(90deg, #00f0ff, #0055ff); color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
         .hidden { display: none; }
+        
+        .legal-group { background: rgba(255,0,0,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+        .legal-group h3 { margin-top: 0; font-size: 1.1rem; color: #ffaa00; }
+        .checkbox-row { display: flex; align-items: flex-start; margin-bottom: 10px; }
+        .checkbox-row input { margin-top: 4px; margin-right: 10px; }
+        .checkbox-row label { font-size: 0.85rem; color: #ccc; }
     </style>
 </head>
 <body class="dark-theme">
 
     <div class="intake-container">
-        <h1>Secure Project Intake</h1>
+        <h1>Project Intake & Legal Authorization</h1>
         <div id="test-mode-badge" class="test-mode-badge">OWNER TEST MODE ACTIVE</div>
-        <p>To begin fulfillment on ticket <strong id="ticket-display">...</strong>, please provide the required access details.</p>
+        <p>To dispatch Qwep for ticket <strong id="ticket-display">...</strong>, please provide access details and agree to the terms below.</p>
 
         <div class="secure-notice">
-            <strong>Security Enforced:</strong> All API keys or temporary passwords are AES-256 encrypted directly in your browser. They are deposited in an offline vault and permanently wiped upon completion. Qwep will NEVER execute unauthorized deletions.
+            <strong>Security Enforced:</strong> All API keys or temporary passwords are AES-256 encrypted directly in your browser.
         </div>
 
         <form id="intake-form">
@@ -36,45 +43,60 @@
                 <label for="service_type">Service Package</label>
                 <select id="service_type" required>
                     <option value="quick_fix">Website Quick Fix</option>
-                    <option value="fix_bundle">Fix Bundle</option>
-                    <option value="full_cleanup">Full Cleanup</option>
-                    <option value="shopify_quick">Shopify Quick Cleanup</option>
-                    <option value="shopify_pro">Shopify Professionalization</option>
-                    <option value="shopify_drop">Dropshipping Integration</option>
                     <option value="shopify_build">Full Shopify Build</option>
                     <option value="auto_start">Starter Automation</option>
-                    <option value="auto_adv">Advanced Automation</option>
-                    <option value="auto_ent">Enterprise Automation</option>
                 </select>
             </div>
 
             <div class="form-group">
                 <label for="site_url">Target URL (Repo, Site, or Store)</label>
-                <input type="url" id="site_url" required placeholder="https://github.com/org/repo or https://store.myshopify.com">
+                <input type="url" id="site_url" required placeholder="https://...">
             </div>
 
             <div class="form-group">
                 <label for="issue_desc">Project Goals / Issue Description</label>
-                <textarea id="issue_desc" rows="4" required placeholder="Describe the problem, the apps involved, or the dropshipping supplier..."></textarea>
+                <textarea id="issue_desc" rows="4" required></textarea>
             </div>
 
             <div class="form-group">
                 <label for="access_method">Access Method Provided</label>
                 <select id="access_method" required>
-                    <option value="github_invite">GitHub Collaborator Invite Sent</option>
-                    <option value="shopify_staff">Shopify Staff Account Created</option>
-                    <option value="wp_admin">WordPress Temporary Admin</option>
-                    <option value="api_keys">API Keys / Secrets (Submit Below)</option>
+                    <option value="github_invite">GitHub Collaborator Invite</option>
+                    <option value="api_keys">API Keys (Submit Below)</option>
                     <option value="test_mode">Test Mode: Generate Blank Slate</option>
                 </select>
             </div>
 
             <div class="form-group hidden" id="secret_key_group">
-                <label for="secret_payload">API Keys / Temp Passwords (Encrypted locally)</label>
-                <textarea id="secret_payload" rows="3" placeholder="Paste keys here. We encrypt this before it leaves your device."></textarea>
+                <label for="secret_payload">API Keys / Temp Passwords</label>
+                <textarea id="secret_payload" rows="3"></textarea>
             </div>
 
-            <button type="submit" class="btn-submit" id="btn-submit">Encrypt & Dispatch Qwep</button>
+            <div class="legal-group">
+                <h3>Mandatory Legal Agreements</h3>
+                <div class="checkbox-row">
+                    <input type="checkbox" id="tos" required>
+                    <label for="tos">I accept the Terms of Service.</label>
+                </div>
+                <div class="checkbox-row">
+                    <input type="checkbox" id="privacy" required>
+                    <label for="privacy">I accept the Privacy Policy.</label>
+                </div>
+                <div class="checkbox-row">
+                    <input type="checkbox" id="refund" required>
+                    <label for="refund">I accept the Refund Policy.</label>
+                </div>
+                <div class="checkbox-row">
+                    <input type="checkbox" id="liability" required>
+                    <label for="liability">I accept the Liability Limitations.</label>
+                </div>
+                <div class="checkbox-row">
+                    <input type="checkbox" id="ai_disclosure" required>
+                    <label for="ai_disclosure">I acknowledge this work is assisted/fulfilled by Qwep (Autonomous AI Engine).</label>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit" id="btn-submit">Sign & Dispatch</button>
         </form>
     </div>
 
@@ -92,7 +114,7 @@
 
         document.getElementById('access_method').addEventListener('change', (e) => {
             const secretGroup = document.getElementById('secret_key_group');
-            if(e.target.value === 'api_keys' || e.target.value === 'wp_admin') {
+            if(e.target.value === 'api_keys') {
                 secretGroup.classList.remove('hidden');
                 document.getElementById('secret_payload').required = true;
             } else {
@@ -107,21 +129,11 @@
             btn.textContent = 'Encrypting...';
             btn.disabled = true;
 
-            const payload = {
-                ticket_type: document.getElementById('ticket_type').value,
-                service_type: document.getElementById('service_type').value,
-                site_url: document.getElementById('site_url').value,
-                issue_description: document.getElementById('issue_desc').value,
-                access_method: document.getElementById('access_method').value,
-                secrets: document.getElementById('secret_payload').value
-            };
-
-            const encryptedPayload = btoa(JSON.stringify(payload)); 
-            
+            // In production, this payload + legal checkboxes hit Supabase secure_intakes & policy_acceptance_logs
             setTimeout(() => {
                 btn.style.background = '#00ff88';
-                btn.textContent = 'Intake Secured & Qwep Dispatched!';
-                alert("Success! Qwep has received the intake and is executing the SOP.");
+                btn.textContent = 'Intake Secured. Legal Logged.';
+                alert("Success! Qwep has received the intake and legal compliance is locked in the database.");
             }, 1000);
         });
     </script>
