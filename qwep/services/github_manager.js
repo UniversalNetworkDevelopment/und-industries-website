@@ -24,20 +24,18 @@ async function createRepoAndPush(job) {
         // Ensure we use the correct owner for branch protection
         const owner = repo.owner.login;
 
-        // 2. Enforce Branch Protections
-        console.log(`[GITHUB] Enforcing branch protections on main`);
-        await octokit.rest.repos.updateBranchProtection({
+        // 2. Branch Protections skipped (Requires GitHub Pro for private repos)
+        console.log(`[GITHUB] Skipping branch protections (Free tier limitation)`);
+
+        // 3. Atomic Commit: Scaffold HTML
+        console.log(`[GITHUB] Committing index.html`);
+        await octokit.rest.repos.createOrUpdateFileContents({
             owner: owner,
             repo: repoName,
-            branch: 'main',
-            required_status_checks: null,
-            enforce_admins: true,
-            required_pull_request_reviews: null,
-            restrictions: null,
-            allow_force_pushes: false
+            path: 'index.html',
+            message: 'feat: Scaffold initial index.html',
+            content: Buffer.from('<!DOCTYPE html><html><head><title>Scaffold</title></head><body><h1>Welcome to Qwep Generated Site</h1></body></html>').toString('base64')
         });
-
-        // 3. (Mock) Commit HTML, CSS, JS anatomically here using octokit.rest.repos.createOrUpdateFileContents
         // For actual atomic commits, we would loop through staging directory.
 
         return repo.html_url;
