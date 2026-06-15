@@ -2847,3 +2847,17 @@ button.sidebar-link {
   box-shadow: 0 6px 24px rgba(0,0,0,0.4);
 }
 .promo-embed-frame iframe { display: block; width: 100%; border: 0; }
+
+/* Service Modal Dynamic Elements */
+.svc-modal-price { font-size: 1.5rem; font-weight: 700; color: var(--text); margin-bottom: 16px; display: flex; align-items: center; gap: 12px; }
+.svc-modal-warn, .svc-modal-note { padding: 12px 16px; border-radius: var(--radius); margin-bottom: 16px; font-size: 0.9rem; line-height: 1.4; }
+.svc-modal-warn { background: rgba(255, 68, 68, 0.1); border: 1px solid rgba(255, 68, 68, 0.2); color: #ffcccc; }
+.svc-modal-note { background: rgba(57, 255, 157, 0.05); border: 1px solid rgba(57, 255, 157, 0.15); color: var(--text-muted); }
+.svc-modal-terms { list-style: none; padding: 0; margin: 0 0 20px 0; }
+.svc-modal-terms li { position: relative; padding-left: 24px; margin-bottom: 12px; font-size: 0.95rem; color: var(--text-muted); line-height: 1.4; }
+.svc-modal-terms li::before { content: "?"; position: absolute; left: 0; top: 0; color: var(--accent-light); font-weight: bold; }
+.svc-modal-check { display: flex; align-items: flex-start; gap: 12px; font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; cursor: pointer; margin-bottom: 16px; padding: 12px; background: var(--bg-card-hover); border-radius: var(--radius); border: 1px solid var(--border); }
+.svc-modal-check input[type="checkbox"] { margin-top: 4px; flex-shrink: 0; width: 16px; height: 16px; }
+.svc-modal-check a { color: var(--accent-light); text-decoration: none; }
+.svc-modal-check a:hover { text-decoration: underline; }
+.svc-modal-check-warn { background: rgba(255, 68, 68, 0.05); border-color: rgba(255, 68, 68, 0.2); }
