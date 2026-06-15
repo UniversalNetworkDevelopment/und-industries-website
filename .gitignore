@@ -49,4 +49,4 @@ desktop.ini
 # SQLite databases
 *.db
 
-qwep/archives/*.zip
+qwep/
