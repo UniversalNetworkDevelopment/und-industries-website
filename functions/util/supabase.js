@@ -23,8 +23,9 @@ async function rest(env, path, init) {
     const detail = await res.text();
     throw new Error('Supabase REST ' + (init.method || 'GET') + ' ' + path + ' -> ' + res.status + ': ' + detail);
   }
-  if (res.status === 204) return null;
-  return res.json();
+  const text = await res.text();
+  if (!text) return null;
+  return JSON.parse(text);
 }
 
 // Authenticate the caller from their Supabase access token (the JWT the browser
