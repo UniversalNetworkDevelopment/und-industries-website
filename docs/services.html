@@ -17,7 +17,24 @@
     .svc-badge { background: #15151a; border: 1px solid rgba(255,255,255,.1); border-radius: 999px; padding: 6px 14px; font-size: .85rem; color: var(--text-muted); }
     .svc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; margin: 36px 0; }
     @media (min-width: 1080px) { .svc-grid { grid-template-columns: repeat(4, 1fr); } }
-    .svc-card { background: #15151a; border: 1px solid rgba(255,255,255,.08); border-radius: 16px; padding: 26px; display: flex; flex-direction: column; position: relative; }
+    
+    .svc-card {
+      background: rgba(21, 21, 26, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px;
+      padding: 26px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .svc-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(124,92,255,0.4);
+      box-shadow: 0 12px 40px rgba(124,92,255,0.15);
+    }
     .svc-card.featured { border-color: #7c5cff; box-shadow: 0 0 0 1px #7c5cff, 0 12px 40px rgba(124,92,255,.18); }
     .svc-card .tag { position: absolute; top: -11px; left: 50%; transform: translateX(-50%); background: #7c5cff; color: #fff; font-size: .72rem; font-weight: 700; padding: 4px 12px; border-radius: 999px; letter-spacing: .5px; }
     .svc-card h3 { margin: 0 0 4px; font-size: 1.25rem; }
@@ -67,6 +84,28 @@
     .svc-modal-err { color: #ff8a8a; font-size: .85rem; margin: 0 0 12px; }
     .svc-modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px; }
     @media (max-width: 520px) { .svc-modal-actions { flex-direction: column-reverse; } .svc-modal-actions .btn { width: 100%; } }
+    
+    /* Shopping Cart */
+    .cart-toggle { position: fixed; bottom: 24px; right: 24px; z-index: 900; background: #7c5cff; color: #fff; border: none; border-radius: 50%; width: 56px; height: 56px; box-shadow: 0 4px 20px rgba(124,92,255,.4); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform .2s; }
+    .cart-toggle:hover { transform: scale(1.05); }
+    .cart-toggle-badge { position: absolute; top: -2px; right: -2px; background: #ff395c; color: #fff; font-size: 0.75rem; font-weight: bold; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #08080c; }
+    .cart-panel { position: fixed; top: 0; right: -400px; width: 100%; max-width: 400px; height: 100vh; background: #15151a; border-left: 1px solid rgba(255,255,255,.08); z-index: 1100; box-shadow: -10px 0 30px rgba(0,0,0,.6); transition: right .3s ease; display: flex; flex-direction: column; }
+    .cart-panel.open { right: 0; }
+    .cart-header { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,.05); display: flex; justify-content: space-between; align-items: center; }
+    .cart-header h3 { margin: 0; font-size: 1.25rem; }
+    .cart-close { background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; }
+    .cart-close:hover { color: #fff; }
+    .cart-body { flex: 1; overflow-y: auto; padding: 24px; }
+    .cart-item { display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,.05); }
+    .cart-item-info h4 { margin: 0 0 4px; font-size: 0.95rem; }
+    .cart-item-info p { margin: 0; color: #4de8ff; font-size: 0.85rem; font-weight: bold; }
+    .cart-item-remove { background: none; border: none; color: #ff8a8a; font-size: 0.8rem; cursor: pointer; padding: 4px; }
+    .cart-item-remove:hover { text-decoration: underline; }
+    .cart-empty { text-align: center; color: var(--text-muted); padding: 40px 0; }
+    .cart-footer { padding: 24px; border-top: 1px solid rgba(255,255,255,.05); background: #121216; }
+    .cart-total-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-size: 1.2rem; font-weight: bold; }
+    .cart-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 1050; opacity: 0; visibility: hidden; transition: opacity .3s; }
+    .cart-overlay.open { opacity: 1; visibility: visible; }
   </style>
 </head>
 <body data-page="services">
@@ -121,7 +160,7 @@
             <li>Broken page, form, or link</li>
             <li>Mobile layout glitch</li>
           </ul>
-          <a class="btn btn-outline btn-full svc-paybtn" data-pay="quick" href="contact.html">Book Quick Fix</a>
+          <a class="btn btn-outline btn-full svc-paybtn" data-pay="quick" href="contact.html">Add to Cart</a>
         </div>
         <div class="svc-card featured">
           <span class="tag">MOST POPULAR</span>
@@ -133,7 +172,7 @@
             <li>Full once-over of your site</li>
             <li>Mobile + speed check</li>
           </ul>
-          <a class="btn btn-primary btn-full svc-paybtn" data-pay="bundle" href="contact.html">Book Fix Bundle</a>
+          <a class="btn btn-primary btn-full svc-paybtn" data-pay="bundle" href="contact.html">Add to Cart</a>
         </div>
         <div class="svc-card">
           <h3>Full Cleanup</h3>
@@ -144,7 +183,7 @@
             <li>Speed optimization</li>
             <li>SEO basics + working contact form</li>
           </ul>
-          <a class="btn btn-outline btn-full svc-paybtn" data-pay="cleanup" href="contact.html">Book Full Cleanup</a>
+          <a class="btn btn-outline btn-full svc-paybtn" data-pay="cleanup" href="contact.html">Add to Cart</a>
         </div>
       </div>
 
@@ -160,7 +199,7 @@
             <li>Mobile layout fixes</li>
             <li>Basic speed pass</li>
           </ul>
-          <a class="btn btn-outline btn-full svc-paybtn" data-pay="shopify_quick" href="contact.html">Book Shopify Cleanup</a>
+          <a class="btn btn-outline btn-full svc-paybtn" data-pay="shopify_quick" href="contact.html">Add to Cart</a>
         </div>
         <div class="svc-card featured">
           <span class="tag">AGENCY FAVORITE</span>
@@ -172,7 +211,7 @@
             <li>Search bar tuning</li>
             <li>Product tagging</li>
           </ul>
-          <a class="btn btn-primary btn-full svc-paybtn" data-pay="shopify_pro" href="contact.html">Book Professionalization</a>
+          <a class="btn btn-primary btn-full svc-paybtn" data-pay="shopify_pro" href="contact.html">Add to Cart</a>
         </div>
         <div class="svc-card">
           <h3>Dropshipping Integration</h3>
@@ -183,7 +222,7 @@
             <li>Order automation</li>
             <li>Testing</li>
           </ul>
-          <a class="btn btn-outline btn-full svc-paybtn" data-pay="shopify_drop" href="contact.html">Book Integration</a>
+          <a class="btn btn-outline btn-full svc-paybtn" data-pay="shopify_drop" href="contact.html">Add to Cart</a>
         </div>
         <div class="svc-card">
           <h3>Full Shopify Build</h3>
@@ -210,7 +249,7 @@
             <li>Email automation</li>
             <li>Basic triggers</li>
           </ul>
-          <a class="btn btn-outline btn-full svc-paybtn" data-pay="auto_start" href="contact.html">Book Starter Automation</a>
+          <a class="btn btn-outline btn-full svc-paybtn" data-pay="auto_start" href="contact.html">Add to Cart</a>
         </div>
         <div class="svc-card featured">
           <span class="tag">GROWTH</span>
@@ -222,7 +261,7 @@
             <li>Payment automation</li>
             <li>Data movement between apps</li>
           </ul>
-          <a class="btn btn-primary btn-full svc-paybtn" data-pay="auto_adv" href="contact.html">Book Advanced Automation</a>
+          <a class="btn btn-primary btn-full svc-paybtn" data-pay="auto_adv" href="contact.html">Add to Cart</a>
         </div>
         <div class="svc-card">
           <h3>Enterprise Automation</h3>
@@ -247,7 +286,7 @@
             <li>Keyword setup</li>
             <li>Structure &amp; headings</li>
           </ul>
-          <a class="btn btn-outline btn-full svc-paybtn" data-pay="seo" href="contact.html">Book SEO</a>
+          <a class="btn btn-outline btn-full svc-paybtn" data-pay="seo" href="contact.html">Add to Cart</a>
         </div>
         <div class="svc-card">
           <h3>Speed Optimization</h3>
@@ -275,7 +314,7 @@
             <li>Strategy Session</li>
             <li>Hourly at $50/hr</li>
           </ul>
-          <a class="btn btn-outline btn-full svc-paybtn" data-pay="consulting" href="contact.html">Book Consulting</a>
+          <a class="btn btn-outline btn-full svc-paybtn" data-pay="consulting" href="contact.html">Add to Cart</a>
         </div>
       </div>
 
@@ -340,6 +379,29 @@
   <!-- Booking gate (login + logged consent + double-buy guard + PayPal links) lives in
        services.js. It MUST be external: this page's CSP is script-src 'self' (no
        'unsafe-inline'), so an inline <script> here would be blocked by the browser. -->
+  <!-- Shopping Cart UI -->
+  <div class="cart-overlay" id="cart-overlay"></div>
+  <button type="button" class="cart-toggle" id="cart-toggle" aria-label="Open Cart">
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>
+    <span class="cart-toggle-badge" id="cart-badge" style="display:none">0</span>
+  </button>
+  <div class="cart-panel" id="cart-panel">
+    <div class="cart-header">
+      <h3>Your Cart</h3>
+      <button type="button" class="cart-close" id="cart-close" aria-label="Close Cart">&times;</button>
+    </div>
+    <div class="cart-body" id="cart-items">
+      <div class="cart-empty">Your cart is empty.</div>
+    </div>
+    <div class="cart-footer">
+      <div class="cart-total-row">
+        <span>Total</span>
+        <span id="cart-total">$0.00</span>
+      </div>
+      <button type="button" class="btn btn-primary btn-full" id="cart-checkout" disabled>Proceed to Checkout</button>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
   <script src="assets/js/main.js"></script>
   <script src="assets/js/services.js"></script>

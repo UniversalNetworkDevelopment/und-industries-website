@@ -2861,3 +2861,9 @@ button.sidebar-link {
 .svc-modal-check a { color: var(--accent-light); text-decoration: none; }
 .svc-modal-check a:hover { text-decoration: underline; }
 .svc-modal-check-warn { background: rgba(255, 68, 68, 0.05); border-color: rgba(255, 68, 68, 0.2); }
+
+
+/* Ticket Tab Badges */
+.bg-accent { background: rgba(124,58,237,0.2); color: #c4b5fd; padding: 2px 6px; border-radius: 4px; }
+.bg-success { background: rgba(16,185,129,0.2); color: #6ee7b7; padding: 2px 6px; border-radius: 4px; }
+.bg-error { background: rgba(239,68,68,0.2); color: #fca5a5; padding: 2px 6px; border-radius: 4px; }

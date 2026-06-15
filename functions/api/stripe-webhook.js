@@ -18,6 +18,7 @@ import {
   setProfilePlan,
   getUserIdByCustomer,
   logEvent,
+  markTicketPaid,
 } from '../util/supabase.js';
 import { verifyStripeSignature } from '../util/stripe.js';
 import { generateLicenseKey } from '../util/license.js';
@@ -142,6 +143,10 @@ async function handleCheckoutCompleted(env, session) {
     stripe_payment_intent: session.payment_intent || null,
     status: 'paid',
   });
+
+  if (md.ticket_number) {
+    await markTicketPaid(env, md.ticket_number, session.id);
+  }
 
   // One entitlement per item; software items also get a license key.
   for (let n = 0; n < items.length; n++) {

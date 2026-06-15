@@ -51,6 +51,8 @@
   };
   var activeRef = null;
   var currentKey = null;
+  var CART = [];
+  try { var savedCart = localStorage.getItem('svc_cart'); if (savedCart) CART = JSON.parse(savedCart); } catch(e) {}
 
   // Effective price + pay link for a package, honoring an applied referral.
   function effective(key) {
@@ -74,6 +76,9 @@
   var sb = (window.supabase && window.supabase.createClient)
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
     : null;
+
+  // initialize cart
+  renderCart();
 
   // footer year (the inline script that used to do this was removed for CSP)
   var yEl = document.querySelector('[data-year]');
@@ -99,6 +104,95 @@
       .then(function (r) { return r.text(); })
       .then(function (t) { var m = t.match(/(?:^|\n)ip=([^\n]+)/); return m ? m[1].trim() : null; })
       .catch(function () { return null; });
+  }
+
+  
+  // ---- cart ui logic ----
+  function saveCart() { try { localStorage.setItem('svc_cart', JSON.stringify(CART)); } catch(e) {} renderCart(); }
+  function renderCart() {
+    var cBadge = document.getElementById('cart-badge');
+    var cItems = document.getElementById('cart-items');
+    var cTotal = document.getElementById('cart-total');
+    var cCheck = document.getElementById('cart-checkout');
+    if (!cBadge || !cItems) return;
+    
+    var totalCents = 0;
+    cBadge.textContent = CART.length;
+    cBadge.style.display = CART.length > 0 ? 'flex' : 'none';
+    
+    if (CART.length === 0) {
+      cItems.innerHTML = '<div class="cart-empty">Your cart is empty.</div>';
+      cCheck.disabled = true;
+      cTotal.textContent = '$0.00';
+      return;
+    }
+    
+    var html = '';
+    for (var i = 0; i < CART.length; i++) {
+      var key = CART[i];
+      var eff = effective(key);
+      var svc = SERVICES[key];
+      if (!svc) continue;
+      totalCents += eff.cents;
+      html += '<div class="cart-item">' +
+                '<div class="cart-item-info">' +
+                  '<h4>' + esc(svc.name) + '</h4>' +
+                  '<p>' + esc(money(eff.cents)) + '</p>' +
+                '</div>' +
+                '<button type="button" class="cart-item-remove" data-idx="' + i + '">Remove</button>' +
+              '</div>';
+    }
+    cItems.innerHTML = html;
+    cTotal.textContent = money(totalCents);
+    cCheck.disabled = false;
+    
+    var rBtns = cItems.querySelectorAll('.cart-item-remove');
+    for (var j = 0; j < rBtns.length; j++) {
+      rBtns[j].addEventListener('click', function(e) {
+        var idx = parseInt(e.target.getAttribute('data-idx'), 10);
+        CART.splice(idx, 1);
+        saveCart();
+      });
+    }
+  }
+  
+  var cOverlay = document.getElementById('cart-overlay');
+  var cPanel = document.getElementById('cart-panel');
+  function toggleCart(forceOpen) {
+    if (!cPanel) return;
+    var isOpen = cPanel.classList.contains('open');
+    if (isOpen && forceOpen !== true) {
+      cPanel.classList.remove('open'); cOverlay.classList.remove('open'); document.body.style.overflow = '';
+    } else {
+      cPanel.classList.add('open'); cOverlay.classList.add('open'); document.body.style.overflow = 'hidden';
+      renderCart();
+    }
+  }
+  var cToggleBtn = document.getElementById('cart-toggle');
+  var cCloseBtn = document.getElementById('cart-close');
+  if (cToggleBtn) cToggleBtn.addEventListener('click', function() { toggleCart(); });
+  if (cCloseBtn) cCloseBtn.addEventListener('click', function() { toggleCart(false); });
+  if (cOverlay) cOverlay.addEventListener('click', function() { toggleCart(false); });
+  
+  var cCheckBtn = document.getElementById('cart-checkout');
+  if (cCheckBtn) {
+    cCheckBtn.addEventListener('click', function() {
+      if (CART.length === 0) return;
+      if (!sb) { window.location.href = 'contact.html'; return; }
+      sb.auth.getSession().then(function (sres) {
+        var session = sres && sres.data ? sres.data.session : null;
+        if (!session) { promptLoginForCart(); return; }
+        fetchRecent(session.user.id).then(function (recent) { showConsentForCart(recent); });
+      });
+    });
+  }
+  
+  function addToCart(key) {
+    var svc = SERVICES[key];
+    if (!svc) return;
+    CART.push(key);
+    saveCart();
+    toggleCart(true);
   }
 
   // ---- modal (built once, reused) ----
@@ -145,196 +239,158 @@
   function showErr(msg) { if (mErr) { mErr.textContent = msg || ''; mErr.hidden = !msg; } }
 
   // ---- login-required prompt ----
-  function promptLogin(svc, key) {
+  function promptLoginForCart() {
     buildModal();
-    mTitle.textContent = 'Create an account to book';
+    mTitle.textContent = 'Create an account to checkout';
     mBody.innerHTML =
-      '<p class="svc-modal-p">Booking <strong>' + esc(svc.name) + '</strong> (' + esc(money(svc.cents)) + ') needs a free account &mdash; that’s how we log your order and your agreement, and give you a ticket number you can track.</p>' +
+      '<p class="svc-modal-p">Checking out requires a free account &mdash; that’s how we log your order, your agreement, and give you a ticket number you can track.</p>' +
       '<p class="svc-modal-p svc-modal-muted">Already have one? Log in &mdash; you’ll come right back here to finish.</p>';
     showErr('');
     mGo.disabled = false;
     mGo.textContent = 'Create free account';
-    mGo.onclick = function () { rememberIntent(key); window.location.href = 'register.html?next=services.html'; };
+    mGo.onclick = function () { rememberIntent('cart'); window.location.href = 'register.html?next=services.html'; };
     mCancel.textContent = 'Log in';
-    mCancel.onclick = function () { rememberIntent(key); window.location.href = 'login.html?next=services.html'; };
+    mCancel.onclick = function () { rememberIntent('cart'); window.location.href = 'login.html?next=services.html'; };
     openModal();
   }
   function rememberIntent(key) { try { sessionStorage.setItem('svc_intent', key); } catch (e) {} }
 
   // ---- consent modal ----
-  function showConsent(svc, recent) {
+  
+  // ---- consent modal for cart ----
+  function showConsentForCart(recent) {
     buildModal();
-    var dupes  = recent.filter(function (t) { return t.service_slug === svc.slug; });
-    var others = recent.filter(function (t) { return t.service_slug !== svc.slug; });
-
-    var eff = effective(currentKey);
-    mTitle.textContent = 'Book ' + svc.name;
-    var html = '<div class="svc-modal-price">' + esc(money(eff.cents));
-    if (eff.code) html += ' <span style="font-size:.85rem;color:#39ff9d;font-weight:600">' + esc(eff.label || (Math.round(eff.off * 100) + '% off')) + ' · ' + esc(eff.code) + '</span>';
-    html += '</div>';
-
-    if (dupes.length) {
-      html += '<div class="svc-modal-warn"><strong>⚠ You already started this order.</strong><br>' +
-        esc(svc.name) + ' &mdash; order ' + esc(dupes[0].ticket_number) + ' on ' + esc(fmtDate(dupes[0].created_at)) + '. ' +
-        'Only continue if you truly mean to pay again. Duplicate payments are non-refundable.</div>';
-    } else if (others.length) {
-      html += '<div class="svc-modal-note">Heads up: you recently started an order for <strong>' +
-        esc(others[0].service_name || others[0].service_slug) + '</strong> (' + esc(fmtDate(others[0].created_at)) +
-        '). This is a different package &mdash; continue only if that’s intended.</div>';
-    }
+    var effList = CART.map(function(k) { return { key: k, svc: SERVICES[k], eff: effective(k) }; });
+    var totalCents = 0;
+    var html = '<ul class="svc-modal-terms" style="margin-bottom: 8px">';
+    effList.forEach(function(item) {
+      totalCents += item.eff.cents;
+      html += '<li style="padding-bottom: 4px"><strong>' + esc(item.svc.name) + '</strong> (' + esc(money(item.eff.cents)) + ')</li>';
+    });
+    html += '</ul>';
+    
+    mTitle.textContent = 'Complete Your Order';
+    html = '<div class="svc-modal-price">' + esc(money(totalCents)) + '</div>' + html;
 
     html += '<ul class="svc-modal-terms">' +
-      '<li><strong>What you get:</strong> a flat-rate ' + esc(svc.name) + ', delivered as described with before/after proof.</li>' +
       '<li><strong>Our guarantee:</strong> if we break something that was working, we fix it &mdash; free.</li>' +
       '<li>Fast turnaround, U.S.-based developer, no surprise charges.</li>' +
       '</ul>';
 
-    // The legal acknowledgment lives here (calm, standard wording) — the full,
-    // detailed policy is one click away. Florida governing law is bound at consent.
     html += '<label class="svc-modal-check"><input type="checkbox" id="svc-agree"> <span>' +
       'I agree to the <a href="terms.html" target="_blank" rel="noopener">Terms</a>, ' +
       '<a href="privacy.html" target="_blank" rel="noopener">Privacy</a>, and ' +
       '<a href="refund.html" target="_blank" rel="noopener">Refund Policy</a> — including that this service is ' +
       'governed by the law of the State of Florida and is non-refundable once work begins.</span></label>';
 
-    if (dupes.length) {
-      html += '<label class="svc-modal-check svc-modal-check-warn"><input type="checkbox" id="svc-dup"> <span>' +
-        'I know I already placed an order for ' + esc(svc.name) + ' and I am <strong>intentionally paying again</strong>. ' +
-        'I understand duplicate payments are non-refundable.</span></label>';
-    }
-
     mBody.innerHTML = html;
     showErr('');
     mCancel.textContent = 'Cancel';
     mCancel.onclick = closeModal;
-    mGo.textContent = 'Agree & Continue to Checkout';
+    mGo.textContent = 'Agree & Checkout';
 
     var agree = mBody.querySelector('#svc-agree');
-    var dup   = mBody.querySelector('#svc-dup');
-    function refresh() { mGo.disabled = !(agree.checked && (!dup || dup.checked)); }
-    agree.addEventListener('change', refresh);
-    if (dup) dup.addEventListener('change', refresh);
-    refresh();
-    mGo.onclick = function () { confirmAndPay(svc, recent, dupes); };
+    function refresh() { mGo.disabled = !agree.checked; }
+    if (agree) {
+      agree.addEventListener('change', refresh);
+      refresh();
+    }
+    mGo.onclick = function () { confirmAndPayCart(effList, totalCents, recent); };
     openModal();
   }
 
-  // ---- write the proof, then send to PayPal (fail closed) ----
-  function confirmAndPay(svc, recent, dupes) {
+  function confirmAndPayCart(effList, totalCents, recent) {
     mGo.disabled = true;
     mGo.textContent = 'Recording your agreement…';
     showErr('');
 
     sb.auth.getSession().then(function (sres) {
       var session = sres && sres.data ? sres.data.session : null;
-      if (!session) {
-        showErr('Your session expired — please log in again.');
-        mGo.disabled = false; mGo.textContent = 'Agree & Continue to PayPal';
-        return;
-      }
+      if (!session) { showErr('Your session expired — please log in again.'); mGo.disabled = false; mGo.textContent = 'Agree & Checkout'; return; }
       var user = session.user;
-      var eff = effective(currentKey);
 
-      function recordAndGo() {
-        clientIp().then(function (ip) {
-          var ua = navigator.userAgent;
-          var consentRow = {
-            user_id: user.id,
-            doc: 'service:' + svc.slug,
-            version: TERMS_VERSION,
-            detail: {
-              service_name: svc.name,
-              amount_cents: eff.cents,
-              referral_code: eff.code,
-              accepted: ['terms', 'privacy', 'refund'],
-              non_refundable_ack: true,
-              payment_final_ack: true,
-              duplicate_ack: dupes.length > 0,
-              duplicate_of: dupes.map(function (t) { return t.ticket_number; }),
-              recent_orders: recent.map(function (t) { return { ticket: t.ticket_number, slug: t.service_slug, at: t.created_at }; }),
-              policy_shown: 'All sales final — no refunds. If we break something that was working we fix it free. If we cannot deliver the agreed fix at all, refund for undelivered work. Payment is final once submitted.',
-              page: 'services'
-            },
-            ip: ip,
-            user_agent: ua
-          };
+      clientIp().then(function (ip) {
+        var ua = navigator.userAgent;
+        var consentRow = {
+          user_id: user.id,
+          doc: 'cart_checkout',
+          version: TERMS_VERSION,
+          detail: {
+            items: effList.map(function(item) { return { slug: item.svc.slug, name: item.svc.name, cents: item.eff.cents }; }),
+            amount_cents: totalCents,
+            accepted: ['terms', 'privacy', 'refund'],
+            non_refundable_ack: true,
+            payment_final_ack: true,
+            page: 'services'
+          },
+          ip: ip,
+          user_agent: ua
+        };
 
-          sb.from('tos_consents').insert(consentRow).select('id').single().then(function (cIns) {
-            if (cIns.error || !cIns.data) throw new Error(cIns.error ? cIns.error.message : 'consent insert failed');
-            var consentId = cIns.data.id;
-            return sb.from('service_tickets').insert({
+        sb.from('tos_consents').insert(consentRow).select('id').single().then(function (cIns) {
+          if (cIns.error || !cIns.data) throw new Error(cIns.error ? cIns.error.message : 'consent insert failed');
+          
+          // Insert multiple tickets (one for each item in the cart)
+          var ticketRows = effList.map(function(item) {
+            return {
               user_id: user.id,
-              service_slug: svc.slug,
-              service_name: svc.name,
+              service_slug: item.svc.slug,
+              service_name: item.svc.name,
               status: 'checkout_started',
-              amount_cents: eff.cents,
-              consent_id: consentId,
-              detail: { source: 'services_page', duplicate_ack: dupes.length > 0, referral_code: eff.code }
-            }).select('ticket_number').single();
-          }).then(function (tIns) {
-            if (tIns.error || !tIns.data) throw new Error(tIns.error ? tIns.error.message : 'ticket insert failed');
-            var ticket = tIns.data.ticket_number;
-            // Record the redemption — one per (account, code). The DB unique
-            // constraint is the real backstop against reuse; this is best-effort.
-            if (eff.code) {
-              sb.from('referral_redemptions').insert({ user_id: user.id, code: eff.code, ticket_number: ticket }).then(function () {}, function () {});
-            }
-            mBody.innerHTML = '<p class="svc-modal-p"><strong>Order ' + esc(ticket) + ' recorded.</strong> ' +
-              'Generating secure checkout link…</p>';
-            mGo.style.display = 'none';
-            mCancel.style.display = 'none';
-            
-            // Call the SDK to generate the Stripe Checkout Session
-            sb.auth.getSession().then(function(s) {
-              var tkn = s && s.data && s.data.session ? s.data.session.access_token : '';
-              fetch('/api/create-checkout-session', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tkn },
-                body: JSON.stringify({ slug: svc.slug })
-              })
-              .then(function(r) { return r.json(); })
-              .then(function(res) {
-                if (res.url) {
-                  window.location.href = res.url;
-                } else {
-                  showErr('Error starting checkout: ' + (res.error || 'Unknown error'));
-                  mGo.disabled = false; mGo.textContent = 'Agree & Continue to Checkout';
-                  mGo.style.display = ''; mCancel.style.display = '';
-                }
-              })
-              .catch(function() {
-                showErr('Network error starting checkout. Please try again.');
-                mGo.disabled = false; mGo.textContent = 'Agree & Continue to Checkout';
-                mGo.style.display = ''; mCancel.style.display = '';
-              });
-            });
-          }).catch(function () {
-            // Fail CLOSED: no proof recorded => do not send them to pay.
-            showErr('We couldn’t record your agreement, so we did not send you to pay. Please try again, or contact us if it keeps happening.');
-            mGo.disabled = false; mGo.textContent = 'Agree & Continue to Checkout';
+              amount_cents: item.eff.cents,
+              consent_id: cIns.data.id,
+              detail: { source: 'cart_checkout' }
+            };
           });
+          
+          return sb.from('service_tickets').insert(ticketRows).select('ticket_number');
+        }).then(function(tIns) {
+          if (tIns.error || !tIns.data) throw new Error(tIns.error ? tIns.error.message : 'ticket insert failed');
+          var ticketsStr = tIns.data.map(function(r) { return r.ticket_number; }).join(',');
+          
+          mBody.innerHTML = '<p class="svc-modal-p"><strong>Order recorded.</strong> Generating secure checkout link…</p>';
+          mGo.style.display = 'none'; mCancel.style.display = 'none';
+          
+          var tkn = session.access_token;
+          var payloadItems = effList.map(function(item) { return { slug: item.svc.slug, quantity: 1 }; });
+          
+          fetch('/api/create-checkout-session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tkn },
+            body: JSON.stringify({ items: payloadItems, ticket: ticketsStr })
+          })
+          .then(function(r) {
+            if (!r.ok) {
+              return r.text().then(function(text) {
+                try {
+                  var json = JSON.parse(text);
+                  throw new Error(json.error || 'Server error');
+                } catch(e) {
+                  throw new Error('Server error (' + r.status + '): ' + text.substring(0, 100));
+                }
+              });
+            }
+            return r.json();
+          })
+          .then(function(res) {
+            if (res.url) {
+              CART = []; saveCart(); // Clear cart on success
+              window.location.href = res.url;
+            } else {
+              throw new Error(res.error || 'No URL returned');
+            }
+          })
+          .catch(function(err) {
+            console.error(err);
+            showErr('Checkout error: ' + err.message);
+            mGo.disabled = false; mGo.textContent = 'Agree & Checkout';
+            mGo.style.display = ''; mCancel.style.display = '';
+          });
+        }).catch(function (err) {
+          showErr('We couldn’t record your agreement: ' + err.message);
+          mGo.disabled = false; mGo.textContent = 'Agree & Checkout';
         });
-      }
-
-      // Single-use per account: if this code was already redeemed by this user,
-      // drop the discount (full price) — they'd need a different code to save again.
-      if (eff.code) {
-        sb.from('referral_redemptions').select('id').eq('user_id', user.id).eq('code', eff.code).maybeSingle().then(function (rr) {
-          if (rr && rr.data) {
-            var usedCode = eff.code;
-            activeRef = null;
-            try { sessionStorage.removeItem('svc_ref'); } catch (e) {}
-            eff = effective(currentKey); // recompute at full price
-            var note = document.getElementById('ref-note');
-            if (note) { note.textContent = 'Code ' + usedCode + ' was already used on your account — booking at full price.'; note.className = 'ref-note ref-bad'; }
-            var priceEl = mBody.querySelector('.svc-modal-price');
-            if (priceEl) priceEl.textContent = money(eff.cents);
-          }
-          recordAndGo();
-        }, function () { recordAndGo(); });
-      } else {
-        recordAndGo();
-      }
+      });
     });
   }
 
@@ -354,15 +410,7 @@
 
   // ---- click handler ----
   function book(key) {
-    currentKey = key;
-    var svc = SERVICES[key];
-    if (!svc) return;
-    if (!sb) { window.location.href = 'contact.html'; return; } // graceful fallback
-    sb.auth.getSession().then(function (sres) {
-      var session = sres && sres.data ? sres.data.session : null;
-      if (!session) { promptLogin(svc, key); return; }
-      fetchRecent(session.user.id).then(function (recent) { showConsent(svc, recent); });
-    });
+    addToCart(key);
   }
 
   var btns = document.querySelectorAll('[data-pay]');

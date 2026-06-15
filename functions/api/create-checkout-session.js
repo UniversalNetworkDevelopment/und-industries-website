@@ -33,15 +33,16 @@ export async function onRequestPost(context) {
     }
   }
 
-  // 1. Authenticate from the Supabase JWT — never trust a client-sent user id.
-  const authHeader = request.headers.get('Authorization') || '';
-  const token = authHeader.indexOf('Bearer ') === 0 ? authHeader.slice(7) : '';
-  const user = await getUserFromToken(env, token);
-  if (!user || !user.id) {
-    return json({ error: 'You must be signed in to check out.' }, 401, request, env);
-  }
+  let user = null;
 
   try {
+    // 1. Authenticate from the Supabase JWT — never trust a client-sent user id.
+    const authHeader = request.headers.get('Authorization') || '';
+    const token = authHeader.indexOf('Bearer ') === 0 ? authHeader.slice(7) : '';
+    user = await getUserFromToken(env, token);
+    if (!user || !user.id) {
+      return json({ error: 'You must be signed in to check out.' }, 401, request, env);
+    }
     let payload;
     try {
       payload = await request.json();
@@ -128,11 +129,13 @@ export async function onRequestPost(context) {
         metadata: {
           supabase_user_id: user.id,
           kind: 'one_time',
+          ticket_number: payload.ticket || '',
           // Compact item list for the webhook to fulfil each line.
           items: JSON.stringify(metaItems),
         },
         payment_intent_data: {
           metadata: { supabase_user_id: user.id },
+          setup_future_usage: 'off_session',
         },
         automatic_tax: { enabled: taxEnabled },
         allow_promotion_codes: true,

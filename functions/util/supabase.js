@@ -129,6 +129,20 @@ export async function recordPurchase(env, row) {
   });
 }
 
+export async function markTicketPaid(env, ticketNumber, stripeSessionId) {
+  // ticketNumber might be a comma-separated list like "UND-123,UND-124"
+  // PostgREST in. syntax expects values in parentheses: in.(UND-123,UND-124)
+  const filter = ticketNumber.indexOf(',') > -1 
+    ? 'in.(' + encodeURIComponent(ticketNumber) + ')'
+    : 'eq.' + encodeURIComponent(ticketNumber);
+    
+  await rest(env, 'service_tickets?ticket_number=' + filter, {
+    method: 'PATCH',
+    headers: adminHeaders(env, { Prefer: 'return=minimal' }),
+    body: JSON.stringify({ status: 'paid', stripe_session_id: stripeSessionId }),
+  });
+}
+
 export async function grantEntitlement(env, row) {
   // Upsert on (user_id, product_id) => re-granting the same product is a no-op
   // update rather than a duplicate-key error.
