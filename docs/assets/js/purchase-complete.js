@@ -29,6 +29,9 @@
 
   var sessionId = new URLSearchParams(location.search).get('session_id');
 
+  // Clear the cart now that the purchase is complete
+  try { localStorage.removeItem('svc_cart'); } catch(e) {}
+
   if (!sessionId) {
     statusEl.innerHTML = '<p class="pc-note">Your payment was received. View your orders and any license keys on your Dashboard.</p>';
     return;

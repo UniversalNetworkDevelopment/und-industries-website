@@ -378,7 +378,6 @@
           })
           .then(function(res) {
             if (res.url) {
-              CART = []; saveCart(); // Clear cart on success
               window.location.href = res.url;
             } else {
               throw new Error(res.error || 'No URL returned');
