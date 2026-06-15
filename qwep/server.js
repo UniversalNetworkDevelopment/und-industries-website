@@ -50,18 +50,33 @@ app.post('/api/jobs', async (req, res) => {
         });
 });
 
+const { runWebsiteJob } = require('./services/website-engine');
+
 async function executePipeline(job) {
     try {
         console.log(`[QWEP] Starting execution for ${job.ticket_id}`);
         db.run(`UPDATE jobs SET status = 'in_progress' WHERE ticket_id = ?`, [job.ticket_id]);
         
-        // 1. GitHub Repo & Build
-        const repoUrl = await githubManager.createRepoAndPush(job);
+        // Formulate the full job packet
+        const jobPacket = {
+            job_id: Date.now().toString(),
+            ticket_id: job.ticket_id,
+            service_type: job.service_type || 'website',
+            target_repo: job.target_repo_name || 'web-builder-ai',
+            intake: job.intake_data || {},
+            mode: job.ticket_type || 'live'
+        };
+
+        if (jobPacket.service_type === 'website') {
+            await runWebsiteJob(jobPacket);
+        } else {
+            console.log(`[QWEP] Unsupported service_type for now: ${jobPacket.service_type}`);
+        }
         
-        // 2. Generate Evidence Pack
-        const evidencePath = await evidenceCompiler.generatePack(job.ticket_id, repoUrl);
+        // Generate Evidence Pack (simulating repoUrl for now since runWebsiteJob doesn't return it yet)
+        const evidencePath = await evidenceCompiler.generatePack(job.ticket_id, `https://github.com/${process.env.GITHUB_ORG}/${jobPacket.target_repo}`);
         
-        // 3. Sync back to Supabase
+        // Sync back to Supabase
         await supabaseWriteback.markComplete(job.ticket_id, evidencePath);
         
         db.run(`UPDATE jobs SET status = 'completed' WHERE ticket_id = ?`, [job.ticket_id]);
