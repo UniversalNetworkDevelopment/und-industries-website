@@ -21,13 +21,13 @@ const ticketSubscription = supabase
         const oldRecord = payload.old;
 
         // Trigger condition 1: Real ticket paid
-        const isRealPaid = newRecord.ticket_type === 'real' && newRecord.status === 'paid' && oldRecord.status !== 'paid';
+        const isRealPaid = newRecord.service_slug !== 'full_website_build_test' && newRecord.status === 'paid' && oldRecord.status !== 'paid';
         
         // Trigger condition 2: Owner test ticket marked ready
-        const isTestReady = newRecord.ticket_type === 'test' && newRecord.status === 'ready' && oldRecord.status !== 'ready';
+        const isTestReady = newRecord.service_slug === 'full_website_build_test' && newRecord.status === 'ready' && oldRecord.status !== 'ready';
 
         if (isRealPaid || isTestReady) {
-            console.log(`\n[ALERT] Job Detected! ID: ${newRecord.ticket_number} | Type: ${newRecord.ticket_type}`);
+            console.log(`\n[ALERT] Job Detected! ID: ${newRecord.ticket_number} | Type: ${newRecord.service_slug}`);
             handleNewJob(newRecord);
         }
     })
@@ -52,7 +52,7 @@ async function handleNewJob(ticket) {
     
     const jobPacket = {
         ticket_id: ticket.ticket_number,
-        ticket_type: ticket.ticket_type,
+        ticket_type: ticket.service_slug,
         user_id: ticket.user_id,
         service_type: ticket.service_slug,
         intake_data_ref: ticket.intake_data,
@@ -75,7 +75,7 @@ async function handleNewJob(ticket) {
             body: JSON.stringify({
                 ticket_id: ticket.ticket_number,
                 target_system: 'Supabase_Realtime',
-                action: `Claimed ${ticket.ticket_type} ticket`,
+                action: `Claimed ${ticket.service_slug} ticket`,
                 process_id: 'qwep_relay'
             })
         });
