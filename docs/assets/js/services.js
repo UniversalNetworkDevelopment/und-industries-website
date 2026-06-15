@@ -191,16 +191,16 @@
 
     // The legal acknowledgment lives here (calm, standard wording) — the full,
     // detailed policy is one click away. Florida governing law is bound at consent.
-    html += '<label class="svc-modal-check"><input type="checkbox" id="svc-agree"> ' +
+    html += '<label class="svc-modal-check"><input type="checkbox" id="svc-agree"> <span>' +
       'I agree to the <a href="terms.html" target="_blank" rel="noopener">Terms</a>, ' +
       '<a href="privacy.html" target="_blank" rel="noopener">Privacy</a>, and ' +
       '<a href="refund.html" target="_blank" rel="noopener">Refund Policy</a> — including that this service is ' +
-      'governed by the law of the State of Florida and is non-refundable once work begins.</label>';
+      'governed by the law of the State of Florida and is non-refundable once work begins.</span></label>';
 
     if (dupes.length) {
-      html += '<label class="svc-modal-check svc-modal-check-warn"><input type="checkbox" id="svc-dup"> ' +
+      html += '<label class="svc-modal-check svc-modal-check-warn"><input type="checkbox" id="svc-dup"> <span>' +
         'I know I already placed an order for ' + esc(svc.name) + ' and I am <strong>intentionally paying again</strong>. ' +
-        'I understand duplicate payments are non-refundable.</label>';
+        'I understand duplicate payments are non-refundable.</span></label>';
     }
 
     mBody.innerHTML = html;
