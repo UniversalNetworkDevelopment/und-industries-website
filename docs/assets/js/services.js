@@ -178,6 +178,7 @@
   if (cCheckBtn) {
     cCheckBtn.addEventListener('click', function() {
       if (CART.length === 0) return;
+      if (typeof toggleCart === 'function') toggleCart(false); // Close the cart so modal takes focus
       if (!sb) { window.location.href = 'contact.html'; return; }
       sb.auth.getSession().then(function (sres) {
         var session = sres && sres.data ? sres.data.session : null;
