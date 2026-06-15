@@ -14,18 +14,20 @@ async function createRepoAndPush(job) {
         const repoName = job.target_repo_name || `${job.ticket_id}-deployment`;
         
         // 1. Create Private Repo
-        console.log(`[GITHUB] Creating private repo: ${repoName}`);
-        const { data: repo } = await octokit.rest.repos.createInOrg({
-            org: ORG_NAME,
+        console.log(`[GITHUB] Creating private repo: ${repoName} for authenticated user`);
+        const { data: repo } = await octokit.rest.repos.createForAuthenticatedUser({
             name: repoName,
             private: true,
             auto_init: true
         });
+        
+        // Ensure we use the correct owner for branch protection
+        const owner = repo.owner.login;
 
         // 2. Enforce Branch Protections
         console.log(`[GITHUB] Enforcing branch protections on main`);
         await octokit.rest.repos.updateBranchProtection({
-            owner: ORG_NAME,
+            owner: owner,
             repo: repoName,
             branch: 'main',
             required_status_checks: null,
