@@ -1,5 +1,5 @@
 # FULFILLMENT SYSTEM SPECIFICATION
-**Version:** 2.0.0 (Airtight Legal & Technical Spec)
+**Version:** 2.1.0 (Airtight Legal & Technical Spec - Nexus Integrated)
 **Target Engine:** Qwep (Sovereign Local AI)
 
 ## 1. EVENT BRIDGE (Supabase → Qwep)
@@ -196,3 +196,21 @@ Qwep exposes endpoints for the local dashboard to read job states.
   "access_status": "active"
 }
 ```
+
+---
+
+## 7. NEXUS INTEGRATION
+
+To ensure zero cross-contamination and maximum security, the integration between Nexus, Supabase, and Qwep strictly adheres to the following rules:
+
+- **Nexus is a pure frontend + dashboard layer.** It provides the UI for the owner to view tickets and the UI for clients to interact. It has NO internal database state of its own.
+- **Supabase is the single source of truth** for tickets, jobs, changes, and evidence. 
+- **Qwep only interacts with Supabase.** Qwep never directly connects to the Nexus container or Stripe. Qwep acts purely as a worker that pulls work from Supabase and pushes results back to Supabase.
+- **Qwep writes all status updates, logs, and evidence back into Supabase** where it is permanently stored.
+- **Nexus only reads from Supabase.** Nexus never stores, intercepts, or processes credentials. 
+- **All access credentials are stored encrypted in Qwep’s local store (QwepStore).** They are never placed into Supabase and never exposed to Nexus.
+
+### Nexus Query Logic
+- **Job Status:** Nexus queries `Supabase.service_tickets` directly for real-time status updates (`in_progress`, `awaiting_review`, etc.).
+- **Evidence Packs:** Nexus queries `Supabase` for the `Change Summary` markdown and snapshot references uploaded by Qwep at the end of the job.
+- **Credential Handling:** If a client submits credentials via the Nexus intake portal, the payload is immediately encrypted via public key on the frontend, sent to Supabase `secure_intakes`, and then pulled down and decrypted locally by Qwep. Nexus never holds the unencrypted string.
