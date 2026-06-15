@@ -363,14 +363,15 @@
           .then(function(r) {
             if (!r.ok) {
               return r.text().then(function(text) {
+                var msg = '';
                 try {
                   var json = JSON.parse(text);
-                  var msg = json.error || 'Server error';
+                  msg = json.error || 'Server error';
                   if (json.details) msg += ' (' + json.details + ')';
-                  throw new Error(msg);
                 } catch(e) {
-                  throw new Error('Server error (' + r.status + '): ' + text);
+                  msg = 'Server error (' + r.status + '): ' + text;
                 }
+                throw new Error(msg);
               });
             }
             return r.json();
