@@ -158,6 +158,6 @@ export async function onRequestPost(context) {
       device_fingerprint: request.headers.get('user-agent') || 'unknown',
       detail: err.message,
     });
-    return json({ error: 'Could not process checkout request. Please contact support.' }, 502, request, env);
+    return json({ error: 'Could not process checkout request. Please contact support.', details: err.message }, 400, request, env);
   }
 }

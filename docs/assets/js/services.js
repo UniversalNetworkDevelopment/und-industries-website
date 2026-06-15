@@ -365,9 +365,11 @@
               return r.text().then(function(text) {
                 try {
                   var json = JSON.parse(text);
-                  throw new Error(json.error || 'Server error');
+                  var msg = json.error || 'Server error';
+                  if (json.details) msg += ' (' + json.details + ')';
+                  throw new Error(msg);
                 } catch(e) {
-                  throw new Error('Server error (' + r.status + '): ' + text.substring(0, 100));
+                  throw new Error('Server error (' + r.status + '): ' + text);
                 }
               });
             }
