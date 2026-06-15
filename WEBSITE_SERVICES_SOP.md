@@ -147,3 +147,13 @@ When `awaiting_review` is confirmed by client (or auto-approves after 72 hours):
 1. Job moves to `completed`.
 2. Qwep deletes encrypted credentials from memory.
 3. Qwep sends final email: "Your project is complete. Please revoke our collaborator/staff access."
+
+
+## ?? QWEP MANDATORY QUALITY ENFORCEMENT (POST-QA)
+
+1. **Atomic Commits:** Qwep MUST split commits by concern (e.g., 'Scaffold HTML', 'Apply CSS styles', 'Add JS interactions'). No single massive 'Initial Build' commits.
+2. **Premium Easing:** All CSS transitions and animations MUST use cubic-bezier(0.25, 1, 0.5, 1) or similar premium easing curves. Never use linear or basic ease.
+3. **IntersectionObserver:** Scroll animations MUST use IntersectionObserver. Do NOT attach raw scroll event listeners.
+4. **Z-Index Discipline:** Always ensure mobile navigation and headers have explicit, high z-indexes to prevent background overlaps.
+5. **Lazy Loading:** All images below the fold MUST have loading="lazy"".
+
