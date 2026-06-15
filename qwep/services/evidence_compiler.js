@@ -10,7 +10,7 @@ async function generatePack(ticketId, repoUrl) {
         
         const zipPath = path.join(outputDir, `${ticketId}_evidence.zip`);
         const output = fs.createWriteStream(zipPath);
-        const archive = archiver.create('zip', { zlib: { level: 9 } });
+        const archive = new archiver.ZipArchive({ zlib: { level: 9 } });
 
         output.on('close', () => {
             // Generate SHA-256 Hash
