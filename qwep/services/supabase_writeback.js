@@ -7,7 +7,7 @@ const supabase = process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_K
     ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
     : null;
 
-async function markComplete(ticketId, evidencePath) {
+async function markComplete(ticketId, evidencePath, deployedUrl) {
     if (!supabase) {
         console.warn('[SUPABASE WRITEBACK] No keys found. Simulating completion writeback.');
         return;
@@ -29,7 +29,8 @@ async function markComplete(ticketId, evidencePath) {
             .from('service_tickets')
             .update({ 
                 status: 'complete',
-                completed_at: new Date().toISOString()
+                completed_at: new Date().toISOString(),
+                deployed_url: deployedUrl
             })
             .eq('ticket_number', ticketId);
 

@@ -295,6 +295,9 @@ async function runWebsiteJob(jobPacket) {
   pushRepo(repoDir);
 
   console.log(`[Qwep][Website] Job ${job_id} completed for repo ${target_repo}`);
+
+  const deployedUrl = `https://${GITHUB_ORG}.github.io/${target_repo}/`;
+  return deployedUrl;
 }
 
 module.exports = { runWebsiteJob };
