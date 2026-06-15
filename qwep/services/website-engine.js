@@ -73,182 +73,56 @@ function cloneRepo(repoName) {
   return targetDir;
 }
 
-// 3. Scaffold HTML/CSS/JS (basic UND-style site)
-function scaffoldSite(repoDir, intake) {
-  const srcDir = repoDir;
+// 🔥 Home Brain: generate site from intake via local LLM
+async function generateDynamicSite(intake, serviceType = "website") {
+  const { qwepLLM, pickModel } = require("./llm-router.js");
+  const model = pickModel(serviceType);
 
-  // index.html
-  const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="Content-Security-Policy" content="frame-ancestors *;" />
-  <title>${intake.site_name || "UND Site"}</title>
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-  <header class="hero">
-    <h1>${intake.site_name || "UND Industries"}</h1>
-    <p>Premium digital experiences, built by Qwep.</p>
-  </header>
+  const prompt = `
+You are Qwep, the UND Industries Website Engine.
 
-  <main>
-    <section id="home" class="section">
-      <h2>Home</h2>
-      <p>Welcome to your new site. This was built automatically by Qwep.</p>
-    </section>
+Given this intake JSON, generate:
+- index.html
+- styles.css
+- main.js
 
-    <section id="about" class="section">
-      <h2>About</h2>
-      <p>Tell your story here. Artist, founder, brand—this section is yours.</p>
-    </section>
+Intake:
+${JSON.stringify(intake, null, 2)}
 
-    <section id="music" class="section">
-      <h2>Music</h2>
-      <p>Embed your tracks, playlists, and visuals here.</p>
-    </section>
+Requirements:
+- Premium UND dark cinematic style.
+- Responsive layout.
+- Smooth section reveal animations.
+- Sections: home, about, services/music, contact.
+- Contact form with basic front-end validation.
 
-    <section id="contact" class="section">
-      <h2>Contact</h2>
-      <form id="contact-form">
-        <input type="text" placeholder="Your name" />
-        <input type="email" placeholder="Your email" />
-        <textarea placeholder="Your message"></textarea>
-        <button type="submit">Send</button>
-      </form>
-    </section>
-  </main>
-
-  <script src="main.js"></script>
-</body>
-</html>
+Return a JSON object with keys: html, css, js.
 `;
 
-  // styles.css
-  const css = `* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+  console.log(`[Qwep][HomeBrain] Using model: ${model}`);
+  const raw = await qwepLLM(prompt, model);
 
-body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #050509;
-  color: #f5f5f5;
-}
-
-.hero {
-  padding: 4rem 2rem;
-  text-align: center;
-  background: radial-gradient(circle at top, #7b5cff, #050509);
-}
-
-.hero h1 {
-  font-size: 3rem;
-  margin-bottom: 0.5rem;
-}
-
-.hero p {
-  opacity: 0.8;
-}
-
-.section {
-  padding: 3rem 2rem;
-  max-width: 900px;
-  margin: 0 auto;
-}
-
-.section h2 {
-  font-size: 2rem;
-  margin-bottom: 1rem;
-}
-
-.section p {
-  line-height: 1.6;
-  opacity: 0.9;
-}
-
-#contact-form {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  margin-top: 1rem;
-}
-
-#contact-form input,
-#contact-form textarea {
-  padding: 0.75rem;
-  border-radius: 6px;
-  border: 1px solid #333;
-  background: #0b0b10;
-  color: #f5f5f5;
-}
-
-#contact-form button {
-  padding: 0.75rem;
-  border-radius: 6px;
-  border: none;
-  background: #7b5cff;
-  color: #050509;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-#contact-form button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 20px rgba(123, 92, 255, 0.4);
-}
-`;
-
-  // main.js
-  const js = `document.addEventListener("DOMContentLoaded", () => {
-  const sections = document.querySelectorAll(".section");
-
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add("visible");
-        }
-      });
-    },
-    { threshold: 0.2 }
-  );
-
-  sections.forEach((section) => {
-    section.classList.add("hidden");
-    observer.observe(section);
-  });
-
-  const form = document.getElementById("contact-form");
-  if (form) {
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      alert("Message captured. Backend wiring comes next.");
-    });
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (e) {
+    console.error("[Qwep][HomeBrain] Failed to parse LLM JSON, falling back.");
+    throw e;
   }
-});
-`;
 
-  const animCss = `
-.section.hidden {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.4s ease, transform 0.4s ease;
+  return parsed;
 }
 
-.section.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-`;
+async function scaffoldSite(repoDir, intake) {
+  console.log("[Qwep][Website] Generating site via Home Brain...");
 
-  fs.writeFileSync(path.join(srcDir, "index.html"), html, "utf8");
-  fs.writeFileSync(path.join(srcDir, "styles.css"), css + animCss, "utf8");
-  fs.writeFileSync(path.join(srcDir, "main.js"), js, "utf8");
+  const { html, css, js } = await generateDynamicSite(intake, "website");
 
-  console.log("[Qwep][Website] Scaffolded HTML/CSS/JS");
+  fs.writeFileSync(path.join(repoDir, "index.html"), html, "utf8");
+  fs.writeFileSync(path.join(repoDir, "styles.css"), css, "utf8");
+  fs.writeFileSync(path.join(repoDir, "main.js"), js, "utf8");
+
+  console.log("[Qwep][Website] Scaffolded HTML/CSS/JS from Home Brain");
 }
 
 // 4. Atomic commits
