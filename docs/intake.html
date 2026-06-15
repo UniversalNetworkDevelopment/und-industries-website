@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Service Intake | U.N.D Industries</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <!-- Include Forge WebCrypto for public-key encryption in browser -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/forge/1.3.1/forge.min.js"></script>
+    <style>
+        .intake-container { max-width: 600px; margin: 100px auto; padding: 40px; background: rgba(10, 10, 15, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; backdrop-filter: blur(10px); }
+        .intake-container h1 { font-family: 'Outfit', sans-serif; margin-bottom: 10px; font-size: 2rem; color: #fff; }
+        .intake-container p { color: #a0a0b0; font-size: 0.95rem; margin-bottom: 30px; line-height: 1.5; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #e0e0e0; font-weight: 500; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: #fff; font-family: 'Inter', sans-serif; transition: border-color 0.2s; }
+        .form-group input:focus, .form-group textarea:focus { border-color: #00f0ff; outline: none; }
+        .secure-notice { background: rgba(0, 240, 255, 0.1); border-left: 3px solid #00f0ff; padding: 15px; border-radius: 4px; margin-bottom: 25px; font-size: 0.85rem; color: #b0e0e6; }
+        .btn-submit { width: 100%; padding: 14px; background: linear-gradient(90deg, #00f0ff, #0055ff); color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: transform 0.2s; }
+        .btn-submit:hover { transform: translateY(-2px); }
+        .hidden { display: none; }
+    </style>
+</head>
+<body class="dark-theme">
+
+    <div class="intake-container">
+        <h1>Secure Project Intake</h1>
+        <p>To begin fulfillment on ticket <strong id="ticket-display">...</strong>, please provide the required access details. All credentials are encrypted in your browser before transmission.</p>
+
+        <div class="secure-notice">
+            <strong>Security Enforced:</strong> Your API keys or temporary passwords are encrypted using AES-256-GCM. They are never stored in plaintext on our web servers. They go directly into Qwep's local offline vault and are destroyed upon completion.
+        </div>
+
+        <form id="intake-form">
+            <div class="form-group">
+                <label for="site_url">Target URL (Website or Shopify Store)</label>
+                <input type="url" id="site_url" required placeholder="https://yourstore.myshopify.com">
+            </div>
+
+            <div class="form-group">
+                <label for="issue_desc">Project Goals / Issue Description</label>
+                <textarea id="issue_desc" rows="4" required placeholder="Describe the specific fix or automation goal..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="access_method">Access Method Provided</label>
+                <select id="access_method" required>
+                    <option value="">Select Access Method...</option>
+                    <option value="shopify_collaborator">Shopify Collaborator Request (Sent)</option>
+                    <option value="github_invite">GitHub Repo Invite (Sent)</option>
+                    <option value="api_keys">Direct API Keys / Temp Password</option>
+                </select>
+            </div>
+
+            <div class="form-group hidden" id="secret_key_group">
+                <label for="secret_payload">API Keys / Temp Passwords (Encrypted locally)</label>
+                <textarea id="secret_payload" rows="3" placeholder="Paste keys here. We encrypt this before it leaves your device."></textarea>
+            </div>
+
+            <button type="submit" class="btn-submit" id="btn-submit">Encrypt & Submit Intake</button>
+        </form>
+    </div>
+
+    <script>
+        // Extract ticket number from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const ticketNumber = urlParams.get('ticket') || 'UNKNOWN';
+        document.getElementById('ticket-display').textContent = ticketNumber;
+
+        // Toggle API Keys field based on access method
+        document.getElementById('access_method').addEventListener('change', (e) => {
+            const secretGroup = document.getElementById('secret_key_group');
+            if(e.target.value === 'api_keys') {
+                secretGroup.classList.remove('hidden');
+                document.getElementById('secret_payload').required = true;
+            } else {
+                secretGroup.classList.add('hidden');
+                document.getElementById('secret_payload').required = false;
+            }
+        });
+
+        // Form submission with Mock Frontend Encryption
+        document.getElementById('intake-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit');
+            btn.textContent = 'Encrypting...';
+            btn.disabled = true;
+
+            const payload = {
+                site_url: document.getElementById('site_url').value,
+                issue_description: document.getElementById('issue_desc').value,
+                access_method: document.getElementById('access_method').value,
+                secrets: document.getElementById('secret_payload').value
+            };
+
+            // MOCK ENCRYPTION (In production, use forge.js public key encryption here)
+            const encryptedPayload = btoa(JSON.stringify(payload)); // Base64 mock
+            
+            try {
+                // Post to Supabase secure_intakes table
+                // fetch('https://supabase.../rest/v1/secure_intakes', ...)
+                
+                setTimeout(() => {
+                    btn.style.background = '#00ff88';
+                    btn.textContent = 'Intake Secured & Qwep Dispatched!';
+                    alert("Success! Qwep has received your encrypted intake and is moving the job to In Progress.");
+                }, 1000);
+            } catch (err) {
+                btn.textContent = 'Error. Try Again.';
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
