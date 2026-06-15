@@ -4,14 +4,14 @@ const { Octokit } = require('octokit');
 const octokit = process.env.GITHUB_PAT ? new Octokit({ auth: process.env.GITHUB_PAT }) : null;
 const ORG_NAME = 'UniversalNetworkDevelopment';
 
-async function createRepoAndPush(ticketId) {
+async function createRepoAndPush(job) {
     if (!octokit) {
         console.warn('[GITHUB MANAGER] No GITHUB_PAT found. Simulating repo creation.');
-        return `https://github.com/${ORG_NAME}/${ticketId}-simulated`;
+        return `https://github.com/${ORG_NAME}/${job.ticket_id}-simulated`;
     }
 
     try {
-        const repoName = `${ticketId}-deployment`;
+        const repoName = job.target_repo_name || `${job.ticket_id}-deployment`;
         
         // 1. Create Private Repo
         console.log(`[GITHUB] Creating private repo: ${repoName}`);
