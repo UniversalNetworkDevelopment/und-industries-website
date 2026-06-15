@@ -1,107 +1,133 @@
 # U.N.D Industries: Website Services Fulfillment SOP
 
-This document defines the exact standard operating procedure (SOP) that **Qwep** (the autonomous agent) MUST follow when fulfilling incoming service tickets.
+This is the exhaustive Standard Operating Procedure (SOP) for **Qwep** to fulfill all 10 paid services. Zero deviations are permitted.
 
 ---
 
-## 1. Trigger & Intake Bridge (All Services)
-1. **Trigger:** The `ticket-relay.js` sidecar detects a ticket in `service_tickets` moving from `pending` to `paid`. It pushes the event to Qwep.
-2. **Claim:** Qwep logs the ticket locally in QwepStore and updates Supabase `status = 'intake_pending'`.
-3. **Intake Dispatch:** Qwep emails the client an intake link requesting:
-   - Specific URLs and issue descriptions.
-   - Secure access credentials (via encrypted portal) or Collaborator invites.
-4. **Validation:** Once intake data is received and validated, Qwep moves the job to `in_progress`.
+## 1. WEBSITE QUICK FIX
+- **Trigger:** Job moves to `in_progress`.
+- **Intake Provided:** Site URL, exact bug description, GitHub/Panel access.
+- **Fulfillment Steps:**
+  1. Clone repository to isolated `/tmp/jobs/{ticket_id}` sandbox.
+  2. Snapshot current state.
+  3. Replicate bug using browser subagent.
+  4. Query Gemini/Qwen to identify the minimal CSS/JS/HTML fix.
+  5. Apply fix on a new branch `fix/{ticket_id}`.
+- **Testing:** Browser subagent verifies the form submits, link works, or layout is fixed. Checks mobile viewport.
+- **Completion:** Generate Change Summary. Merge branch. Move to `awaiting_review` and email client.
+- **Failure:** If bug is unfixable without rewriting the app, roll back, mark `needs_manual_review`.
+
+## 2. FIX BUNDLE
+- **Trigger:** Job moves to `in_progress`.
+- **Intake Provided:** Up to 3 issues, Site URL, constraints.
+- **Fulfillment Steps:**
+  1. Clone repo and snapshot.
+  2. Execute Quick Fix loop for all 3 issues sequentially.
+  3. Run Lighthouse performance check.
+- **Testing:** Verify all 3 fixes independently. Verify site speed hasn't degraded.
+- **Completion:** Generate combined Evidence Pack. Move to `awaiting_review`.
+- **Failure:** If 1 issue is unfixable, finish the other 2, document the failure, mark `needs_manual_review`.
+
+## 3. FULL CLEANUP
+- **Trigger:** Job moves to `in_progress`.
+- **Intake Provided:** Site URL, performance/SEO concerns.
+- **Fulfillment Steps:**
+  1. Complete Fix Bundle workflow.
+  2. Optimize Core Web Vitals (minify assets, lazy-load images).
+  3. Scan DOM for missing `<meta>` descriptions, `<h1>` tags, and `alt` attributes. Inject SEO improvements.
+  4. Test all contact forms to ensure mail delivery.
+- **Testing:** Lighthouse score must improve. Form submission must return 200 OK.
+- **Completion:** Present Before/After Lighthouse scores. Move to `awaiting_review`.
+- **Failure:** If CMS blocks optimizations, generate report explaining limitations, mark `completed`.
 
 ---
 
-## 2. Fulfillment Workflows by Service Package
+## 4. SHOPIFY QUICK CLEANUP
+- **Trigger:** Job moves to `in_progress`.
+- **Intake Provided:** Store URL, Collaborator access.
+- **Fulfillment Steps:**
+  1. Accept Collaborator request.
+  2. Duplicate live theme as `[UND-Backup] Live`.
+  3. Create working theme `[UND-Work] Quick Cleanup`.
+  4. Resolve theme clutter and mobile layout bugs via Liquid/CSS in the working theme.
+- **Testing:** Emulate mobile devices to verify layout.
+- **Completion:** Publish `[UND-Work]` theme to live. Move to `awaiting_review`.
+- **Failure:** If theme is hard-coded/broken, discard working theme, mark `needs_manual_review`.
 
-### A. Web Systems
+## 5. SHOPIFY PROFESSIONALIZATION
+- **Trigger:** Job moves to `in_progress`.
+- **Intake Provided:** Store URL, Homepage goals, product tagging needs.
+- **Fulfillment Steps:**
+  1. Backup live theme.
+  2. Restructure Homepage liquid templates (Hero banner, trust badges).
+  3. Bulk update product tags based on schema requirements via Shopify Admin API.
+  4. Tune search/filtering behavior.
+- **Testing:** Visual QA of Homepage. Ensure search returns correct tagged products.
+- **Completion:** Publish theme. Move to `awaiting_review`.
+- **Failure:** Discard draft theme, rollback tags via API if failure occurs midway.
 
-**Quick Fix (`quick`)**
-- **Goal:** Resolve a single specific error.
-- **Process:**
-  1. Clone target repo or access hosting panel (read-only logs).
-  2. Snapshot the `before` state of the affected file.
-  3. Replicate the error locally or via browser subagent.
-  4. Apply the minimal necessary code fix in a new branch/draft state.
-  5. Test functionality.
-  6. Snapshot the `after` state.
+## 6. DROPSHIPPING INTEGRATION
+- **Trigger:** Job moves to `in_progress`.
+- **Intake Provided:** Store URL, Supplier platform (e.g., Zendrop).
+- **Fulfillment Steps:**
+  1. Install requested supplier app.
+  2. Map shipping profiles and sync initial catalog.
+  3. Configure auto-fulfillment settings in app.
+- **Testing:** Place a test order via Bogus Gateway to verify webhook triggers to supplier.
+- **Completion:** Send video/screenshot evidence of test order flow. Move to `awaiting_review`.
+- **Failure:** Uninstall app, clear bogus orders, mark `failed`.
 
-**Fix Bundle (`bundle`)**
-- **Process:**
-  1. Complete Quick Fix steps for up to 3 issues.
-  2. Run Lighthouse via browser subagent; record performance scores.
-  3. Apply caching/minification fixes if performance is degraded.
-  4. Run mobile responsive tests across 3 breakpoints.
-
-**Full Cleanup (`cleanup`)**
-- **Process:**
-  1. Complete Fix Bundle steps.
-  2. Test all contact forms end-to-end to ensure mail delivery.
-  3. Scan DOM for missing `<meta>` descriptions, `<h1>` tags, and `alt` text. Inject compliant SEO tags.
-  4. Snapshot the final consolidated PR before merge.
-
-### B. Shopify & Commerce
-
-**Shopify Quick Cleanup (`shopify_quick`)**
-- **Process:**
-  1. Accept Shopify Collaborator request.
-  2. Duplicate the live theme as `[UND-Backup] Live Theme`.
-  3. Work entirely inside a new draft theme `[UND-Work] Quick Cleanup`.
-  4. Fix reported layout bugs via Liquid/CSS edits.
-  5. Verify mobile layout on product/collection pages.
-
-**Shopify Professionalization (`shopify_pro`)**
-- **Process:**
-  1. Complete Quick Cleanup steps (using draft themes).
-  2. Restructure the Homepage (Hero banner, trust badges, featured collections).
-  3. Verify Search behavior and standardize product tagging schema.
-
-**Dropshipping Integration (`shopify_drop`)**
-- **Process:**
-  1. Install requested dropshipping app (e.g. Zendrop).
-  2. Configure API bridging and shipping profiles.
-  3. Execute a test order via Shopify Bogus Gateway to ensure webhook fulfillment works.
-
-**Full Shopify Build (`shopify_build`)**
-- **Process:**
-  1. Scaffold base theme based on tier (Starter/Standard/Premium).
+## 7. FULL SHOPIFY BUILD (STARTER / STANDARD / PREMIUM)
+- **Trigger:** Job moves to `in_progress`.
+- **Intake Provided:** Niche, catalog, design preferences, tier.
+- **Fulfillment Steps:**
+  1. Scaffold theme based on Tier.
   2. Import catalog CSVs.
-  3. Build required static pages (Terms, Privacy, About, Contact).
-  4. Configure navigation menus and footer structure.
-
-### C. Automation & AI
-
-**Starter Automation (`auto_start`)**
-- **Process:**
-  1. Access Make.com/Zapier via secure intake keys.
-  2. Build 1–2 requested webhook/trigger flows.
-  3. Test the trigger 3 times to ensure a 100% success rate.
-  4. Snapshot the JSON representation of the workflow.
-
-**Advanced Automation (`auto_adv`)**
-- **Process:**
-  1. Map the multi-step data architecture.
-  2. Build conditional routing, error handling, and data transformation scripts.
-  3. Integrate payment gateways or external API endpoints.
-  4. Generate an architecture map (Mermaid) for the client.
+  3. Generate Terms, Privacy, About, Contact pages.
+  4. Configure navigation and footer.
+- **Testing:** Verify all links, cart flow, and policy pages.
+- **Completion:** Transfer store ownership / provide completion pack. Move to `awaiting_review`.
+- **Failure:** Mark `needs_manual_review` if catalog CSV is invalid.
 
 ---
 
-## 3. Testing, Completion, and Evidence
+## 8. STARTER AUTOMATION
+- **Trigger:** Job moves to `in_progress`.
+- **Intake Provided:** Apps involved, 1-2 workflows, API keys.
+- **Fulfillment Steps:**
+  1. Export current Make/Zapier state if existing.
+  2. Construct webhook/trigger logic.
+  3. Map data fields between the two apps.
+- **Testing:** Fire 3 test payloads. Require 100% success rate (HTTP 200/201).
+- **Completion:** Provide JSON blueprint and screenshot of successful execution. Move to `awaiting_review`.
+- **Failure:** If API keys are invalid, mark `failed_access`.
 
-1. **Testing:** Qwep must verify the fix natively or via a browser subagent.
-2. **Completion Report:** Qwep generates a final summary including:
-   - Summary of actions taken.
-   - Before & After screenshots / code diffs.
-   - Reminder to revoke access.
-3. **Database Update:** Update `service_tickets.status = 'completed'` in Supabase.
-4. **Cleanup:** Delete the local cloned repository and purge decrypted credentials from memory.
+## 9. ADVANCED AUTOMATION
+- **Trigger:** Job moves to `in_progress`.
+- **Intake Provided:** Multi-step workflows, payment automation logic.
+- **Fulfillment Steps:**
+  1. Construct complex logic (routing, error handling).
+  2. Integrate Stripe/Payment webhooks if requested.
+  3. Build data transformation layers using Gemini.
+- **Testing:** Fire test payloads simulating edge cases (missing data, failed payments).
+- **Completion:** Export JSON blueprint, provide Mermaid architecture diagram. Move to `awaiting_review`.
+- **Failure:** Rollback to original JSON state if existing.
+
+## 10. ENTERPRISE AUTOMATION
+- **Trigger:** Job moves to `in_progress`.
+- **Intake Provided:** High-level business logic, chatbot needs.
+- **Fulfillment Steps:**
+  1. Architect full solution utilizing custom Node microservices or massive Make.com scenarios.
+  2. Integrate LLM wrappers if chatbots are required.
+  3. Establish robust error logging and retry mechanisms.
+- **Testing:** E2E simulation of entire business logic flow.
+- **Completion:** Comprehensive documentation, source code handover. Move to `awaiting_review`.
+- **Failure:** Halt and mark `needs_manual_review` if external APIs are unsupported.
 
 ---
 
-## 4. Failure Handling
-
-- **Access Failed:** If intake is incomplete after 7 days, update status to `failed_access`.
-- **Unexpected Crash:** Run `git reset --hard` (or discard draft theme), update status to `failed`, log stack trace, and alert Owner.
+## GLOBAL WRAP-UP (All Services)
+When `awaiting_review` is confirmed by client (or auto-approves after 72 hours):
+1. Job moves to `completed`.
+2. Qwep deletes encrypted credentials from memory.
+3. Qwep sends final email: "Your project is complete. Please revoke our collaborator/staff access."

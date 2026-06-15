@@ -1,27 +1,28 @@
 # FULFILLMENT SYSTEM SPECIFICATION
-**Version:** 1.0.0
+**Version:** 2.0.0 (Airtight Legal & Technical Spec)
 **Target Engine:** Qwep (Sovereign Local AI)
 
 ## 1. EVENT BRIDGE (Supabase → Qwep)
 
 **Source:** Supabase `service_tickets` table via REST API.
-**Trigger:** Transition of `status` from `pending` (or `checkout_started`) to `paid`.
+**Trigger:** `status = 'paid'`
 
 **Mechanism:**
-- Qwep runs the `ticket-relay.js` sidecar daemon which polls the Supabase `/rest/v1/service_tickets?status=eq.paid` endpoint every 30 seconds.
-- The daemon pushes the ticket data to Qwep's local REST API (`http://127.0.0.1:3133/api/chat`).
-- Qwep operates with Zero Shared State. It never accesses Stripe or Cloudflare.
+- Qwep runs the `ticket-relay.js` daemon, polling Supabase `/rest/v1/service_tickets?status=eq.paid` every 30 seconds.
+- Relay pushes payload to `http://127.0.0.1:3133/api/chat`.
+- Zero Shared State: Qwep only interacts with Supabase via the relay. It never touches Stripe or Cloudflare.
 
-**QwepStore Internal Schema (`jobs` table in local SQLite/Postgres):**
+**QwepStore Internal Schema (`jobs` table in local Postgres/SQLite):**
 ```sql
 CREATE TABLE jobs (
     job_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    ticket_number VARCHAR(255) UNIQUE NOT NULL,
+    ticket_id VARCHAR(255) UNIQUE NOT NULL,
     user_id UUID NOT NULL,
-    service_slug VARCHAR(255) NOT NULL,
-    status VARCHAR(50) DEFAULT 'intake_pending', -- intake_pending, intake_complete, in_progress, awaiting_review, completed, failed, refunded
-    amount_cents INTEGER NOT NULL,
+    client_email VARCHAR(255),
+    service_type VARCHAR(255) NOT NULL,
     payment_id VARCHAR(255),
+    status VARCHAR(50) DEFAULT 'intake_pending', 
+    -- Status Enum: paid, intake_pending, intake_complete, in_progress, awaiting_review, completed, failed, failed_access, refunded
     intake_data JSONB,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -29,33 +30,37 @@ CREATE TABLE jobs (
 ```
 
 **Idempotency & Claiming:**
-1. Relay fetches `paid` tickets from Supabase.
+1. Relay fetches `paid` tickets.
 2. Relay attempts an `INSERT` into QwepStore `jobs`.
-3. If `ticket_number` already exists, the insert is ignored (idempotent).
-4. If the insert succeeds, Qwep sends a `PATCH` to Supabase updating `status = 'intake_pending'` to claim the ticket and prevent double-processing.
+3. If `ticket_id` already exists, insert is ignored.
+4. If successful, Qwep sends a `PATCH` to Supabase updating `status = 'intake_pending'`. This definitively claims the job and prevents double-processing.
 
 ---
 
-## 2. CLIENT INTAKE SCHEMAS
+## 2. CLIENT INTAKE SYSTEM (SCREENS & SCHEMAS)
 
-When a job hits `intake_pending`, Qwep generates a secure email (or portal link) requesting the following JSON structures based on `service_slug`.
+When status reaches `intake_pending`, Qwep generates a secure portal link for the user. Plain-text passwords in emails are strictly forbidden.
 
-### Web Systems (Quick Fix, Bundle, Cleanup)
+### A. Web Systems (Quick Fix, Fix Bundle, Full Cleanup)
+**Intake Rules:** GitHub collaborator invite, or Hosting Panel access.
 ```json
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "site_url": { "type": "string", "format": "uri" },
-    "issue_description": { "type": "string" },
-    "access_method": { "enum": ["github_collaborator", "hosting_panel", "wordpress_admin"] },
-    "credentials_portal_link": { "type": "string", "description": "Used to submit encrypted keys if required" }
+    "issue_description": { "type": "string", "description": "Specific problem for Fixes, or goals for Cleanup" },
+    "access_method": { "enum": ["github", "vercel", "netlify", "cpanel"] },
+    "access_confirmed": { "type": "boolean", "description": "Client confirms they sent the invite to the U.N.D dev account" },
+    "priority_notes": { "type": "string" },
+    "known_constraints": { "type": "string", "description": "e.g., no downtime during 9-5" }
   },
-  "required": ["site_url", "issue_description", "access_method"]
+  "required": ["site_url", "issue_description", "access_method", "access_confirmed"]
 }
 ```
 
-### Shopify & Commerce
+### B. Shopify & Commerce (Quick Cleanup, Professionalization, Dropshipping, Full Build)
+**Intake Rules:** Shopify Staff Account or Collaborator Access.
 ```json
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
@@ -64,91 +69,130 @@ When a job hits `intake_pending`, Qwep generates a secure email (or portal link)
     "store_url": { "type": "string", "format": "uri" },
     "collaborator_code": { "type": "string" },
     "primary_goals": { "type": "string" },
-    "supplier_preference": { "type": "string" }
+    "supplier_platforms": { "type": "array", "items": { "type": "string" }, "description": "For dropshipping" },
+    "build_tier": { "enum": ["starter", "standard", "premium"], "description": "For full builds" },
+    "design_preferences": { "type": "string" }
   },
-  "required": ["store_url", "primary_goals"]
+  "required": ["store_url"]
 }
 ```
 
-### Automation & AI
+### C. Automation & AI (Starter, Advanced, Enterprise)
+**Intake Rules:** API keys submitted directly to the secure, encrypted local Qwep portal.
 ```json
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "platforms": { "type": "array", "items": { "type": "string" } },
-    "workflow_description": { "type": "string" },
-    "api_keys_submitted": { "type": "boolean" }
+    "apps_involved": { "type": "array", "items": { "type": "string" } },
+    "workflow_plain_english": { "type": "string" },
+    "api_keys_submitted": { "type": "boolean" },
+    "payment_automation_reqs": { "type": "string" }
   },
-  "required": ["platforms", "workflow_description"]
+  "required": ["apps_involved", "workflow_plain_english", "api_keys_submitted"]
 }
 ```
 
-**Storage:** Intake payload is stored in QwepStore `jobs.intake_data`. Once validated, Qwep updates Supabase to `in_progress`.
+**Storage:** Payloads are stored encrypted in `jobs.intake_data`. Once validated, Qwep updates Supabase to `in_progress`.
 
 ---
 
-## 3. ACCESS & SECURITY RULES
+## 3. ACCESS CONTROL, SECURITY, AND SCOPE LIMITS
 
-1. **Credentials:** 
-   - Never stored in plaintext. Encrypted locally using a master key (`AES-256-GCM`).
-   - Passed to headless browser contexts via environment variables or secure credential managers.
-   - Never injected into LLM context windows (Gemini/Qwen).
-2. **Scope Control:**
-   - Qwep is strictly sandboxed. For website fixes, it clones the specific repo into an isolated `/tmp/jobs/{ticket_number}` directory.
-   - It cannot execute `rm -rf /` or modify global billing settings.
-3. **Revocation:**
-   - Upon moving job to `completed`, Qwep deletes the isolated directory and wipes the encrypted credentials from QwepStore.
+- **Credentials Encryption:** Stored locally in QwepStore using AES-256-GCM. Decrypted only in memory at runtime. Never passed to LLM context windows (Gemini/Qwen).
+- **Scope Limit Enforcement:**
+  - Qwep executes code within isolated `/tmp/jobs/{ticket_id}` sandbox containers.
+  - Qwep is restricted to modifying the exact repo/theme provided.
+  - It cannot modify global billing settings, DNS, or delete structural data unless explicitly commanded in the intake form.
+- **Revocation:** Upon `completed`, Qwep purges `/tmp/jobs/{ticket_id}`, wipes credentials from QwepStore, and emails the client a reminder to remove collaborator access.
+- **Access Audit Log:**
+  - `timestamp`
+  - `process_id`
+  - `target_system` (e.g., "Shopify API", "GitHub Repo")
+  - `action` (e.g., "clone", "commit", "theme_publish")
+  - `ticket_id`
 
 ---
 
-## 4. LOGGING, AUDIT TRAIL, AND EVIDENCE
+## 4. LOGGING, AUDIT TRAIL, AND EVIDENCE SYSTEM
 
-To legally protect U.N.D Industries against "you broke it" claims, Qwep maintains a strict immutable audit trail.
+To completely insulate U.N.D Industries from legal liability ("You broke my site").
 
 **QwepStore `changes` Table:**
 ```sql
 CREATE TABLE changes (
-    change_id UUID PRIMARY KEY,
-    ticket_number VARCHAR(255) REFERENCES jobs(ticket_number),
-    change_type VARCHAR(50), -- 'file_edit', 'theme_update', 'workflow_add'
-    before_snapshot_path VARCHAR(500),
-    after_snapshot_path VARCHAR(500),
+    change_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    ticket_id VARCHAR(255) REFERENCES jobs(ticket_id),
+    target_system VARCHAR(50), -- website, shopify, automation
+    change_type VARCHAR(50), -- file_edit, theme_update, workflow_add
+    before_snapshot_ref VARCHAR(500), -- Path to local immutable storage
+    after_snapshot_ref VARCHAR(500),
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
-- **Snapshots:** Before altering any file or Shopify theme, Qwep saves a raw copy of the file/theme to `E:\Qwep\Snapshots\{ticket_number}\before\`.
-- **Completion Report:** A PDF/Markdown report is generated showing exactly what files were touched, alongside Visual QA screenshots.
+
+**Snapshot Rules:**
+- Websites: Full clone of HTML/CSS/JS prior to ANY edit.
+- Shopify: Qwep duplicates the live theme and works strictly on `[UND-Work] Ticket {ID}`. The live theme ID is recorded as `before_snapshot_ref`.
+- Automation: Make.com/Zapier JSON blueprint exported before and after modifications.
+
+**Evidence Pack Generation:**
+Qwep compiles a ZIP containing the before/after snapshots and the Markdown "Change Summary" before moving to `awaiting_review`.
 
 ---
 
-## 5. ERROR HANDLING & REFUNDS
+## 5. ERROR HANDLING, ROLLBACK, AND REFUNDS
 
-- **Access Timeout:** If intake is not completed in 7 days, job status becomes `failed_access`. Customer receives a notification.
-- **System Too Broken:** If the architecture is fundamentally corrupted beyond the scope of the package (e.g. asking for a Quick Fix on a completely hacked WordPress site), Qwep marks job as `needs_manual_review` and halts. Owner is notified to issue a custom quote or refund.
-- **Unexpected Error:** If Qwep crashes or fails 3 verification checks, it triggers a `git reset --hard` (rollback), marks `failed`, and pages the Owner.
+**1. Access Not Provided:**
+- If intake is stuck in `intake_pending` for 7 days, Qwep changes status to `failed_access`.
+- Automated email sent to client. Policy logic kicks in for refund/credit decision by Owner.
+
+**2. Access Revoked Mid-Job:**
+- Qwep detects auth failure, logs to `changes` table.
+- Rolls back any pending commits.
+- Changes status to `failed_access`. Escalate to Owner.
+
+**3. System Too Broken to Fix:**
+- If Qwep determines the architecture is hopelessly corrupted beyond the package scope (e.g., compromised core files).
+- Qwep halts, marks status `needs_manual_review`, generates an Explanation Report, and pages Owner.
+
+**4. Unexpected Error / Qwep Crash:**
+- Catch-all exception block triggers `git reset --hard` (or discards Shopify draft theme).
+- Marks `failed`. Pings Owner dashboard immediately.
 
 ---
 
-## 6. REST API SURFACE FOR DASHBOARDS
+## 6. OWNER & STAFF DASHBOARDS (REST API SURFACE)
 
-Qwep exposes a local API (`http://127.0.0.1:3133/api/fulfillment`) for the Owner Dashboard.
+Qwep exposes endpoints for the local dashboard to read job states.
 
-`GET /api/fulfillment/jobs`
-Returns all jobs. Supports `?status=in_progress`.
+**GET `/api/fulfillment/jobs`**
 ```json
 {
   "jobs": [
     {
-      "ticket_number": "TST-1234",
+      "ticket_id": "TST-9999",
+      "service_type": "shopify_professionalization",
+      "client": "email@example.com",
       "status": "in_progress",
-      "service_slug": "quick",
-      "amount_cents": 9900,
-      "timeline": { "started_at": "...", "due_at": "..." }
+      "timeline": { "intake_complete": "2026-06-15T14:00:00Z" }
     }
   ]
 }
 ```
 
-`GET /api/fulfillment/jobs/:ticket_number/audit`
-Returns the array of changes and paths to snapshot evidence.
+**GET `/api/fulfillment/jobs/:ticket_id/evidence`**
+```json
+{
+  "ticket_id": "TST-9999",
+  "change_logs": [
+    {
+      "timestamp": "2026-06-15T14:15:00Z",
+      "action": "Updated theme.liquid",
+      "before_ref": "/snapshots/TST-9999/before_theme.liquid",
+      "after_ref": "/snapshots/TST-9999/after_theme.liquid"
+    }
+  ],
+  "access_status": "active"
+}
+```
