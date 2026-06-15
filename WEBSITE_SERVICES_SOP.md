@@ -1,6 +1,22 @@
 # U.N.D Industries: Website Services Fulfillment SOP
 
-This is the exhaustive Standard Operating Procedure (SOP) for **Qwep** to fulfill all 10 paid services. Zero deviations are permitted.
+This is the exhaustive Standard Operating Procedure (SOP) for **Qwep** to fulfill all 10 paid services, plus the strict Owner Test Mode workflow. Zero deviations are permitted.
+
+---
+
+## 0. OWNER TEST MODE: GITHUB TEST WEBSITE BUILDER
+- **Trigger:** Job moves to `in_progress` with `ticket_type = 'test'`.
+- **Intake Provided:** Test repository name, design motif (e.g., "slashy, modern, animated").
+- **Fulfillment Steps:**
+  1. Authenticate with GitHub API using internal test PAT.
+  2. Create a new public repository.
+  3. Scaffold a modern HTML/CSS/JS frontend utilizing glassmorphism, dynamic scrolling, and "slashy" neon aesthetics.
+  4. Query Gemini to generate dynamic copy and micro-animations for the test site.
+  5. Commit all code to the repository.
+  6. Enable GitHub Pages to deploy the site live.
+- **Testing:** Verify the GitHub Pages URL returns HTTP 200 and loads successfully.
+- **Completion:** Generate Evidence Pack containing the Repo URL, Live URL, and a screenshot of the deployed site. Move to `awaiting_review`.
+- **Failure:** If GitHub API limits are hit, mark `failed_access`. Rollback by deleting the repo.
 
 ---
 
