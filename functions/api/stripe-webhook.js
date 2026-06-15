@@ -17,6 +17,7 @@ import {
   upsertSubscription,
   setProfilePlan,
   getUserIdByCustomer,
+  logEvent,
 } from '../util/supabase.js';
 import { verifyStripeSignature } from '../util/stripe.js';
 import { generateLicenseKey } from '../util/license.js';
@@ -75,6 +76,15 @@ export async function onRequestPost(context) {
         break; // unhandled types are acknowledged, not errors
     }
   } catch (err) {
+    console.error('Webhook provisioning failed:', err);
+    await logEvent(env, {
+      user_id: null,
+      action: 'stripe_webhook_failed',
+      severity: 'error',
+      ip: request.headers.get('cf-connecting-ip') || 'unknown',
+      device_fingerprint: request.headers.get('user-agent') || 'unknown',
+      detail: err.message,
+    });
     return new Response('Provisioning failed', { status: 500 }); // let Stripe retry
   }
 

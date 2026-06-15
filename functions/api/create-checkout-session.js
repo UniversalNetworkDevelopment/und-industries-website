@@ -13,6 +13,7 @@ import {
   getProductBySlug,
   getCustomerMapping,
   saveCustomerMapping,
+  logEvent,
 } from '../util/supabase.js';
 import { stripeRequest } from '../util/stripe.js';
 
@@ -144,8 +145,16 @@ export async function onRequestPost(context) {
     return json({ id: session.id, url: session.url }, 200, request, env);
   } catch (err) {
     // SECURITY: Never leak internal stack traces or Stripe error messages to the client.
-    // Log the actual error to the Cloudflare Worker console for debugging.
+    // Log the actual error to the Cloudflare Worker console and Nexus Telemetry (Supabase).
     console.error('Checkout error:', err);
+    await logEvent(env, {
+      user_id: user ? user.id : null,
+      action: 'checkout_session_failed',
+      severity: 'critical',
+      ip: request.headers.get('cf-connecting-ip') || 'unknown',
+      device_fingerprint: request.headers.get('user-agent') || 'unknown',
+      detail: err.message,
+    });
     return json({ error: 'Could not process checkout request. Please contact support.' }, 502, request, env);
   }
 }
