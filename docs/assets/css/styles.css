@@ -2867,3 +2867,24 @@ button.sidebar-link {
 .bg-accent { background: rgba(124,58,237,0.2); color: #c4b5fd; padding: 2px 6px; border-radius: 4px; }
 .bg-success { background: rgba(16,185,129,0.2); color: #6ee7b7; padding: 2px 6px; border-radius: 4px; }
 .bg-error { background: rgba(239,68,68,0.2); color: #fca5a5; padding: 2px 6px; border-radius: 4px; }
+
+
+
+/* =========================================================================
+   GLOBAL PREMIUM CARD OVERRIDES (UNIFIED AESTHETIC)
+   ========================================================================= */
+.card, .pillar-card, .stat-card, .music-card, .promo-card, .service-card {
+  background: rgba(21, 21, 26, 0.7) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease !important;
+}
+
+.card:hover, .pillar-card:hover, .stat-card:hover, .music-card:hover, .promo-card:hover, .service-card:hover {
+  border-color: rgba(124,92,255,0.4) !important;
+  transform: translateY(-4px) !important;
+  box-shadow: 0 12px 40px rgba(124,92,255,0.15) !important;
+}
