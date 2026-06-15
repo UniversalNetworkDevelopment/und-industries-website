@@ -50,6 +50,8 @@
     // }
   };
   var activeRef = null;
+  var currentKey = null;
+
   // Effective price + pay link for a package, honoring an applied referral.
   function effective(key) {
     var s = SERVICES[key] || {};
@@ -352,6 +354,7 @@
 
   // ---- click handler ----
   function book(key) {
+    currentKey = key;
     var svc = SERVICES[key];
     if (!svc) return;
     if (!sb) { window.location.href = 'contact.html'; return; } // graceful fallback
