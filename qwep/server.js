@@ -65,6 +65,24 @@ app.post('/api/jobs', async (req, res) => {
 
 const { runWebsiteJob } = require('./services/website-engine');
 
+const { startAutonomousIntakeLoop } = require('./services/autonomy-intake');
+startAutonomousIntakeLoop();
+
+function decideAndRoute(job) {
+    if (job.service_type === 'website') {
+        return runWebsiteJob(job);
+    } else if (job.service_type === 'shopify') {
+        console.log(`[QWEP] Shopify engine stub...`);
+        return Promise.resolve();
+    } else if (job.service_type === 'automation') {
+        console.log(`[QWEP] Automation engine stub...`);
+        return Promise.resolve();
+    } else {
+        console.log(`[Autonomy][Decision] Unknown service_type:`, job.service_type);
+        return Promise.resolve();
+    }
+}
+
 async function executePipeline(job) {
     try {
         activeJobs++;
@@ -73,25 +91,10 @@ async function executePipeline(job) {
         console.log(`[QWEP] Starting execution for ${job.ticket_id}`);
         db.run(`UPDATE jobs SET status = 'in_progress' WHERE ticket_id = ?`, [job.ticket_id]);
         
-        // Formulate the full job packet
-        const jobPacket = {
-            job_id: Date.now().toString(),
-            ticket_id: job.ticket_id,
-            service_type: job.service_type || 'website',
-            target_repo: job.target_repo_name || 'web-builder-ai',
-            intake: job.intake_data || {},
-            mode: job.ticket_type || 'live'
-        };
-
-        let deployedUrl = null;
-        if (jobPacket.service_type === 'website') {
-            deployedUrl = await runWebsiteJob(jobPacket);
-        } else {
-            console.log(`[QWEP] Unsupported service_type for now: ${jobPacket.service_type}`);
-        }
+        let deployedUrl = await decideAndRoute(job);
         
         // Generate Evidence Pack
-        const evidencePath = await evidenceCompiler.generatePack(job.ticket_id, `https://github.com/${process.env.GITHUB_ORG}/${jobPacket.target_repo}`);
+        const evidencePath = await evidenceCompiler.generatePack(job.ticket_id, `https://github.com/${process.env.GITHUB_ORG}/${job.target_repo || 'web-builder-ai'}`);
         
         // Sync back to Supabase
         await supabaseWriteback.markComplete(job.ticket_id, evidencePath, deployedUrl);
