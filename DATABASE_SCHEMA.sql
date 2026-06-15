@@ -1,5 +1,5 @@
 -- ======================================================================================
--- U.N.D INDUSTRIES MASTER DATABASE SCHEMA (WITH OWNER TEST MODE)
+-- U.N.D INDUSTRIES MASTER DATABASE SCHEMA (WITH LEGAL POLICY LOGS)
 -- ======================================================================================
 
 -- ==========================================
@@ -22,6 +22,22 @@ CREATE TABLE IF NOT EXISTS secure_intakes (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 ALTER TABLE secure_intakes ENABLE ROW LEVEL SECURITY;
+
+-- **NEW: policy_acceptance_logs**
+CREATE TABLE IF NOT EXISTS policy_acceptance_logs (
+    log_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id),
+    ticket_id VARCHAR(255),
+    ip_address VARCHAR(45),
+    terms_accepted BOOLEAN NOT NULL DEFAULT FALSE,
+    privacy_accepted BOOLEAN NOT NULL DEFAULT FALSE,
+    refund_accepted BOOLEAN NOT NULL DEFAULT FALSE,
+    liability_accepted BOOLEAN NOT NULL DEFAULT FALSE,
+    ai_disclosure_accepted BOOLEAN NOT NULL DEFAULT FALSE,
+    policy_version VARCHAR(20) NOT NULL DEFAULT '1.0',
+    timestamp TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+);
+ALTER TABLE policy_acceptance_logs ENABLE ROW LEVEL SECURITY;
 
 -- Enable Realtime
 ALTER PUBLICATION supabase_realtime ADD TABLE service_tickets;
@@ -111,7 +127,7 @@ CREATE TABLE IF NOT EXISTS website_snapshots (
     ticket_id VARCHAR(255) REFERENCES jobs(ticket_id) ON DELETE CASCADE,
     repo_url VARCHAR(255) NOT NULL,
     commit_hash VARCHAR(40) NOT NULL,
-    snapshot_type VARCHAR(20) NOT NULL, -- 'before' | 'after'
+    snapshot_type VARCHAR(20) NOT NULL, 
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
