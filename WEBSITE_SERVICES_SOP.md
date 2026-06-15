@@ -1,100 +1,107 @@
 # U.N.D Industries: Website Services Fulfillment SOP
 
-This document defines the exact standard operating procedure (SOP) that **Qwep** (the autonomous agent) MUST follow when fulfilling incoming service tickets. 
-
-**Zero-Egress Mandate:** Qwep operates locally. All tickets are pushed to Qwep via the `ticket-relay.js` sidecar.
+This document defines the exact standard operating procedure (SOP) that **Qwep** (the autonomous agent) MUST follow when fulfilling incoming service tickets.
 
 ---
 
-## 1. Initial Intake (All Services)
-
-When a new ticket arrives with `status = 'paid'`, Qwep must:
-1. Identify the `service_slug` and `ticket_number`.
-2. Generate an **Intake Email** to the customer containing:
-   - Order confirmation and ticket number.
-   - The specific deliverables for their package.
-   - A secure request for any necessary credentials (e.g., Shopify collaborator access, WordPress admin login, cPanel/FTP details).
-3. Wait for the customer to provide access. **Do not begin work until access is verified.**
+## 1. Trigger & Intake Bridge (All Services)
+1. **Trigger:** The `ticket-relay.js` sidecar detects a ticket in `service_tickets` moving from `pending` to `paid`. It pushes the event to Qwep.
+2. **Claim:** Qwep logs the ticket locally in QwepStore and updates Supabase `status = 'intake_pending'`.
+3. **Intake Dispatch:** Qwep emails the client an intake link requesting:
+   - Specific URLs and issue descriptions.
+   - Secure access credentials (via encrypted portal) or Collaborator invites.
+4. **Validation:** Once intake data is received and validated, Qwep moves the job to `in_progress`.
 
 ---
 
 ## 2. Fulfillment Workflows by Service Package
 
-### A. Website Fixes
+### A. Web Systems
+
 **Quick Fix (`quick`)**
 - **Goal:** Resolve a single specific error.
 - **Process:**
-  1. Replicate the error described by the user (use browser subagent or local fetch).
-  2. Identify the root cause (CSS glitch, broken JS, 404 link).
-  3. Apply the minimal necessary fix.
-  4. Visual QA: Take a "Before" and "After" screenshot of the fixed element.
+  1. Clone target repo or access hosting panel (read-only logs).
+  2. Snapshot the `before` state of the affected file.
+  3. Replicate the error locally or via browser subagent.
+  4. Apply the minimal necessary code fix in a new branch/draft state.
+  5. Test functionality.
+  6. Snapshot the `after` state.
 
 **Fix Bundle (`bundle`)**
-- **Goal:** Resolve up to 3 issues + speed/mobile check.
 - **Process:**
-  1. Complete Quick Fix steps for the reported issues.
-  2. Run a mobile responsiveness audit via browser subagent.
-  3. Run a basic Lighthouse speed test and fix any glaring issues (unoptimized images, render-blocking scripts).
+  1. Complete Quick Fix steps for up to 3 issues.
+  2. Run Lighthouse via browser subagent; record performance scores.
+  3. Apply caching/minification fixes if performance is degraded.
+  4. Run mobile responsive tests across 3 breakpoints.
 
 **Full Cleanup (`cleanup`)**
-- **Goal:** Complete overhaul of speed, mobile, SEO, and forms.
 - **Process:**
   1. Complete Fix Bundle steps.
-  2. Test all contact forms end-to-end to ensure they deliver mail.
-  3. Add missing `<meta>` descriptions, `<h1>` tags, and `alt` text to images.
-  4. Aggressively minify CSS/JS and compress images.
+  2. Test all contact forms end-to-end to ensure mail delivery.
+  3. Scan DOM for missing `<meta>` descriptions, `<h1>` tags, and `alt` text. Inject compliant SEO tags.
+  4. Snapshot the final consolidated PR before merge.
 
----
+### B. Shopify & Commerce
 
-### B. Shopify Services
 **Shopify Quick Cleanup (`shopify_quick`)**
-- **Goal:** Theme cleanup and layout fixes.
 - **Process:**
-  1. Log into Shopify via Collaborator account.
-  2. Fix reported theme layout bugs (liquid/CSS edits).
-  3. Check mobile layout across product and collection pages.
+  1. Accept Shopify Collaborator request.
+  2. Duplicate the live theme as `[UND-Backup] Live Theme`.
+  3. Work entirely inside a new draft theme `[UND-Work] Quick Cleanup`.
+  4. Fix reported layout bugs via Liquid/CSS edits.
+  5. Verify mobile layout on product/collection pages.
 
 **Shopify Professionalization (`shopify_pro`)**
-- **Goal:** Agency-level storefront polish.
 - **Process:**
-  1. Complete Quick Cleanup steps.
-  2. Rebuild the Homepage layout for better conversion (hero banners, social proof).
-  3. Standardize product tags and configure the search bar/filters.
+  1. Complete Quick Cleanup steps (using draft themes).
+  2. Restructure the Homepage (Hero banner, trust badges, featured collections).
+  3. Verify Search behavior and standardize product tagging schema.
 
 **Dropshipping Integration (`shopify_drop`)**
-- **Goal:** Supplier setup and automation.
 - **Process:**
-  1. Install and configure the requested dropshipping app (DSers, Zendrop, etc.).
-  2. Sync the initial catalog and map shipping profiles.
-  3. Place a test order to ensure the fulfillment automation triggers correctly.
+  1. Install requested dropshipping app (e.g. Zendrop).
+  2. Configure API bridging and shipping profiles.
+  3. Execute a test order via Shopify Bogus Gateway to ensure webhook fulfillment works.
 
----
+**Full Shopify Build (`shopify_build`)**
+- **Process:**
+  1. Scaffold base theme based on tier (Starter/Standard/Premium).
+  2. Import catalog CSVs.
+  3. Build required static pages (Terms, Privacy, About, Contact).
+  4. Configure navigation menus and footer structure.
 
 ### C. Automation & AI
+
 **Starter Automation (`auto_start`)**
-- **Goal:** 1-2 basic workflows.
 - **Process:**
-  1. Connect requested platforms (e.g., Make.com, Zapier, or custom Node script).
-  2. Build a webhook or trigger-based flow (e.g., Lead form -> Google Sheet -> Email).
-  3. Test the trigger 3 times to ensure 100% success rate.
+  1. Access Make.com/Zapier via secure intake keys.
+  2. Build 1–2 requested webhook/trigger flows.
+  3. Test the trigger 3 times to ensure a 100% success rate.
+  4. Snapshot the JSON representation of the workflow.
 
 **Advanced Automation (`auto_adv`)**
-- **Goal:** Complex, multi-step business logic.
 - **Process:**
-  1. Map the data architecture.
-  2. Build conditional routing, error handling, and data transformation steps.
-  3. Integrate payment gateways or API endpoints if required.
-  4. Provide the customer with a visual map of the data flow.
+  1. Map the multi-step data architecture.
+  2. Build conditional routing, error handling, and data transformation scripts.
+  3. Integrate payment gateways or external API endpoints.
+  4. Generate an architecture map (Mermaid) for the client.
 
 ---
 
-## 3. Delivery & Handover
+## 3. Testing, Completion, and Evidence
 
-Once the technical work is complete, Qwep must:
-1. Verify the fix in a production environment (Visual QA).
-2. Generate a **Completion Report** containing:
+1. **Testing:** Qwep must verify the fix natively or via a browser subagent.
+2. **Completion Report:** Qwep generates a final summary including:
    - Summary of actions taken.
-   - Before & After screenshots.
-   - Any new documentation or passwords generated.
-3. Update the ticket status in Supabase to `completed`.
-4. Close the session.
+   - Before & After screenshots / code diffs.
+   - Reminder to revoke access.
+3. **Database Update:** Update `service_tickets.status = 'completed'` in Supabase.
+4. **Cleanup:** Delete the local cloned repository and purge decrypted credentials from memory.
+
+---
+
+## 4. Failure Handling
+
+- **Access Failed:** If intake is incomplete after 7 days, update status to `failed_access`.
+- **Unexpected Crash:** Run `git reset --hard` (or discard draft theme), update status to `failed`, log stack trace, and alert Owner.
