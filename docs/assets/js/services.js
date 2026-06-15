@@ -18,9 +18,24 @@
   // Public, fixed catalog. Amounts mirror the PayPal links exactly; the real
   // charge is enforced by PayPal's hosted page (these are just our record).
   var SERVICES = {
+    // Original Website Fixes
     quick:   { slug: 'website-fix-quick',    name: 'Website Quick Fix',    cents:  9900, pay: 'https://www.paypal.com/ncp/payment/SCTUJTJ77AK6Q' },
     bundle:  { slug: 'website-fix-bundle',   name: 'Website Fix Bundle',   cents: 19900, pay: 'https://www.paypal.com/ncp/payment/2H8HXYU2JMHPG' },
-    cleanup: { slug: 'website-fix-cleanup',  name: 'Website Full Cleanup', cents: 34900, pay: 'https://www.paypal.com/ncp/payment/XFGQG3RN3MMS8' }
+    cleanup: { slug: 'website-fix-cleanup',  name: 'Website Full Cleanup', cents: 34900, pay: 'https://www.paypal.com/ncp/payment/XFGQG3RN3MMS8' },
+    
+    // Shopify Services (Replace the placeholder links with your real Stripe Payment Links)
+    shopify_quick: { slug: 'shopify-quick-cleanup', name: 'Shopify Quick Cleanup', cents: 14900, pay: 'https://buy.stripe.com/PLACEHOLDER_SHOPIFY_QUICK' },
+    shopify_pro:   { slug: 'shopify-pro-upgrade',   name: 'Shopify Professionalization', cents: 29900, pay: 'https://buy.stripe.com/PLACEHOLDER_SHOPIFY_PRO' },
+    shopify_drop:  { slug: 'shopify-dropshipping',  name: 'Dropshipping Integration', cents: 24900, pay: 'https://buy.stripe.com/PLACEHOLDER_SHOPIFY_DROP' },
+    shopify_custom: { slug: 'shopify-custom-upgrade', name: 'Custom Shopify Upgrade', cents: 49900, pay: 'https://buy.stripe.com/PLACEHOLDER_SHOPIFY_CUSTOM' },
+
+    // Automation Services
+    auto_start:    { slug: 'auto-starter', name: 'Starter Automation', cents: 19900, pay: 'https://buy.stripe.com/PLACEHOLDER_AUTO_STARTER' },
+    auto_adv:      { slug: 'auto-advanced', name: 'Advanced Automation', cents: 39900, pay: 'https://buy.stripe.com/PLACEHOLDER_AUTO_ADV' },
+
+    // Growth & Consulting
+    seo:           { slug: 'seo-overhaul', name: 'SEO Overhaul', cents: 24900, pay: 'https://buy.stripe.com/PLACEHOLDER_SEO' },
+    consulting:    { slug: 'consulting-session', name: 'Consulting Session', cents: 14900, pay: 'https://buy.stripe.com/PLACEHOLDER_CONSULT' }
   };
 
   // Referral codes → a discount + the discounted PayPal links you create.
@@ -190,7 +205,7 @@
     showErr('');
     mCancel.textContent = 'Cancel';
     mCancel.onclick = closeModal;
-    mGo.textContent = 'Agree & Continue to PayPal';
+    mGo.textContent = 'Agree & Continue to Checkout';
 
     var agree = mBody.querySelector('#svc-agree');
     var dup   = mBody.querySelector('#svc-dup');
@@ -235,7 +250,7 @@
               duplicate_ack: dupes.length > 0,
               duplicate_of: dupes.map(function (t) { return t.ticket_number; }),
               recent_orders: recent.map(function (t) { return { ticket: t.ticket_number, slug: t.service_slug, at: t.created_at }; }),
-              policy_shown: 'All sales final — no refunds. If we break something that was working we fix it free. If we cannot deliver the agreed fix at all, refund for undelivered work. PayPal payment is final once submitted.',
+              policy_shown: 'All sales final — no refunds. If we break something that was working we fix it free. If we cannot deliver the agreed fix at all, refund for undelivered work. Payment is final once submitted.',
               page: 'services'
             },
             ip: ip,
@@ -263,14 +278,38 @@
               sb.from('referral_redemptions').insert({ user_id: user.id, code: eff.code, ticket_number: ticket }).then(function () {}, function () {});
             }
             mBody.innerHTML = '<p class="svc-modal-p"><strong>Order ' + esc(ticket) + ' recorded.</strong> ' +
-              'Taking you to secure PayPal checkout…</p>';
+              'Generating secure checkout link…</p>';
             mGo.style.display = 'none';
             mCancel.style.display = 'none';
-            setTimeout(function () { window.location.href = eff.pay; }, 900);
+            
+            // Call the SDK to generate the Stripe Checkout Session
+            sb.auth.getSession().then(function(s) {
+              var tkn = s && s.data && s.data.session ? s.data.session.access_token : '';
+              fetch('/api/create-checkout-session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tkn },
+                body: JSON.stringify({ slug: svc.slug })
+              })
+              .then(function(r) { return r.json(); })
+              .then(function(res) {
+                if (res.url) {
+                  window.location.href = res.url;
+                } else {
+                  showErr('Error starting checkout: ' + (res.error || 'Unknown error'));
+                  mGo.disabled = false; mGo.textContent = 'Agree & Continue to Checkout';
+                  mGo.style.display = ''; mCancel.style.display = '';
+                }
+              })
+              .catch(function() {
+                showErr('Network error starting checkout. Please try again.');
+                mGo.disabled = false; mGo.textContent = 'Agree & Continue to Checkout';
+                mGo.style.display = ''; mCancel.style.display = '';
+              });
+            });
           }).catch(function () {
             // Fail CLOSED: no proof recorded => do not send them to pay.
             showErr('We couldn’t record your agreement, so we did not send you to pay. Please try again, or contact us if it keeps happening.');
-            mGo.disabled = false; mGo.textContent = 'Agree & Continue to PayPal';
+            mGo.disabled = false; mGo.textContent = 'Agree & Continue to Checkout';
           });
         });
       }
