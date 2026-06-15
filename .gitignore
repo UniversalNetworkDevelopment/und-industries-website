@@ -42,3 +42,6 @@ desktop.ini
 .idea/
 *.swp
 *.swo
+
+.wrangler
+.dev.vars
