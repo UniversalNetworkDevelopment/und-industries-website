@@ -1,4 +1,5 @@
 const { createClient } = require('@supabase/supabase-js');
+global.WebSocket = require('ws');
 const fs = require('fs');
 const path = require('path');
 
