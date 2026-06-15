@@ -154,3 +154,15 @@ export async function setProfilePlan(env, userId, fields) {
     body: JSON.stringify(fields),
   });
 }
+
+export async function logEvent(env, event) {
+  try {
+    await rest(env, 'system_logs', {
+      method: 'POST',
+      headers: adminHeaders(env),
+      body: JSON.stringify(event),
+    });
+  } catch (e) {
+    console.error('Failed to log event to Supabase:', e);
+  }
+}
