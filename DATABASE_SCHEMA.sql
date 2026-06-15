@@ -1,5 +1,5 @@
 -- ======================================================================================
--- U.N.D INDUSTRIES MASTER DATABASE SCHEMA (ONE-SHOT)
+-- U.N.D INDUSTRIES MASTER DATABASE SCHEMA (WITH OWNER TEST MODE)
 -- ======================================================================================
 
 -- ==========================================
@@ -8,6 +8,7 @@
 
 -- A. service_tickets
 ALTER TABLE service_tickets 
+ADD COLUMN IF NOT EXISTS ticket_type VARCHAR(20) DEFAULT 'real', -- 'real' | 'test'
 ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'pending',
 ADD COLUMN IF NOT EXISTS intake_data JSONB,
 ADD COLUMN IF NOT EXISTS claimed_by VARCHAR(50);
@@ -34,6 +35,7 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 CREATE TABLE IF NOT EXISTS jobs (
     job_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     ticket_id VARCHAR(255) UNIQUE NOT NULL,
+    ticket_type VARCHAR(20) DEFAULT 'real',
     user_id UUID NOT NULL,
     client_email VARCHAR(255),
     service_type VARCHAR(255) NOT NULL,
@@ -81,6 +83,35 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     process_id VARCHAR(50) NOT NULL, 
     target_system VARCHAR(100) NOT NULL,
     action VARCHAR(255) NOT NULL, 
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- H. automation_workflows
+CREATE TABLE IF NOT EXISTS automation_workflows (
+    workflow_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    ticket_id VARCHAR(255) REFERENCES jobs(ticket_id) ON DELETE CASCADE,
+    platform VARCHAR(100) NOT NULL,
+    blueprint_json JSONB NOT NULL,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- I. shopify_theme_versions
+CREATE TABLE IF NOT EXISTS shopify_theme_versions (
+    theme_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    ticket_id VARCHAR(255) REFERENCES jobs(ticket_id) ON DELETE CASCADE,
+    store_url VARCHAR(255) NOT NULL,
+    live_theme_id VARCHAR(100) NOT NULL,
+    draft_theme_id VARCHAR(100) NOT NULL,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- J. website_snapshots
+CREATE TABLE IF NOT EXISTS website_snapshots (
+    snapshot_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    ticket_id VARCHAR(255) REFERENCES jobs(ticket_id) ON DELETE CASCADE,
+    repo_url VARCHAR(255) NOT NULL,
+    commit_hash VARCHAR(40) NOT NULL,
+    snapshot_type VARCHAR(20) NOT NULL, -- 'before' | 'after'
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
