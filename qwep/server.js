@@ -10,6 +10,14 @@ const supabaseWriteback = require('./services/supabase_writeback');
 const app = express();
 app.use(express.json());
 
+// Inject Book & Street Smarts (The Master Rules)
+try {
+    global.QWEP_RULES = require('fs').readFileSync(path.join(__dirname, '../../GEMINI.md'), 'utf-8');
+    console.log(`[QWEP] Master rules injected into memory. Street smarts active.`);
+} catch (e) {
+    console.warn(`[QWEP] Could not load GEMINI.md master rules.`);
+}
+
 // Initialize SQLite Bookkeeping Ledger
 const dbPath = path.join(__dirname, 'qwep_ledger.db');
 const db = new sqlite3.Database(dbPath);
@@ -48,7 +56,7 @@ async function executePipeline(job) {
         db.run(`UPDATE jobs SET status = 'in_progress' WHERE ticket_id = ?`, [job.ticket_id]);
         
         // 1. GitHub Repo & Build
-        const repoUrl = await githubManager.createRepoAndPush(job.ticket_id);
+        const repoUrl = await githubManager.createRepoAndPush(job);
         
         // 2. Generate Evidence Pack
         const evidencePath = await evidenceCompiler.generatePack(job.ticket_id, repoUrl);
