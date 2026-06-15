@@ -82,6 +82,7 @@ function scaffoldSite(repoDir, intake) {
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="frame-ancestors *;" />
   <title>${intake.site_name || "UND Site"}</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
