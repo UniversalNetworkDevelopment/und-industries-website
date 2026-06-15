@@ -143,7 +143,9 @@ export async function onRequestPost(context) {
     const session = await stripeRequest(env, 'POST', '/v1/checkout/sessions', sessionParams);
     return json({ id: session.id, url: session.url }, 200, request, env);
   } catch (err) {
-    // Catch-all to ensure we return JSON, preventing frontend Network Error due to JSON parse failure
-    return json({ error: err.message || 'Could not process checkout request.' }, 502, request, env);
+    // SECURITY: Never leak internal stack traces or Stripe error messages to the client.
+    // Log the actual error to the Cloudflare Worker console for debugging.
+    console.error('Checkout error:', err);
+    return json({ error: 'Could not process checkout request. Please contact support.' }, 502, request, env);
   }
 }
