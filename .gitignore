@@ -45,3 +45,6 @@ desktop.ini
 
 .wrangler
 .dev.vars
+
+# SQLite databases
+*.db

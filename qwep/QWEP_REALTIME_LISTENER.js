@@ -3,7 +3,7 @@ global.WebSocket = require('ws');
 const fs = require('fs');
 const path = require('path');
 
-const envPath = path.join(__dirname, '.env');
+const envPath = path.join(__dirname, '../.env');
 const envVars = fs.readFileSync(envPath, 'utf8').split('\n').reduce((acc, line) => {
     const [key, ...val] = line.split('=');
     if (key && val) acc[key.trim()] = val.join('=').trim();
