@@ -63,7 +63,14 @@
 
   var supabase = null;
   if (window.supabase) {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession:    true,   // always save session to localStorage
+        autoRefreshToken:  true,   // refresh token before it expires (prevents logouts)
+        detectSessionInUrl: true,  // pick up OAuth / magic-link tokens from URL
+        storageKey:        'und_session',  // explicit key so nothing else stomps it
+      }
+    });
 
     // Auth state listener — handles recovery and verification flows.
     // Registered before runRouteGuard() so it catches events fired during getSession().
