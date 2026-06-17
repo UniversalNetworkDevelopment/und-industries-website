@@ -6,7 +6,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; connect-src 'self' https://*.supabase.co wss://*.supabase.co; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; base-uri 'self'; form-action 'self'; frame-ancestors *;">
   <meta name="theme-color" content="#0d0d0f">
   <meta name="robots" content="noindex, nofollow">
-  <title>Dashboard — U.N.D Industries</title>
+  <title>Dashboard &mdash; U.N.D Industries</title>
   <link rel="stylesheet" href="assets/css/styles.css?v=1781536538119">
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 </head>
@@ -43,7 +43,7 @@
       </div>
 
       <div class="dashboard-topbar">
-        <div class="dashboard-topbar-title">Welcome, <span id="dashboard-user-name">—</span><span id="dashboard-role-badge" class="role-badge" hidden></span></div>
+        <div class="dashboard-topbar-title">Welcome, <span id="dashboard-user-name">&mdash;</span><span id="dashboard-role-badge" class="role-badge" hidden></span></div>
         <div id="backend-status-bar" class="topbar-backend-status"></div>
       </div>
 
@@ -58,26 +58,26 @@
       <!-- TAB: Overview -->
       <div id="tab-overview" class="dash-tab-content" role="tabpanel">
 
-        <!-- Owner stats — JS reveals for role='owner' only -->
+        <!-- Owner stats &mdash; JS reveals for role='owner' only -->
         <div id="owner-stats-row" class="stat-grid" hidden>
           <div class="stat-card">
             <div class="stat-label">Inbox Messages</div>
-            <div class="stat-value" id="owner-stat-inbox">—</div>
+            <div class="stat-value" id="owner-stat-inbox">&mdash;</div>
             <div class="stat-sub">Contact submissions</div>
           </div>
           <div class="stat-card">
             <div class="stat-label">Total Members</div>
-            <div class="stat-value" id="owner-stat-users">—</div>
+            <div class="stat-value" id="owner-stat-users">&mdash;</div>
             <div class="stat-sub">Registered accounts</div>
           </div>
           <div class="stat-card">
             <div class="stat-label">Active (10 min)</div>
-            <div class="stat-value stat-value-live" id="owner-stat-active">—</div>
+            <div class="stat-value stat-value-live" id="owner-stat-active">&mdash;</div>
             <div class="stat-sub">Recently seen online</div>
           </div>
           <div class="stat-card">
             <div class="stat-label">Auth Backend</div>
-            <div class="stat-value stat-value-live" id="owner-stat-auth">—</div>
+            <div class="stat-value stat-value-live" id="owner-stat-auth">&mdash;</div>
             <div class="stat-sub">Supabase connection</div>
           </div>
         </div>
@@ -123,11 +123,11 @@
               <span class="studio-status-badge">Internal Only</span>
             </div>
             <p class="text-sm mb-20">An internal studio tool used in the U.N.D Industries workflow.</p>
-            <a href="dashboard-alt.html" class="btn btn-outline btn-sm studio-open-btn">Open Panel →</a>
+            <a href="dashboard-alt.html" class="btn btn-outline btn-sm studio-open-btn">Open Panel &rarr;</a>
           </div>
         </div>
 
-        <!-- Announcements — JS reveals when active announcements exist -->
+        <!-- Announcements &mdash; JS reveals when active announcements exist -->
         <div id="announcements-card" class="card mt-20" hidden>
           <h4 class="mb-12">Announcements</h4>
           <div id="announcements-list" class="ann-list"></div>
@@ -160,7 +160,7 @@
           </div>
 
           <div id="chat-messages" class="chat-messages" aria-live="polite" aria-label="Chat messages">
-            <div class="chat-empty"><span class="chat-empty-icon">💬</span><p>Loading messages…</p></div>
+            <div class="chat-empty"><span class="chat-empty-icon">💬</span><p>Loading messages&hellip;</p></div>
           </div>
 
           <div id="chat-typing" class="chat-typing" hidden></div>
@@ -170,7 +170,7 @@
           <form id="chat-form" class="chat-form" novalidate>
             <button type="button" id="chat-emoji-btn" class="chat-icon-btn" aria-label="Add emoji" title="Emoji">😊</button>
             <button type="button" id="chat-gif-btn" class="chat-icon-btn" aria-label="Add GIF" title="Add a GIF link">GIF</button>
-            <input class="chat-input" type="text" id="chat-input" placeholder="Message the community…" maxlength="2000" autocomplete="off" required>
+            <input class="chat-input" type="text" id="chat-input" placeholder="Message the community&hellip;" maxlength="2000" autocomplete="off" required>
             <button type="submit" class="chat-send-btn" aria-label="Send message">➤</button>
             <div id="chat-emoji-panel" class="chat-emoji-panel" role="menu" aria-label="Emoji picker"></div>
           </form>
@@ -186,22 +186,22 @@
           <div class="account-info-grid">
             <div class="account-info-item">
               <span class="account-info-label">Email</span>
-              <span class="account-info-value" id="account-email-display">—</span>
+              <span class="account-info-value" id="account-email-display">&mdash;</span>
             </div>
             <div class="account-info-item">
               <span class="account-info-label">Role</span>
-              <span class="account-info-value" id="account-role-display">—</span>
+              <span class="account-info-value" id="account-role-display">&mdash;</span>
             </div>
             <div class="account-info-item">
               <span class="account-info-label">Data Mode</span>
-              <span class="account-info-value" id="account-mode-display">—</span>
+              <span class="account-info-value" id="account-mode-display">&mdash;</span>
             </div>
           </div>
         </div>
 
         <div class="card mb-20">
           <h4 class="mb-8">Change Email</h4>
-          <p class="text-sm mb-16">Update the email address on your account. A confirmation link will be sent to the new address — the change takes effect when you click it.</p>
+          <p class="text-sm mb-16">Update the email address on your account. A confirmation link will be sent to the new address &mdash; the change takes effect when you click it.</p>
           <div id="change-email-alert" class="auth-alert" role="alert"></div>
           <form id="change-email-form" class="form" novalidate>
             <div class="form-group">
@@ -260,12 +260,12 @@
               <span class="settings-mode-desc">Enables optional personalization as features roll out. No third-party trackers, ever.</span>
             </button>
           </div>
-          <p class="settings-mode-note">Current mode: <strong id="settings-current-mode">—</strong>. See <a href="privacy.html">Privacy Policy</a>.</p>
+          <p class="settings-mode-note">Current mode: <strong id="settings-current-mode">&mdash;</strong>. See <a href="privacy.html">Privacy Policy</a>.</p>
         </div>
 
       </div>
 
-      <!-- TAB: Owner Panel — owner only, removed from DOM for members by main.js -->
+      <!-- TAB: Owner Panel &mdash; owner only, removed from DOM for members by main.js -->
       <div id="tab-admin" class="dash-tab-content" role="tabpanel" hidden>
 
         <div class="owner-panel-section">
@@ -297,11 +297,11 @@
           <div class="owner-status-grid">
             <div class="owner-status-item">
               <span class="owner-status-label">Auth Backend</span>
-              <span id="op-stat-backend" class="owner-status-val">—</span>
+              <span id="op-stat-backend" class="owner-status-val">&mdash;</span>
             </div>
             <div class="owner-status-item">
               <span class="owner-status-label">Database</span>
-              <span id="op-stat-db" class="owner-status-val">—</span>
+              <span id="op-stat-db" class="owner-status-val">&mdash;</span>
             </div>
             <div class="owner-status-item">
               <span class="owner-status-label">Last Client Error</span>
@@ -333,20 +333,20 @@
                 <input class="form-input" type="text" id="op-promo-subtitle" placeholder="e.g. Artist Name · New Single" maxlength="160">
               </div>
               <div class="form-group">
-                <label class="form-label" for="op-promo-desc">Description <span class="form-label-hint">(tell people what it is &amp; why they should care — this is the info)</span></label>
-                <textarea class="form-input" id="op-promo-desc" rows="2" placeholder="e.g. A cinematic, bass-heavy new single — out now on every platform. Tap in." maxlength="300"></textarea>
+                <label class="form-label" for="op-promo-desc">Description <span class="form-label-hint">(tell people what it is &amp; why they should care &mdash; this is the info)</span></label>
+                <textarea class="form-input" id="op-promo-desc" rows="2" placeholder="e.g. A cinematic, bass-heavy new single &mdash; out now on every platform. Tap in." maxlength="300"></textarea>
               </div>
               <div class="form-group">
-                <label class="form-label" for="op-promo-badge">Badge / Type <span class="form-label-hint">(the chip — e.g. New Single, Sample, Sponsored)</span></label>
+                <label class="form-label" for="op-promo-badge">Badge / Type <span class="form-label-hint">(the chip &mdash; e.g. New Single, Sample, Sponsored)</span></label>
                 <input class="form-input" type="text" id="op-promo-badge" placeholder="New Single" maxlength="40">
               </div>
               <div class="form-group">
                 <label class="form-label" for="op-promo-image">Cover Art / Image URL <span class="form-label-hint">(square artwork looks best)</span></label>
-                <input class="form-input" type="url" id="op-promo-image" placeholder="https://…/cover.jpg" maxlength="500">
+                <input class="form-input" type="url" id="op-promo-image" placeholder="https://&hellip;/cover.jpg" maxlength="500">
               </div>
               <div class="form-group">
-                <label class="form-label" for="op-promo-url">Link URL <span class="form-label-hint">(paste a Spotify / Apple Music / YouTube link → it auto-previews the player. Any other link shows a button.)</span></label>
-                <input class="form-input" type="url" id="op-promo-url" placeholder="https://…" maxlength="500" required>
+                <label class="form-label" for="op-promo-url">Link URL <span class="form-label-hint">(paste a Spotify / Apple Music / YouTube link &rarr; it auto-previews the player. Any other link shows a button.)</span></label>
+                <input class="form-input" type="url" id="op-promo-url" placeholder="https://&hellip;" maxlength="500" required>
               </div>
               <div class="form-group">
                 <label class="form-label" for="op-promo-cta">Button Label</label>
@@ -385,14 +385,14 @@
                 <span class="owner-flag-label">Community Chat</span>
                 <span class="owner-flag-desc">Hides the Community tab for members when off.</span>
               </div>
-              <button type="button" class="owner-flag-toggle" id="op-flag-chat" data-key="community_chat_enabled" data-state="">—</button>
+              <button type="button" class="owner-flag-toggle" id="op-flag-chat" data-key="community_chat_enabled" data-state="">&mdash;</button>
             </div>
             <div class="owner-flag-row">
               <div class="owner-flag-info">
                 <span class="owner-flag-label">Contact Form</span>
                 <span class="owner-flag-desc">Disables the contact form submit when off.</span>
               </div>
-              <button type="button" class="owner-flag-toggle" id="op-flag-contact" data-key="contact_form_enabled" data-state="">—</button>
+              <button type="button" class="owner-flag-toggle" id="op-flag-contact" data-key="contact_form_enabled" data-state="">&mdash;</button>
             </div>
           </div>
         </div>
@@ -416,7 +416,7 @@
               </div>
               <div class="form-group">
                 <label class="form-label" for="op-ann-body">Body</label>
-                <textarea class="form-input" id="op-ann-body" placeholder="Announcement details…" maxlength="500" required></textarea>
+                <textarea class="form-input" id="op-ann-body" placeholder="Announcement details&hellip;" maxlength="500" required></textarea>
               </div>
               <button type="submit" class="btn btn-outline btn-sm">Post</button>
             </form>
@@ -426,7 +426,7 @@
         <!-- ── STOREFRONT ── owner only, built by JS ── -->
         <div class="owner-panel-section" id="op-store-section">
           <div class="owner-section-hd">
-            <h4>Storefront — Products</h4>
+            <h4>Storefront &mdash; Products</h4>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
               <button type="button" id="op-store-refresh" class="btn btn-outline btn-sm">Refresh</button>
               <button type="button" id="op-product-new"   class="btn btn-outline btn-sm">+ New Product</button>
@@ -487,16 +487,16 @@
               <div class="op-form-grid">
                 <div class="form-group">
                   <label class="form-label" for="op-prod-cover">Cover Image URL</label>
-                  <input class="form-input" type="url" id="op-prod-cover" maxlength="500" placeholder="https://…">
+                  <input class="form-input" type="url" id="op-prod-cover" maxlength="500" placeholder="https://&hellip;">
                 </div>
                 <div class="form-group">
                   <label class="form-label" for="op-prod-external">External Link</label>
-                  <input class="form-input" type="url" id="op-prod-external" maxlength="500" placeholder="https://itch.io/…">
+                  <input class="form-input" type="url" id="op-prod-external" maxlength="500" placeholder="https://itch.io/&hellip;">
                 </div>
               </div>
               <div class="op-form-grid">
                 <div class="form-group">
-                  <label class="form-label" for="op-prod-series">Series / Universe <span class="form-label-hint">(optional — links this to a continuity)</span></label>
+                  <label class="form-label" for="op-prod-series">Series / Universe <span class="form-label-hint">(optional &mdash; links this to a continuity)</span></label>
                   <input class="form-input" type="text" id="op-prod-series" maxlength="120" placeholder="e.g. Totality Fractured Union">
                 </div>
               </div>
@@ -520,7 +520,7 @@
           </div>
         </div>
 
-        <!-- ── STOREFRONT — Categories & Tags ── -->
+        <!-- ── STOREFRONT &mdash; Categories & Tags ── -->
         <div class="owner-panel-section" id="op-taxonomy-section">
           <div class="owner-section-hd">
             <h4>Categories &amp; Tags</h4>

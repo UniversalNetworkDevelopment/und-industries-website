@@ -52,7 +52,7 @@
   var body = document.body;
 
   // ── Supabase ──────────────────────────────────────────────
-  var SUPABASE_URL      = 'https://wgcgzuflpxijhzlpphab.supabase.co';
+  var SUPABASE_URL = 'https://wgcgzuflpxijhzlpphab.supabase.co';
   var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndnY2d6dWZscHhpamh6bHBwaGFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMTc3MTgsImV4cCI6MjA5NDc5MzcxOH0.y96jBpi9ECy1RU76q4AuZQFlqPVrS6CJDwNyx__2K9A';
 
   // Portable base URL — the directory this site is served from, derived at runtime.
