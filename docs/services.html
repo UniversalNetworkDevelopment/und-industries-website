@@ -16,7 +16,7 @@
     .svc-badges { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 18px; }
     .svc-badge { background: #15151a; border: 1px solid rgba(255,255,255,.1); border-radius: 999px; padding: 6px 14px; font-size: .85rem; color: var(--text-muted); }
     .svc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; margin: 36px 0; }
-    @media (min-width: 1080px) { .svc-grid { grid-template-columns: repeat(4, 1fr); } }
+    @media (min-width: 1080px) { .svc-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); } }
     
     .svc-card {
       background: rgba(21, 21, 26, 0.7);
@@ -35,8 +35,8 @@
       border-color: rgba(124,92,255,0.4);
       box-shadow: 0 12px 40px rgba(124,92,255,0.15);
     }
-    .svc-card.featured { border-color: #7c5cff; box-shadow: 0 0 0 1px #7c5cff, 0 12px 40px rgba(124,92,255,.18); }
-    .svc-card .tag { position: absolute; top: -11px; left: 50%; transform: translateX(-50%); background: #7c5cff; color: #fff; font-size: .72rem; font-weight: 700; padding: 4px 12px; border-radius: 999px; letter-spacing: .5px; }
+    .svc-card.featured { border-color: #7c5cff; box-shadow: 0 0 0 1px #7c5cff, 0 12px 40px rgba(124,92,255,.18); overflow: visible; position: relative; }
+    .svc-card .tag { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: #7c5cff; color: #fff; font-size: .7rem; font-weight: 700; padding: 4px 14px; border-radius: 999px; letter-spacing: .5px; white-space: nowrap; z-index: 2; }
     .svc-card h3 { margin: 0 0 4px; font-size: 1.25rem; }
     .svc-price { font-size: 2.4rem; font-weight: 800; margin: 8px 0 2px; }
     .svc-price span { font-size: .9rem; font-weight: 500; color: var(--text-muted); }
@@ -202,7 +202,7 @@
         <div class="svc-badges">
           <span class="svc-badge">âš¡ Same-to-next-day</span>
           <span class="svc-badge">ðŸ&#39;³ Flat rates, no surprises</span>
-          <span class="svc-badge">ðŸ&ldquo; U.S.-based Â· Florida</span>
+          <span class="svc-badge">ðŸ&ldquo; U.S.-based &middot; Florida</span>
           <span class="svc-badge">ðŸ&rdquo;&#39; I never break what works</span>
         </div>
       </div>
