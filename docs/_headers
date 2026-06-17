@@ -1,9 +1,12 @@
-# Cloudflare Pages security headers for universalnetworkdevelopment.com
-# Applied to every route. See https://developers.cloudflare.com/pages/configuration/headers/
 /*
-  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  Content-Type: text/html; charset=utf-8
   X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  X-XSS-Protection: 1; mode=block
   Referrer-Policy: strict-origin-when-cross-origin
-  Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
-  Cross-Origin-Opener-Policy: same-origin
-  Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://js.stripe.com https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https://wgcgzuflpxijhzlpphab.supabase.co wss://wgcgzuflpxijhzlpphab.supabase.co https://api.stripe.com; frame-src https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com https://challenges.cloudflare.com https://open.spotify.com https://embed.music.apple.com https://www.youtube.com; frame-ancestors *; base-uri 'self'; form-action 'self' https://checkout.stripe.com; object-src 'none'
+
+/*.js
+  Content-Type: application/javascript; charset=utf-8
+
+/*.css
+  Content-Type: text/css; charset=utf-8
