@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -6,11 +6,11 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; connect-src 'self' https://*.supabase.co wss://*.supabase.co; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; base-uri 'self'; form-action 'self'; frame-ancestors *;">
   <meta name="theme-color" content="#0d0d0f">
   <meta name="description" content="Browse music, games, software, and stories from U.N.D Industries.">
-  <title>Store — U.N.D Industries</title>
+  <title>Store â€” U.N.D Industries</title>
   <link rel="stylesheet" href="assets/css/styles.css?v=1781536538131">
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <style>
-    /* Cart — adds a 3rd column to the store grid on wide screens */
+    /* Cart â€” adds a 3rd column to the store grid on wide screens */
     @media (min-width: 980px) {
       .store-layout { grid-template-columns: 220px 1fr 320px; }
     }
@@ -49,6 +49,15 @@
     .store-cart-clear { width: 100%; margin-top: 8px; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.85rem; }
     .store-cart-clear:hover { color: #ff6b6b; }
     .store-card-footer .store-card-add { margin-left: 6px; }
+      /* === COMING SOON MODE === */
+    .cs-banner {
+      background: linear-gradient(135deg,rgba(124,92,255,.15),rgba(77,232,255,.08));
+      border:1px solid rgba(124,92,255,.35);border-radius:14px;
+      padding:18px 24px;margin:0 0 28px;
+      display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    }
+    .cs-banner-text strong{display:block;color:#fff;margin-bottom:4px}
+    .cs-banner-text span{color:#8888a0;font-size:.9rem}
   </style>
 </head>
 <body data-page="store">
@@ -181,7 +190,7 @@
       <div class="footer-inner">
         <div>
           <div class="footer-brand">U.N.D <span>Industries</span></div>
-          <p class="footer-desc">U.N.D Industries — Universal Network Development LLC.</p>
+          <p class="footer-desc">U.N.D Industries â€” Universal Network Development LLC.</p>
         </div>
         <div class="footer-col">
           <h4>Pages</h4>
@@ -224,4 +233,5 @@
   <script src="assets/js/main.js"></script>
 </body>
 </html>
+
 

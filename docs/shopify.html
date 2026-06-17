@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -6,7 +6,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; connect-src 'self' https://*.supabase.co wss://*.supabase.co; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; base-uri 'self'; form-action 'self'; frame-ancestors *;">
   <meta name="theme-color" content="#0d0d0f">
   <meta name="description" content="Shopify Setup, Professionalization, Dropshipping Integration, and Optimization by U.N.D Industries. U.S.-based developer.">
-  <title>Shopify Services — Built for Growth | U.N.D Industries</title>
+  <title>Shopify Services â€” Built for Growth | U.N.D Industries</title>
   <link rel="stylesheet" href="assets/css/styles.css?v=1781536538130">
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <style>
@@ -43,7 +43,7 @@
     .svc-eta { color: #4de8ff; font-size: .85rem; margin-bottom: 14px; }
     .svc-list { list-style: none; padding: 0; margin: 0 0 22px; flex: 1; }
     .svc-list li { padding: 7px 0 7px 26px; position: relative; color: #cfcfe0; font-size: .94rem; }
-    .svc-list li::before { content: "✓"; position: absolute; left: 0; color: #39ff9d; font-weight: 700; }
+    .svc-list li::before { content: "âœ“"; position: absolute; left: 0; color: #39ff9d; font-weight: 700; }
     .svc-paybtn { width: 100%; }
     .svc-how { background: #121216; border: 1px solid rgba(255,255,255,.07); border-radius: 16px; padding: 30px; margin: 10px 0 36px; }
     .svc-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 18px; margin-top: 18px; }
@@ -96,7 +96,7 @@
     .svc-modal-muted { color: var(--text-muted); font-size: .88rem; }
     .svc-modal-terms { list-style: none; padding: 0; margin: 0 0 18px; }
     .svc-modal-terms li { position: relative; padding: 6px 0 6px 22px; color: #cfcfe0; font-size: .9rem; line-height: 1.45; }
-    .svc-modal-terms li::before { content: "✓"; position: absolute; left: 2px; color: #39ff9d; font-weight: 700; }
+    .svc-modal-terms li::before { content: "âœ“"; position: absolute; left: 2px; color: #39ff9d; font-weight: 700; }
     .svc-modal-warn { background: rgba(255,86,86,.1); border: 1px solid rgba(255,86,86,.45); color: #ffd9d9; border-radius: 10px; padding: 12px 14px; font-size: .88rem; line-height: 1.45; margin: 0 0 16px; }
     .svc-modal-note { background: rgba(77,232,255,.08); border: 1px solid rgba(77,232,255,.3); color: #cfeffd; border-radius: 10px; padding: 10px 14px; font-size: .85rem; line-height: 1.4; margin: 0 0 16px; }
     .svc-modal-check { display: flex; gap: 10px; align-items: flex-start; color: #cfcfe0; font-size: .85rem; line-height: 1.45; margin: 0 0 12px; cursor: pointer; }
@@ -106,6 +106,57 @@
     .svc-modal-err { color: #ff8a8a; font-size: .85rem; margin: 0 0 12px; }
     .svc-modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px; }
     @media (max-width: 520px) { .svc-modal-actions { flex-direction: column-reverse; } .svc-modal-actions .btn { width: 100%; } }
+      /* === COMING SOON MODE === */
+    .cart-toggle, .cart-panel, .cart-overlay { display: none !important; }
+    .cs-banner {
+      background: linear-gradient(135deg, rgba(124,92,255,0.15), rgba(77,232,255,0.08));
+      border: 1px solid rgba(124,92,255,0.35);
+      border-radius: 14px;
+      padding: 18px 24px;
+      margin: 0 0 32px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .cs-banner-icon { font-size: 1.6rem; flex: 0 0 auto; }
+    .cs-banner-text { flex: 1; }
+    .cs-banner-text strong { display: block; color: #fff; margin-bottom: 4px; font-size: 1rem; }
+    .cs-banner-text span { color: #8888a0; font-size: .9rem; }
+    .cs-banner-cta { flex: 0 0 auto; }
+    .btn-cs {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 11px 16px;
+      background: rgba(124,92,255,0.08);
+      border: 1px solid rgba(124,92,255,0.25);
+      border-radius: 10px;
+      color: #7c5cff;
+      font-size: .88rem;
+      font-weight: 600;
+      cursor: default;
+      pointer-events: none;
+    }
+    .btn-cs-contact {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 11px 16px;
+      background: rgba(57,255,157,0.07);
+      border: 1px solid rgba(57,255,157,0.25);
+      border-radius: 10px;
+      color: #39ff9d;
+      font-size: .88rem;
+      font-weight: 600;
+      text-decoration: none;
+      margin-top: 8px;
+      transition: background .2s;
+    }
+    .btn-cs-contact:hover { background: rgba(57,255,157,0.14); }
   </style>
 </head>
 <body data-page="services">
@@ -143,19 +194,23 @@
 
   <main>
     <header class="svc-hero">
-      <div class="container">
-        <h1>Shopify Services — Built for Growth</h1>
+      
+<div class="container"><div class="cs-banner"><div class="cs-banner-icon">🚀</div><div class="cs-banner-text"><strong>Online ordering coming soon</strong><span>Our payment backend is being upgraded. Contact us directly — same turnaround, same flat rates.</span></div><div class="cs-banner-cta"><a href="contact.html" class="btn btn-primary btn-sm">Contact Us →</a></div></div>
+    
+        <h1>Shopify Services â€” Built for Growth</h1>
         <p>Your Shopify store should feel fast, clean, and easy to use. I help you professionalize your setup, optimize your search, and integrate dropshipping the right way.</p>
         <div class="svc-badges">
-          <span class="svc-badge">⚡ Fast turnaround</span>
-          <span class="svc-badge">🗣 Clear communication</span>
-          <span class="svc-badge">🇺🇸 U.S.-based developer</span>
-          <span class="svc-badge">✓ Before &amp; after proof</span>
+          <span class="svc-badge">âš¡ Fast turnaround</span>
+          <span class="svc-badge">ðŸ—£ Clear communication</span>
+          <span class="svc-badge">ðŸ‡ºðŸ‡¸ U.S.-based developer</span>
+          <span class="svc-badge">âœ“ Before &amp; after proof</span>
         </div>
       </div>
     </header>
 
-    <div class="container">
+    
+<div class="container"><div class="cs-banner"><div class="cs-banner-icon">🚀</div><div class="cs-banner-text"><strong>Online ordering coming soon</strong><span>Our payment backend is being upgraded. Contact us directly — same turnaround, same flat rates.</span></div><div class="cs-banner-cta"><a href="contact.html" class="btn btn-primary btn-sm">Contact Us →</a></div></div>
+    
       
       <!-- Custom Upgrade Package (Featured) -->
       <h2 style="margin-top: 24px; margin-bottom: 8px;">Featured Package</h2>
@@ -164,7 +219,7 @@
           <span class="tag">AGENCY FAVORITE</span>
           <h3>Custom Shopify Upgrade Package</h3>
           <div class="svc-price">$499</div>
-          <div class="svc-eta">Delivered in 5–7 days</div>
+          <div class="svc-eta">Delivered in 5â€“7 days</div>
           <ul class="svc-list" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
             <li>Full professionalization</li>
             <li>Search optimization</li>
@@ -174,7 +229,7 @@
             <li>Tech guidance &amp; Support</li>
             <li>Before/after proof</li>
           </ul>
-          <a class="btn btn-primary btn-full svc-paybtn" data-pay="shopify_custom" href="contact.html">Start Your Shopify Upgrade</a>
+          <button class="btn-cs" disabled>🔒 Coming Soon</button><a class="btn-cs-contact" href="contact.html">✉ Inquire Now</a>
         </div>
       </div>
 
@@ -261,11 +316,13 @@
   </button>
   
   <footer class="footer">
-    <div class="container">
+    
+<div class="container"><div class="cs-banner"><div class="cs-banner-icon">🚀</div><div class="cs-banner-text"><strong>Online ordering coming soon</strong><span>Our payment backend is being upgraded. Contact us directly — same turnaround, same flat rates.</span></div><div class="cs-banner-cta"><a href="contact.html" class="btn btn-primary btn-sm">Contact Us →</a></div></div>
+    
       <div class="footer-inner">
         <div>
           <div class="footer-brand">U.N.D <span>Industries</span></div>
-          <p class="footer-desc">U.N.D Industries — Universal Network Development LLC.</p>
+          <p class="footer-desc">U.N.D Industries â€” Universal Network Development LLC.</p>
         </div>
         <div class="footer-col">
           <h4>Pages</h4>
@@ -305,4 +362,5 @@
   <script src="assets/js/services.js"></script>
 </body>
 </html>
+
 
