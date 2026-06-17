@@ -5,85 +5,78 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; connect-src 'self' https://*.supabase.co wss://*.supabase.co; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; base-uri 'self'; form-action 'self'; frame-ancestors *;">
   <meta name="theme-color" content="#0d0d0f">
-  <meta name="description" content="Thank you for your purchase from U.N.D Industries.">
-  <title>Thank You — U.N.D Industries</title>
+  <meta name="description" content="Thank you for your purchase from U.N.D Industries. Submit your order details to get started.">
+  <title>Order Confirmed — U.N.D Industries</title>
   <link rel="stylesheet" href="assets/css/styles.css?v=1781536538125">
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <style>
-    .pc-main { min-height: 70vh; display: flex; align-items: center; padding: 4rem 0; }
+    .pc-main { min-height: 70vh; display: flex; align-items: flex-start; padding: 4rem 0; }
     .pc-card {
-      max-width: 640px;
+      max-width: 700px;
       margin: 0 auto;
       background: #15151a;
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 16px;
       padding: 2.5rem;
-      text-align: center;
     }
+    .pc-header { text-align: center; margin-bottom: 2rem; }
     .pc-icon {
-      width: 64px;
-      height: 64px;
-      margin: 0 auto 1.25rem;
-      border-radius: 50%;
-      background: rgba(80, 200, 120, 0.12);
-      color: #4ade80;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2rem;
+      width: 64px; height: 64px; margin: 0 auto 1.25rem;
+      border-radius: 50%; background: rgba(80, 200, 120, 0.12);
+      color: #4ade80; display: flex; align-items: center;
+      justify-content: center; font-size: 2rem;
     }
     .pc-title { font-size: 1.75rem; margin: 0 0 0.5rem; }
-    .pc-sub { color: var(--text-muted); margin: 0 0 1.75rem; }
-    .pc-status { margin: 1.5rem 0; text-align: left; }
-    .pc-summary {
-      background: #0d0d0f;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 12px;
-      padding: 1.25rem 1.5rem;
-      margin: 0 0 1.5rem;
+    .pc-sub { color: var(--text-muted); margin: 0; }
+    .pc-divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 1.75rem 0; }
+
+    /* Intake Form */
+    .intake-heading {
+      font-size: 1.2rem; font-weight: 700; margin: 0 0 0.4rem;
+      color: #fff;
     }
-    .pc-summary-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 1rem;
-      padding: 0.4rem 0;
+    .intake-sub { color: var(--text-muted); font-size: 0.9rem; margin: 0 0 1.5rem; }
+    .intake-field { margin-bottom: 1.1rem; }
+    .intake-label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.4rem; letter-spacing: 0.02em; text-transform: uppercase; }
+    .intake-input, .intake-select, .intake-textarea {
+      width: 100%; background: #0d0d0f; border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 8px; padding: 0.65rem 0.9rem; font-size: 0.95rem;
+      color: #e8e8ec; outline: none; transition: border-color 0.2s;
+      font-family: inherit; box-sizing: border-box;
     }
-    .pc-summary-row span:first-child { color: var(--text-muted); }
-    .pc-summary-row span:last-child { font-weight: 600; text-align: right; }
-    .pc-license { margin: 1.25rem 0 0; text-align: left; }
-    .pc-license-label { color: var(--text-muted); font-size: 0.85rem; margin: 0 0 0.4rem; }
-    .pc-license-box {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: #0d0d0f;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 8px;
-      padding: 0.5rem 0.75rem;
+    .intake-input:focus, .intake-select:focus, .intake-textarea:focus {
+      border-color: #7c5cff;
     }
-    .pc-license-box code {
-      flex: 1;
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      font-size: 0.95rem;
-      word-break: break-all;
-      color: #e8e8ec;
+    .intake-textarea { resize: vertical; min-height: 100px; }
+    .intake-select { appearance: none; cursor: pointer; }
+    .intake-secure {
+      background: rgba(124,92,255,0.08); border: 1px solid rgba(124,92,255,0.25);
+      border-radius: 8px; padding: 0.75rem 1rem; font-size: 0.85rem;
+      color: var(--text-muted); margin-bottom: 1.25rem;
     }
-    .pc-spinner {
-      display: inline-block;
-      width: 18px;
-      height: 18px;
-      border: 2px solid rgba(255, 255, 255, 0.2);
-      border-top-color: var(--text);
-      border-radius: 50%;
-      animation: pc-spin 0.8s linear infinite;
-      vertical-align: middle;
-      margin-right: 0.5rem;
+    .intake-secure strong { color: #a78bfa; }
+    .intake-btn {
+      width: 100%; padding: 0.85rem; background: #7c5cff; color: #fff;
+      border: none; border-radius: 8px; font-size: 1rem; font-weight: 700;
+      cursor: pointer; transition: background 0.2s; display: flex;
+      align-items: center; justify-content: center; gap: 0.5rem;
     }
-    @keyframes pc-spin { to { transform: rotate(360deg); } }
-    .pc-loading-text { display: flex; align-items: center; justify-content: center; color: var(--text-muted); }
+    .intake-btn:hover { background: #6d4fe0; }
+    .intake-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .intake-success {
+      display: none; background: rgba(74,222,128,0.08);
+      border: 1px solid rgba(74,222,128,0.25); border-radius: 12px;
+      padding: 1.5rem; text-align: center; margin-top: 1.25rem;
+    }
+    .intake-success h3 { color: #4ade80; margin: 0 0 0.5rem; }
+    .intake-success p { color: var(--text-muted); margin: 0; font-size: 0.9rem; }
+    .intake-err { color: #f87171; font-size: 0.85rem; margin-top: 0.75rem; display: none; }
+
+    /* spinner */
+    .spin { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
     .pc-actions { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; margin-top: 1.75rem; }
-    .pc-note { color: var(--text-muted); font-size: 0.9rem; }
-    .pc-access { color: #4ade80; font-weight: 600; }
   </style>
 </head>
 <body data-page="purchase-complete">
@@ -101,7 +94,7 @@
             <li><a href="shopify.html">Shopify Services</a></li>
             <li><a href="automation.html">Automations &amp; AI</a></li>
           </ul>
-        </li><li><a href="shopify.html">Shopify</a></li><li><a href="automation.html">Automations</a></li>
+        </li>
         <li><a href="music.html">Music</a></li>
         <li><a href="store.html">Store</a></li>
         <li><a href="contact.html">Contact</a></li>
@@ -123,18 +116,90 @@
   <main class="pc-main">
     <div class="container">
       <div class="pc-card">
-        <div class="pc-icon" aria-hidden="true">&#10003;</div>
-        <h1 class="pc-title">Thank you for your purchase</h1>
-        <p class="pc-sub">Your order is confirmed. A summary is below.</p>
 
-        <div id="pc-status" class="pc-status" aria-live="polite" role="status">
-          <p class="pc-loading-text"><span class="pc-spinner" aria-hidden="true"></span>Confirming your order&hellip;</p>
+        <!-- Confirmation Header -->
+        <div class="pc-header">
+          <div class="pc-icon" aria-hidden="true">&#10003;</div>
+          <h1 class="pc-title">Payment Confirmed!</h1>
+          <p class="pc-sub">Your order is in. Now fill out the form below so we can get started immediately.</p>
         </div>
+
+        <hr class="pc-divider">
+
+        <!-- Order Intake Form — REQUIRED to fulfill -->
+        <div id="intake-section">
+          <p class="intake-heading">&#128221; Submit Your Order Details</p>
+          <p class="intake-sub">We need this information to complete your order. Takes 2 minutes. Do not skip this — we cannot begin work without it.</p>
+
+          <form id="intake-form" novalidate>
+
+            <div class="intake-field">
+              <label class="intake-label" for="intake-service">Service Purchased</label>
+              <select class="intake-select" id="intake-service" name="service" required>
+                <option value="">— Select the service you ordered —</option>
+                <option value="Website Quick Fix ($99)">Website Quick Fix — $99</option>
+                <option value="Website Fix Bundle ($199)">Website Fix Bundle — $199</option>
+                <option value="Website Full Cleanup ($349)">Website Full Cleanup — $349</option>
+                <option value="Shopify Quick Cleanup ($149)">Shopify Quick Cleanup — $149</option>
+                <option value="Shopify Professionalization ($299)">Shopify Professionalization — $299</option>
+                <option value="Dropshipping Integration ($249)">Dropshipping Integration — $249</option>
+                <option value="Custom Shopify Upgrade ($499)">Custom Shopify Upgrade — $499</option>
+                <option value="Starter Automation ($199)">Starter Automation — $199</option>
+                <option value="Advanced Automation ($399)">Advanced Automation — $399</option>
+                <option value="SEO Overhaul ($249)">SEO Overhaul — $249</option>
+                <option value="Consulting Session ($149)">Consulting Session — $149</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div class="intake-field">
+              <label class="intake-label" for="intake-name">Your Name</label>
+              <input class="intake-input" type="text" id="intake-name" name="name" placeholder="Full name" required>
+            </div>
+
+            <div class="intake-field">
+              <label class="intake-label" for="intake-email">Your Email</label>
+              <input class="intake-input" type="email" id="intake-email" name="email" placeholder="email@example.com" required>
+            </div>
+
+            <div class="intake-field">
+              <label class="intake-label" for="intake-url">Website URL</label>
+              <input class="intake-input" type="url" id="intake-url" name="url" placeholder="https://yourwebsite.com" required>
+            </div>
+
+            <div class="intake-field">
+              <label class="intake-label" for="intake-problem">Describe the Problem / What You Need Done</label>
+              <textarea class="intake-textarea" id="intake-problem" name="problem" placeholder="Be as specific as possible. What's broken? What do you want changed? Screenshots help — paste links if you have them." required></textarea>
+            </div>
+
+            <div class="intake-secure">
+              <strong>&#128274; Secure Access Submission:</strong> If we need login access to your site, reply to the confirmation email we send after this form — do not paste passwords here. We'll request only what's needed.
+            </div>
+
+            <div class="intake-field">
+              <label class="intake-label" for="intake-notes">Anything Else We Should Know? (Optional)</label>
+              <textarea class="intake-textarea" id="intake-notes" name="notes" placeholder="Platform (WordPress, Shopify, Wix, custom?), deadlines, preferences, etc." style="min-height:70px;"></textarea>
+            </div>
+
+            <button type="submit" class="intake-btn" id="intake-submit">
+              Submit Order Details
+            </button>
+            <p class="intake-err" id="intake-err"></p>
+          </form>
+
+          <div class="intake-success" id="intake-success">
+            <h3>&#9989; Order Details Received!</h3>
+            <p>We'll review your submission and reach out within 24 hours to confirm the plan and get started. Check your email for a confirmation from contact.undindustries@gmail.com.</p>
+          </div>
+        </div>
+
+        <hr class="pc-divider">
 
         <div class="pc-actions">
-          <a href="dashboard.html" class="btn btn-primary">Go to Dashboard</a>
-          <a href="store.html" class="btn btn-outline">Back to Store</a>
+          <a href="dashboard.html" class="btn btn-outline">View Dashboard</a>
+          <a href="services.html" class="btn btn-outline">Back to Services</a>
         </div>
+
       </div>
     </div>
   </main>
@@ -144,18 +209,18 @@
       <div class="footer-inner">
         <div>
           <div class="footer-brand">U.N.D <span>Industries</span></div>
-          <p class="footer-desc">U.N.D Industries — Universal Network Development LLC.</p>
+          <p class="footer-desc">U.N.D Industries &mdash; Universal Network Development LLC.</p>
         </div>
         <div class="footer-col">
           <h4>Pages</h4>
           <ul class="footer-links">
             <li><a href="index.html">Home</a></li>
             <li><a href="about.html">About</a></li>
-            <li><a href="services.html">Services</a></li><li><a href="shopify.html">Shopify</a></li><li><a href="automation.html">Automations</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="shopify.html">Shopify</a></li>
             <li><a href="store.html">Store</a></li>
             <li><a href="music.html">Music</a></li>
             <li><a href="contact.html">Contact</a></li>
-            <li><a href="grantatlas.html">GrantAtlas</a></li>
           </ul>
         </div>
         <div class="footer-col">
@@ -186,7 +251,86 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
   <script src="assets/js/main.js"></script>
-  <script src="assets/js/purchase-complete.js"></script>
+  <script>
+    // Auto-select service from URL param if present (?service=quick)
+    (function() {
+      try {
+        var params = new URLSearchParams(window.location.search);
+        var svc = params.get('service');
+        if (svc) {
+          var sel = document.getElementById('intake-service');
+          for (var i = 0; i < sel.options.length; i++) {
+            if (sel.options[i].value.toLowerCase().indexOf(svc.toLowerCase()) !== -1) {
+              sel.selectedIndex = i;
+              break;
+            }
+          }
+        }
+      } catch(e) {}
+    })();
+
+    document.getElementById('intake-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      var btn = document.getElementById('intake-submit');
+      var errEl = document.getElementById('intake-err');
+      errEl.style.display = 'none';
+
+      var service  = document.getElementById('intake-service').value.trim();
+      var name     = document.getElementById('intake-name').value.trim();
+      var email    = document.getElementById('intake-email').value.trim();
+      var url      = document.getElementById('intake-url').value.trim();
+      var problem  = document.getElementById('intake-problem').value.trim();
+      var notes    = document.getElementById('intake-notes').value.trim();
+
+      if (!service || !name || !email || !url || !problem) {
+        errEl.textContent = 'Please fill in all required fields.';
+        errEl.style.display = 'block';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spin"></span> Sending...';
+
+      var message = [
+        '=== ORDER INTAKE FORM ===',
+        'Service: ' + service,
+        'Name: ' + name,
+        'Email: ' + email,
+        'Website URL: ' + url,
+        '',
+        'PROBLEM / WHAT NEEDS TO BE DONE:',
+        problem,
+        '',
+        notes ? ('ADDITIONAL NOTES:\n' + notes) : '',
+        '',
+        '=========================',
+        'Submitted from: purchase-complete.html',
+        'Time: ' + new Date().toISOString()
+      ].filter(Boolean).join('\n');
+
+      fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name,
+          email: email,
+          subject: 'ORDER DETAILS: ' + service,
+          message: message
+        })
+      })
+      .then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
+      .then(function(res) {
+        if (!res.ok) throw new Error(res.data.error || 'Submission failed');
+        document.getElementById('intake-form').style.display = 'none';
+        document.getElementById('intake-success').style.display = 'block';
+      })
+      .catch(function(err) {
+        errEl.textContent = 'Could not send — please email contact.undindustries@gmail.com directly with your order details.';
+        errEl.style.display = 'block';
+        btn.disabled = false;
+        btn.innerHTML = 'Submit Order Details';
+      });
+    });
+  </script>
 </body>
 </html>
-
