@@ -336,9 +336,28 @@
           user_agent: ua
         };
 
+        // Detect payment routing: PayPal items have a paypal.com pay URL.
+        // Mixed carts (PayPal + Stripe) are blocked — each payment page is
+        // separate and we cannot split one order across two providers.
+        var paypalItems  = effList.filter(function(item) { return item.eff.pay && item.eff.pay.indexOf('paypal.com') !== -1; });
+        var stripeItems  = effList.filter(function(item) { return item.eff.pay && item.eff.pay.indexOf('paypal.com') === -1; });
+        var isPayPalOnly = paypalItems.length === effList.length;
+        var isStripeOnly = stripeItems.length  === effList.length;
+
+        if (!isPayPalOnly && !isStripeOnly) {
+          showErr('Your cart mixes PayPal and card services — please check out each separately.');
+          mGo.disabled = false; mGo.textContent = 'Agree & Checkout';
+          return;
+        }
+        if (isPayPalOnly && effList.length > 1) {
+          showErr('PayPal services must be purchased one at a time. Please remove extra items and try again.');
+          mGo.disabled = false; mGo.textContent = 'Agree & Checkout';
+          return;
+        }
+
         sb.from('tos_consents').insert(consentRow).select('id').single().then(function (cIns) {
           if (cIns.error || !cIns.data) throw new Error(cIns.error ? cIns.error.message : 'consent insert failed');
-          
+
           // Insert multiple tickets (one for each item in the cart)
           var ticketRows = effList.map(function(item) {
             return {
@@ -346,23 +365,33 @@
               service_slug: item.svc.slug,
               service_name: item.svc.name,
               status: 'checkout_started',
+              intake_status: 'awaiting_intake',
               amount_cents: item.eff.cents,
               consent_id: cIns.data.id,
-              detail: { source: 'cart_checkout' }
+              detail: { source: isPayPalOnly ? 'paypal_checkout' : 'cart_checkout' }
             };
           });
-          
+
           return sb.from('service_tickets').insert(ticketRows).select('ticket_number');
         }).then(function(tIns) {
           if (tIns.error || !tIns.data) throw new Error(tIns.error ? tIns.error.message : 'ticket insert failed');
           var ticketsStr = tIns.data.map(function(r) { return r.ticket_number; }).join(',');
-          
-          mBody.innerHTML = '<p class="svc-modal-p"><strong>Order recorded.</strong> Generating secure checkout link…</p>';
+
+          mBody.innerHTML = '<p class="svc-modal-p"><strong>Order recorded.</strong> Redirecting to payment…</p>';
           mGo.style.display = 'none'; mCancel.style.display = 'none';
-          
+
+          if (isPayPalOnly) {
+            // PayPal path: store ticket so purchase-complete.html can show it,
+            // then navigate to the PayPal hosted payment page.
+            try { sessionStorage.setItem('svc_last_ticket', ticketsStr); } catch (_) {}
+            window.location.href = effList[0].eff.pay;
+            return;
+          }
+
+          // Stripe path: create a server-side Checkout Session.
           var tkn = session.access_token;
           var payloadItems = effList.map(function(item) { return { slug: item.svc.slug, quantity: 1 }; });
-          
+
           fetch('/api/create-checkout-session', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tkn },
@@ -398,7 +427,7 @@
             mGo.style.display = ''; mCancel.style.display = '';
           });
         }).catch(function (err) {
-          showErr('We couldn’t record your agreement: ' + err.message);
+          showErr("We couldn't record your agreement: " + err.message);
           mGo.disabled = false; mGo.textContent = 'Agree & Checkout';
         });
       });
@@ -585,15 +614,29 @@
 
   // ---- resume after login: if we stored an intent and the user is now signed
   // in, reopen the consent modal automatically so they don't lose their place.
+  // Intent 'cart' is a sentinel meaning "reopen the cart checkout consent".
+  // Any other value was a single-service key (legacy path — no longer used now
+  // that all services go through the cart, but kept for safety).
   if (sb) {
     var intent = null;
     try { intent = sessionStorage.getItem('svc_intent'); } catch (e) {}
-    if (intent && SERVICES[intent]) {
+    if (intent === 'cart' && CART.length > 0) {
       sb.auth.getSession().then(function (sres) {
         var session = sres && sres.data ? sres.data.session : null;
         if (session) {
           try { sessionStorage.removeItem('svc_intent'); } catch (e) {}
-          fetchRecent(session.user.id).then(function (recent) { showConsent(SERVICES[intent], recent); });
+          fetchRecent(session.user.id).then(function (recent) { showConsentForCart(recent); });
+        }
+      });
+    } else if (intent && SERVICES[intent]) {
+      // Legacy single-item path (kept for forward-compat with any bookmarks).
+      sb.auth.getSession().then(function (sres) {
+        var session = sres && sres.data ? sres.data.session : null;
+        if (session) {
+          try { sessionStorage.removeItem('svc_intent'); } catch (e) {}
+          // Single-item intent: add to cart and open checkout if cart is empty.
+          if (CART.length === 0) { CART.push(intent); saveCart(); }
+          fetchRecent(session.user.id).then(function (recent) { showConsentForCart(recent); });
         }
       });
     }

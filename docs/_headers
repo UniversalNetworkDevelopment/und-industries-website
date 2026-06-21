@@ -4,6 +4,27 @@
   X-XSS-Protection: 1; mode=block
   Referrer-Policy: strict-origin-when-cross-origin
 
+/login.html
+  X-Frame-Options: DENY
+
+/register.html
+  X-Frame-Options: DENY
+
+/dashboard.html
+  X-Frame-Options: DENY
+
+/purchase-complete.html
+  X-Frame-Options: DENY
+
+/reset-password.html
+  X-Frame-Options: DENY
+
+/verified.html
+  X-Frame-Options: DENY
+
+/service-intake.html
+  X-Frame-Options: DENY
+
 /assets/css/*
   Content-Type: text/css; charset=utf-8
 
