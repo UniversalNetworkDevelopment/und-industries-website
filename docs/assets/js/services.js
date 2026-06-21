@@ -17,26 +17,34 @@
 
   // Public, fixed catalog. Amounts mirror the PayPal links exactly; the real
   // charge is enforced by PayPal's hosted page (these are just our record).
+  // Keys whose `pay` starts with 'https://buy.stripe.com/PLACEHOLDER_' are treated
+  // as NOT YET LIVE: their buttons render as "Coming soon" and are non-clickable.
   var SERVICES = {
-    // Original Website Fixes
+    // Original Website Fixes — LIVE (real PayPal links)
     quick:   { slug: 'website-fix-quick',    name: 'Website Quick Fix',    cents:  9900, pay: 'https://www.paypal.com/ncp/payment/SCTUJTJ77AK6Q' },
     bundle:  { slug: 'website-fix-bundle',   name: 'Website Fix Bundle',   cents: 19900, pay: 'https://www.paypal.com/ncp/payment/2H8HXYU2JMHPG' },
     cleanup: { slug: 'website-fix-cleanup',  name: 'Website Full Cleanup', cents: 34900, pay: 'https://www.paypal.com/ncp/payment/XFGQG3RN3MMS8' },
-    
-    // Shopify Services (Replace the placeholder links with your real Stripe Payment Links)
-    shopify_quick: { slug: 'shopify-quick-cleanup', name: 'Shopify Quick Cleanup', cents: 14900, pay: 'https://buy.stripe.com/PLACEHOLDER_SHOPIFY_QUICK' },
-    shopify_pro:   { slug: 'shopify-pro-upgrade',   name: 'Shopify Professionalization', cents: 29900, pay: 'https://buy.stripe.com/PLACEHOLDER_SHOPIFY_PRO' },
-    shopify_drop:  { slug: 'shopify-dropshipping',  name: 'Dropshipping Integration', cents: 24900, pay: 'https://buy.stripe.com/PLACEHOLDER_SHOPIFY_DROP' },
-    shopify_custom: { slug: 'shopify-custom-upgrade', name: 'Custom Shopify Upgrade', cents: 49900, pay: 'https://buy.stripe.com/PLACEHOLDER_SHOPIFY_CUSTOM' },
 
-    // Automation Services
-    auto_start:    { slug: 'auto-starter', name: 'Starter Automation', cents: 19900, pay: 'https://buy.stripe.com/PLACEHOLDER_AUTO_STARTER' },
-    auto_adv:      { slug: 'auto-advanced', name: 'Advanced Automation', cents: 39900, pay: 'https://buy.stripe.com/PLACEHOLDER_AUTO_ADV' },
+    // Shopify Services — PLACEHOLDER (gate until real Stripe links are wired)
+    shopify_quick:  { slug: 'shopify-quick-cleanup',   name: 'Shopify Quick Cleanup',        cents: 14900, pay: 'https://buy.stripe.com/PLACEHOLDER_SHOPIFY_QUICK' },
+    shopify_pro:    { slug: 'shopify-pro-upgrade',     name: 'Shopify Professionalization',   cents: 29900, pay: 'https://buy.stripe.com/PLACEHOLDER_SHOPIFY_PRO' },
+    shopify_drop:   { slug: 'shopify-dropshipping',    name: 'Dropshipping Integration',      cents: 24900, pay: 'https://buy.stripe.com/PLACEHOLDER_SHOPIFY_DROP' },
+    shopify_custom: { slug: 'shopify-custom-upgrade',  name: 'Custom Shopify Upgrade',        cents: 49900, pay: 'https://buy.stripe.com/PLACEHOLDER_SHOPIFY_CUSTOM' },
 
-    // Growth & Consulting
-    seo:           { slug: 'seo-overhaul', name: 'SEO Overhaul', cents: 24900, pay: 'https://buy.stripe.com/PLACEHOLDER_SEO' },
-    consulting:    { slug: 'consulting-session', name: 'Consulting Session', cents: 14900, pay: 'https://buy.stripe.com/PLACEHOLDER_CONSULT' }
+    // Automation Services — PLACEHOLDER
+    auto_start: { slug: 'auto-starter',  name: 'Starter Automation',  cents: 19900, pay: 'https://buy.stripe.com/PLACEHOLDER_AUTO_STARTER' },
+    auto_adv:   { slug: 'auto-advanced', name: 'Advanced Automation',  cents: 39900, pay: 'https://buy.stripe.com/PLACEHOLDER_AUTO_ADV' },
+
+    // Growth & Consulting — PLACEHOLDER
+    seo:        { slug: 'seo-overhaul',       name: 'SEO Overhaul',        cents: 24900, pay: 'https://buy.stripe.com/PLACEHOLDER_SEO' },
+    consulting: { slug: 'consulting-session', name: 'Consulting Session',  cents: 14900, pay: 'https://buy.stripe.com/PLACEHOLDER_CONSULT' }
   };
+
+  // Returns true if a service is live (has a non-placeholder payment link).
+  function isLive(key) {
+    var s = SERVICES[key];
+    return !!(s && s.pay && s.pay.indexOf('PLACEHOLDER_') === -1);
+  }
 
   // Referral codes → a discount + the discounted PayPal links you create.
   // TO ACTIVATE: make discounted PayPal links (e.g. 10% off) the same way you
@@ -413,13 +421,38 @@
 
   // ---- click handler ----
   function book(key) {
+    if (!isLive(key)) {
+      // Placeholder: show a "Coming soon" modal instead of sending to checkout.
+      buildModal();
+      var svc = SERVICES[key] || {};
+      mTitle.textContent = (svc.name || 'This service') + ' — Coming Soon';
+      mBody.innerHTML =
+        '<p class="svc-modal-p">This service isn\'t available for purchase yet. We\'re finishing the setup and will open it soon.</p>' +
+        '<p class="svc-modal-p svc-modal-muted">In the meantime, <a href="contact.html">contact us</a> if you\'d like to discuss this service or request a custom quote.</p>';
+      showErr('');
+      mGo.style.display = 'none';
+      mCancel.textContent = 'Close';
+      mCancel.onclick = function () { closeModal(); mGo.style.display = ''; };
+      openModal();
+      return;
+    }
     addToCart(key);
   }
 
   var btns = document.querySelectorAll('[data-pay]');
   for (var i = 0; i < btns.length; i++) {
     (function (a) {
-      a.addEventListener('click', function (e) { e.preventDefault(); book(a.getAttribute('data-pay')); });
+      var key = a.getAttribute('data-pay');
+      // Visually disable placeholder buttons so the state is clear before click
+      if (!isLive(key)) {
+        a.setAttribute('disabled', 'disabled');
+        a.setAttribute('aria-disabled', 'true');
+        a.setAttribute('title', 'Coming soon');
+        // Replace the button text with "Coming soon" but keep the original text in data-orig
+        a.dataset.orig = a.textContent;
+        a.textContent = 'Coming Soon';
+      }
+      a.addEventListener('click', function (e) { e.preventDefault(); book(key); });
     }(btns[i]));
   }
 

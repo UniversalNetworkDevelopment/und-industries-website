@@ -30,49 +30,37 @@
     .pc-sub { color: var(--text-muted); margin: 0; }
     .pc-divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 1.75rem 0; }
 
-    /* Intake Form */
-    .intake-heading {
-      font-size: 1.2rem; font-weight: 700; margin: 0 0 0.4rem;
-      color: #fff;
-    }
-    .intake-sub { color: var(--text-muted); font-size: 0.9rem; margin: 0 0 1.5rem; }
-    .intake-field { margin-bottom: 1.1rem; }
-    .intake-label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.4rem; letter-spacing: 0.02em; text-transform: uppercase; }
-    .intake-input, .intake-select, .intake-textarea {
-      width: 100%; background: #0d0d0f; border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 8px; padding: 0.65rem 0.9rem; font-size: 0.95rem;
-      color: #e8e8ec; outline: none; transition: border-color 0.2s;
-      font-family: inherit; box-sizing: border-box;
-    }
-    .intake-input:focus, .intake-select:focus, .intake-textarea:focus {
-      border-color: #7c5cff;
-    }
-    .intake-textarea { resize: vertical; min-height: 100px; }
-    .intake-select { appearance: none; cursor: pointer; }
-    .intake-secure {
-      background: rgba(124,92,255,0.08); border: 1px solid rgba(124,92,255,0.25);
-      border-radius: 8px; padding: 0.75rem 1rem; font-size: 0.85rem;
-      color: var(--text-muted); margin-bottom: 1.25rem;
-    }
-    .intake-secure strong { color: #a78bfa; }
-    .intake-btn {
-      width: 100%; padding: 0.85rem; background: #7c5cff; color: #fff;
-      border: none; border-radius: 8px; font-size: 1rem; font-weight: 700;
-      cursor: pointer; transition: background 0.2s; display: flex;
-      align-items: center; justify-content: center; gap: 0.5rem;
-    }
-    .intake-btn:hover { background: #6d4fe0; }
-    .intake-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-    .intake-success {
-      display: none; background: rgba(74,222,128,0.08);
-      border: 1px solid rgba(74,222,128,0.25); border-radius: 12px;
-      padding: 1.5rem; text-align: center; margin-top: 1.25rem;
-    }
-    .intake-success h3 { color: #4ade80; margin: 0 0 0.5rem; }
-    .intake-success p { color: var(--text-muted); margin: 0; font-size: 0.9rem; }
-    .intake-err { color: #f87171; font-size: 0.85rem; margin-top: 0.75rem; display: none; }
+    /* Status area (Stripe purchase polling) */
+    .pc-summary { background: rgba(255,255,255,0.03); border-radius: 10px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; }
+    .pc-summary-row { display: flex; justify-content: space-between; align-items: center; padding: 0.35rem 0; font-size: 0.95rem; color: #cfcfe0; }
+    .pc-summary-row span:first-child { color: #888; }
+    .pc-license { margin-top: 1.25rem; }
+    .pc-license-label { font-size: 0.8rem; font-weight: 600; color: #888; letter-spacing: 0.04em; text-transform: uppercase; margin: 0 0 0.4rem; }
+    .pc-license-box { display: flex; align-items: center; gap: 0.75rem; background: rgba(124,92,255,0.08); border: 1px solid rgba(124,92,255,0.25); border-radius: 8px; padding: 0.75rem 1rem; }
+    .pc-license-box code { flex: 1; font-family: 'Courier New', monospace; font-size: 0.95rem; color: #a78bfa; word-break: break-all; }
+    .pc-access { color: var(--text-muted); font-size: 0.9rem; margin: 1rem 0 0; }
+    .pc-note { color: var(--text-muted); font-size: 0.95rem; margin: 0; }
 
-    /* spinner */
+    /* Service intake CTA banner */
+    .pc-service-cta {
+      background: rgba(124,92,255,0.09);
+      border: 1px solid rgba(124,92,255,0.30);
+      border-radius: 12px;
+      padding: 1.5rem 1.75rem;
+      text-align: center;
+    }
+    .pc-service-cta-icon {
+      font-size: 2rem; margin-bottom: 0.65rem;
+    }
+    .pc-service-cta h2 {
+      font-size: 1.2rem; margin: 0 0 0.4rem; color: #e8e8ec;
+    }
+    .pc-service-cta p {
+      color: var(--text-muted); font-size: 0.9rem; margin: 0 0 1.25rem; line-height: 1.6;
+    }
+    .pc-service-cta .btn { min-width: 200px; }
+
+    /* Spinner */
     .spin { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -121,75 +109,35 @@
         <div class="pc-header">
           <div class="pc-icon" aria-hidden="true">&#10003;</div>
           <h1 class="pc-title">Payment Confirmed!</h1>
-          <p class="pc-sub">Your order is in. Now fill out the form below so we can get started immediately.</p>
+          <p class="pc-sub" id="pc-sub-text">Your order is in &mdash; one more step below.</p>
         </div>
 
         <hr class="pc-divider">
 
-        <!-- Order Intake Form &mdash; REQUIRED to fulfill -->
-        <div id="intake-section">
-          <p class="intake-heading">&#128221; Submit Your Order Details</p>
-          <p class="intake-sub">We need this information to complete your order. Takes 2 minutes. Do not skip this &mdash; we cannot begin work without it.</p>
+        <!--
+          purchase-complete.js mounts into #pc-status.
+          It reads ?session_id= for Stripe product purchases, polls for the
+          purchase + entitlement, and renders the license key / access note.
+          For PayPal service purchases (no session_id) or when a ?ticket= param
+          is present, #pc-service-section is shown instead and routes the buyer
+          to service-intake.html to complete the order.
+        -->
+        <div id="pc-status">
+          <!-- JS populates this for Stripe product purchases -->
+        </div>
 
-          <form id="intake-form" novalidate>
-
-            <div class="intake-field">
-              <label class="intake-label" for="intake-service">Service Purchased</label>
-              <select class="intake-select" id="intake-service" name="service" required>
-                <option value="">&mdash; Select the service you ordered &mdash;</option>
-                <option value="Website Quick Fix ($99)">Website Quick Fix &mdash; $99</option>
-                <option value="Website Fix Bundle ($199)">Website Fix Bundle &mdash; $199</option>
-                <option value="Website Full Cleanup ($349)">Website Full Cleanup &mdash; $349</option>
-                <option value="Shopify Quick Cleanup ($149)">Shopify Quick Cleanup &mdash; $149</option>
-                <option value="Shopify Professionalization ($299)">Shopify Professionalization &mdash; $299</option>
-                <option value="Dropshipping Integration ($249)">Dropshipping Integration &mdash; $249</option>
-                <option value="Custom Shopify Upgrade ($499)">Custom Shopify Upgrade &mdash; $499</option>
-                <option value="Starter Automation ($199)">Starter Automation &mdash; $199</option>
-                <option value="Advanced Automation ($399)">Advanced Automation &mdash; $399</option>
-                <option value="SEO Overhaul ($249)">SEO Overhaul &mdash; $249</option>
-                <option value="Consulting Session ($149)">Consulting Session &mdash; $149</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-
-            <div class="intake-field">
-              <label class="intake-label" for="intake-name">Your Name</label>
-              <input class="intake-input" type="text" id="intake-name" name="name" placeholder="Full name" required>
-            </div>
-
-            <div class="intake-field">
-              <label class="intake-label" for="intake-email">Your Email</label>
-              <input class="intake-input" type="email" id="intake-email" name="email" placeholder="email@example.com" required>
-            </div>
-
-            <div class="intake-field">
-              <label class="intake-label" for="intake-url">Website URL</label>
-              <input class="intake-input" type="url" id="intake-url" name="url" placeholder="https://yourwebsite.com" required>
-            </div>
-
-            <div class="intake-field">
-              <label class="intake-label" for="intake-problem">Describe the Problem / What You Need Done</label>
-              <textarea class="intake-textarea" id="intake-problem" name="problem" placeholder="Be as specific as possible. What's broken? What do you want changed? Screenshots help &mdash; paste links if you have them." required></textarea>
-            </div>
-
-            <div class="intake-secure">
-              <strong>&#128274; Secure Access Submission:</strong> If we need login access to your site, reply to the confirmation email we send after this form &mdash; do not paste passwords here. We'll request only what's needed.
-            </div>
-
-            <div class="intake-field">
-              <label class="intake-label" for="intake-notes">Anything Else We Should Know? (Optional)</label>
-              <textarea class="intake-textarea" id="intake-notes" name="notes" placeholder="Platform (WordPress, Shopify, Wix, custom?), deadlines, preferences, etc." style="min-height:70px;"></textarea>
-            </div>
-
-            <button type="submit" class="intake-btn" id="intake-submit">
-              Submit Order Details
-            </button>
-            <p class="intake-err" id="intake-err"></p>
-          </form>
-
-          <div class="intake-success" id="intake-success">
-            <h3>&#9989; Order Details Received!</h3>
-            <p>We'll review your submission and reach out within 24 hours to confirm the plan and get started. Check your email for a confirmation from contact.undindustries@gmail.com.</p>
+        <!-- Service intake CTA — shown by purchase-complete.js when appropriate -->
+        <div id="pc-service-section" hidden>
+          <div class="pc-service-cta">
+            <div class="pc-service-cta-icon" aria-hidden="true">&#128221;</div>
+            <h2>Submit Your Order Details</h2>
+            <p>
+              Payment received. Now we need a couple of details so we can start immediately &mdash;
+              takes 2 minutes and we can&rsquo;t begin without it.
+            </p>
+            <a id="pc-intake-link" href="service-intake.html" class="btn btn-primary">
+              Submit Order Details &rarr;
+            </a>
           </div>
         </div>
 
@@ -251,86 +199,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
   <script src="assets/js/main.js"></script>
-  <script>
-    // Auto-select service from URL param if present (?service=quick)
-    (function() {
-      try {
-        var params = new URLSearchParams(window.location.search);
-        var svc = params.get('service');
-        if (svc) {
-          var sel = document.getElementById('intake-service');
-          for (var i = 0; i < sel.options.length; i++) {
-            if (sel.options[i].value.toLowerCase().indexOf(svc.toLowerCase()) !== -1) {
-              sel.selectedIndex = i;
-              break;
-            }
-          }
-        }
-      } catch(e) {}
-    })();
-
-    document.getElementById('intake-form').addEventListener('submit', function(e) {
-      e.preventDefault();
-      var btn = document.getElementById('intake-submit');
-      var errEl = document.getElementById('intake-err');
-      errEl.style.display = 'none';
-
-      var service  = document.getElementById('intake-service').value.trim();
-      var name     = document.getElementById('intake-name').value.trim();
-      var email    = document.getElementById('intake-email').value.trim();
-      var url      = document.getElementById('intake-url').value.trim();
-      var problem  = document.getElementById('intake-problem').value.trim();
-      var notes    = document.getElementById('intake-notes').value.trim();
-
-      if (!service || !name || !email || !url || !problem) {
-        errEl.textContent = 'Please fill in all required fields.';
-        errEl.style.display = 'block';
-        return;
-      }
-
-      btn.disabled = true;
-      btn.innerHTML = '<span class="spin"></span> Sending...';
-
-      var message = [
-        '=== ORDER INTAKE FORM ===',
-        'Service: ' + service,
-        'Name: ' + name,
-        'Email: ' + email,
-        'Website URL: ' + url,
-        '',
-        'PROBLEM / WHAT NEEDS TO BE DONE:',
-        problem,
-        '',
-        notes ? ('ADDITIONAL NOTES:\n' + notes) : '',
-        '',
-        '=========================',
-        'Submitted from: purchase-complete.html',
-        'Time: ' + new Date().toISOString()
-      ].filter(Boolean).join('\n');
-
-      fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: name,
-          email: email,
-          subject: 'ORDER DETAILS: ' + service,
-          message: message
-        })
-      })
-      .then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
-      .then(function(res) {
-        if (!res.ok) throw new Error(res.data.error || 'Submission failed');
-        document.getElementById('intake-form').style.display = 'none';
-        document.getElementById('intake-success').style.display = 'block';
-      })
-      .catch(function(err) {
-        errEl.textContent = 'Could not send &mdash; please email contact.undindustries@gmail.com directly with your order details.';
-        errEl.style.display = 'block';
-        btn.disabled = false;
-        btn.innerHTML = 'Submit Order Details';
-      });
-    });
-  </script>
+  <script src="assets/js/purchase-complete.js"></script>
+  <script src="assets/js/feedback.js"></script>
 </body>
 </html>

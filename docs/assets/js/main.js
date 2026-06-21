@@ -2923,6 +2923,23 @@
     }
   }
 
+  // ── Site-wide feedback widget ─────────────────────────────
+  // Injected here (after route guard + auth) so it appears on every page
+  // without editing 20+ HTML files. feedback.js is a fully isolated IIFE:
+  // it creates its own DOM nodes and its own supabase client — no shared
+  // state with this file, so a throw inside it cannot break auth/nav.
+  // We inject a <script> tag rather than calling it inline so the module
+  // stays external (CSP: script-src 'self' only — no 'unsafe-inline').
+  // Guard: skip if feedback.js is already present (e.g. purchase-complete.html
+  // loads it explicitly in its own <script> tag to control load order).
+  (function () {
+    var alreadyLoaded = !!document.querySelector('script[src*="feedback.js"]');
+    if (alreadyLoaded) return;
+    var s = document.createElement('script');
+    s.src = 'assets/js/feedback.js';
+    document.body.appendChild(s);
+  }());
+
   runRouteGuard();
 
 })();

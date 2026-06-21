@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; connect-src 'self' https://*.supabase.co wss://*.supabase.co; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; base-uri 'self'; form-action 'self'; frame-ancestors 'none';">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#0d0d0f">
+  <meta name="description" content="Submit your order details so we can get started on your service.">
+  <title>Order Details &mdash; U.N.D Industries</title>
+  <link rel="stylesheet" href="assets/css/styles.css?v=1781800001">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <style>
+    .si-page { min-height: 80vh; padding: calc(var(--nav-h) + 40px) 0 60px; }
+
+    /* Page intro */
+    .si-intro { text-align: center; margin-bottom: 2rem; }
+    .si-page-title { font-size: clamp(1.5rem, 4vw, 2.2rem); margin: 0 0 0.5rem; }
+    .si-page-sub { color: var(--text-muted); margin: 0; font-size: 1rem; }
+
+    /* Cards */
+    .si-card {
+      background: #15151a;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 2rem 2rem 2.25rem;
+      margin-bottom: 1.75rem;
+      max-width: 720px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .si-card-header {
+      display: flex; align-items: center; gap: 1rem;
+      margin-bottom: 1.5rem; flex-wrap: wrap;
+    }
+    .si-ticket-num {
+      background: rgba(124,92,255,0.15); color: #a78bfa;
+      border-radius: 999px; padding: 4px 14px; font-size: 0.82rem; font-weight: 700;
+    }
+    .si-service-name { font-weight: 700; font-size: 1.1rem; }
+
+    /* Form fields */
+    .si-form { margin-top: 0; }
+    .si-field { margin-bottom: 1.1rem; }
+    .si-label {
+      display: block; font-size: 0.82rem; font-weight: 600;
+      color: var(--text-muted); margin-bottom: 0.4rem;
+      letter-spacing: 0.04em; text-transform: uppercase;
+    }
+    .si-req { color: #f87171; }
+    .si-input, .si-select, .si-textarea {
+      width: 100%; background: #0d0d0f; border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 8px; padding: 0.65rem 0.9rem; font-size: 0.95rem;
+      color: #e8e8ec; outline: none; transition: border-color 0.2s;
+      font-family: inherit; box-sizing: border-box;
+    }
+    .si-input:focus, .si-select:focus, .si-textarea:focus { border-color: #7c5cff; }
+    .si-textarea { resize: vertical; min-height: 100px; }
+    .si-select { appearance: none; cursor: pointer; }
+
+    /* Access method steps */
+    .si-access-steps { margin-top: 0.6rem; }
+    .si-steps-inner {
+      background: rgba(77,232,255,0.07); border: 1px solid rgba(77,232,255,0.2);
+      border-radius: 8px; padding: 0.75rem 1rem; font-size: 0.88rem;
+      color: #c8f5ff; line-height: 1.6;
+    }
+    .si-steps-inner strong { color: #4de8ff; }
+
+    /* Consent row */
+    .si-consent-row { margin: 1.25rem 0 1rem; }
+    .si-check-label {
+      display: flex; gap: 0.65rem; align-items: flex-start;
+      font-size: 0.9rem; color: #cfcfe0; cursor: pointer; line-height: 1.5;
+    }
+    .si-check-label input[type="checkbox"] { margin-top: 3px; flex-shrink: 0; }
+
+    /* Secure note */
+    .si-secure-note {
+      background: rgba(124,92,255,0.07); border: 1px solid rgba(124,92,255,0.2);
+      border-radius: 8px; padding: 0.7rem 1rem; font-size: 0.85rem;
+      color: var(--text-muted); margin-bottom: 1.25rem;
+    }
+    .si-secure-note strong { color: #a78bfa; }
+
+    /* Submit button */
+    .si-btn {
+      width: 100%; padding: 0.85rem; background: #7c5cff; color: #fff;
+      border: none; border-radius: 8px; font-size: 1rem; font-weight: 700;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .si-btn:hover:not(:disabled) { background: #6d4fe0; }
+    .si-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    /* Error */
+    .si-err { color: #f87171; font-size: 0.88rem; margin-top: 0.75rem; }
+    .si-err-txt { color: #f87171; }
+    .si-err a { color: #f87171; }
+
+    /* Success state */
+    .si-success {
+      text-align: center; padding: 1.5rem;
+    }
+    .si-ok-icon {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: rgba(74,222,128,0.12); color: #4ade80;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.75rem; margin: 0 auto 1rem;
+    }
+    .si-success-title { color: #4ade80; margin: 0 0 0.4rem; }
+    .si-success-sub { color: var(--text-muted); margin: 0; font-size: 0.9rem; }
+
+    /* Done list */
+    .si-done-list { list-style: none; padding: 0; margin: 1rem 0; color: #cfcfe0; font-size: 0.95rem; }
+    .si-done-list li { padding: 4px 0; }
+
+    /* Generic helpers */
+    .si-msg { color: var(--text-muted); margin: 0 0 0.75rem; }
+    .si-msg a { color: #a78bfa; }
+    .si-loading { color: var(--text-muted); font-style: italic; padding: 2rem 0; text-align: center; }
+    .si-actions { display: flex; gap: 0.75rem; justify-content: center; margin-top: 1.5rem; flex-wrap: wrap; }
+  </style>
+</head>
+<body data-page="service-intake">
+
+  <nav class="nav" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">U.N.D <span>Industries</span></a>
+      <ul class="nav-links" id="nav-links" role="list">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li class="nav-dropdown">
+          <a href="services.html" class="nav-dropdown-toggle">Services <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></a>
+          <ul class="nav-dropdown-menu">
+            <li><a href="services.html">Website Fixes</a></li>
+            <li><a href="shopify.html">Shopify Services</a></li>
+            <li><a href="automation.html">Automations &amp; AI</a></li>
+          </ul>
+        </li>
+        <li><a href="store.html">Store</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li class="nav-mobile-auth"><a href="login.html">Login</a></li>
+        <li class="nav-mobile-auth"><a href="register.html">Sign Up</a></li>
+      </ul>
+      <div class="nav-cta">
+        <a href="login.html" class="btn btn-outline btn-sm" id="nav-login-btn">Login</a>
+        <a href="register.html" class="btn btn-primary btn-sm" id="nav-signup-btn">Sign Up</a>
+      </div>
+      <button class="nav-hamburger" id="nav-hamburger" aria-label="Toggle navigation" aria-expanded="false" type="button">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+    </div>
+  </nav>
+
+  <main class="si-page">
+    <div class="container">
+      <!-- service-intake.js mounts everything here -->
+      <div id="si-root">
+        <p class="si-loading">Loading your order&hellip;</p>
+      </div>
+
+      <div class="si-actions" style="margin-top:2.5rem;">
+        <a href="dashboard.html" class="btn btn-outline">View Dashboard</a>
+        <a href="services.html" class="btn btn-outline">Back to Services</a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div>
+          <div class="footer-brand">U.N.D <span>Industries</span></div>
+          <p class="footer-desc">U.N.D Industries &mdash; Universal Network Development LLC.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Support</h4>
+          <ul class="footer-links">
+            <li><a href="customer-service.html">Customer Service</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="login.html">Account</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p class="footer-copy">&copy; <span data-year>2026</span> U.N.D Industries. All rights reserved.</p>
+        <div class="footer-legal-row">
+          <a href="privacy.html" class="footer-legal-link">Privacy Policy</a>
+          <a href="terms.html" class="footer-legal-link">Terms of Use</a>
+          <a href="refund.html" class="footer-legal-link">Refund Policy</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/service-intake.js"></script>
+</body>
+</html>
