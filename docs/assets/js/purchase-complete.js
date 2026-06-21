@@ -214,12 +214,16 @@
             if (eRes && eRes.data && eRes.data.length) {
               entitlement = eRes.data[0];
             }
-          } catch (_) {}
+          } catch (eErr) {
+            console.warn('[purchase-complete] entitlement fetch error (non-fatal):', eErr);
+          }
 
           renderSummary(pRes.data, entitlement);
           return;
         }
-      } catch (_) {}
+      } catch (pErr) {
+        console.warn('[purchase-complete] purchase poll attempt ' + i + ' error:', pErr);
+      }
 
       if (i < maxAttempts - 1) await sleep(1500);
     }

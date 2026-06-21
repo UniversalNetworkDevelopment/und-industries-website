@@ -47,6 +47,34 @@
         navLinks.classList.remove('mobile-open');
       }
     });
+
+    // ── Mobile dropdown: tap the toggle to reveal the submenu, not navigate ──
+    // On desktop, hover opens the dropdown via CSS. On mobile/touch, tapping
+    // an <a> would navigate away — so we intercept the first tap to open the
+    // submenu and only navigate on a second deliberate tap.
+    navLinks.querySelectorAll('.nav-dropdown-toggle').forEach(function (toggle) {
+      toggle.addEventListener('click', function (e) {
+        // Only intercept when the nav is in mobile-open state (hamburger is open).
+        if (!navLinks.classList.contains('mobile-open')) return;
+        var parent = toggle.closest('.nav-dropdown');
+        if (!parent) return;
+        var isOpen = parent.classList.contains('mobile-dropdown-open');
+        // Close all sibling dropdowns first.
+        navLinks.querySelectorAll('.nav-dropdown').forEach(function (d) { d.classList.remove('mobile-dropdown-open'); });
+        if (!isOpen) {
+          // First tap: open the submenu, prevent navigation.
+          parent.classList.add('mobile-dropdown-open');
+          e.preventDefault();
+        }
+        // Second tap (isOpen was true): allow default navigation to toggle.href.
+      });
+    });
+
+    // Close open mobile dropdowns when clicking outside the nav.
+    document.addEventListener('click', function (e) {
+      if (!nav || nav.contains(e.target)) return;
+      navLinks.querySelectorAll('.nav-dropdown').forEach(function (d) { d.classList.remove('mobile-dropdown-open'); });
+    });
   }
 
   var body = document.body;

@@ -2958,3 +2958,22 @@ button.sidebar-link {
   color: #fff !important;
 }
 
+/* Mobile dropdown: show submenu when JS adds .mobile-dropdown-open */
+@media (max-width: 767px) {
+  .nav-dropdown.mobile-dropdown-open .nav-dropdown-menu {
+    position: static;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    box-shadow: none;
+    border: none;
+    background: rgba(255,255,255,0.04);
+    border-radius: 8px;
+    margin: 4px 0 8px;
+    padding: 4px 0;
+  }
+  .nav-dropdown.mobile-dropdown-open .nav-dropdown-toggle svg {
+    transform: rotate(180deg);
+  }
+}
+
