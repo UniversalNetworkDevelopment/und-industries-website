@@ -63,6 +63,24 @@ export async function onRequestPost(context) {
 
     const origin = new URL(request.url).origin;
     const taxEnabled = env.STRIPE_TAX_ENABLED === 'true';
+
+    // F8 fix (2026-07-19): every abandoned checkout used to land on /store.html — the
+    // DIGITAL PRODUCTS page — even when the buyer came from /services.html. Someone who
+    // backs out of a $349 service is dumped somewhere unrelated, which reads as broken
+    // and silently loses the sale.
+    //
+    // The client may name where to return, but it is validated against a fixed allow-list
+    // and never interpolated raw: an attacker-controlled cancel_url is an open-redirect
+    // that would let a phishing page wear a real Stripe checkout as its back button.
+    const RETURN_PAGES = {
+      services: '/services.html?checkout=cancelled',
+      store:    '/store.html?checkout=cancelled',
+      shopify:  '/shopify.html?checkout=cancelled',
+      automation: '/automation.html?checkout=cancelled'
+    };
+    const cancelPath = RETURN_PAGES[String(payload.returnTo || '').toLowerCase()] || RETURN_PAGES.store;
+    const cancelUrl = origin + cancelPath;
+
     let sessionParams;
 
     if (payload.priceId) {
@@ -72,7 +90,7 @@ export async function onRequestPost(context) {
         customer: customerId,
         line_items: [{ price: payload.priceId, quantity: 1 }],
         success_url: origin + '/purchase-complete.html?session_id={CHECKOUT_SESSION_ID}',
-        cancel_url: origin + '/store.html?checkout=cancelled',
+        cancel_url: cancelUrl,
         client_reference_id: user.id,
         metadata: { supabase_user_id: user.id, kind: 'subscription' },
         subscription_data: { metadata: { supabase_user_id: user.id } },
@@ -124,7 +142,7 @@ export async function onRequestPost(context) {
         customer: customerId,
         line_items: lineItems,
         success_url: origin + '/purchase-complete.html?session_id={CHECKOUT_SESSION_ID}',
-        cancel_url: origin + '/store.html?checkout=cancelled',
+        cancel_url: cancelUrl,
         client_reference_id: user.id,
         metadata: {
           supabase_user_id: user.id,

@@ -18,6 +18,27 @@
   var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndnY2d6dWZscHhpamh6bHBwaGFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMTc3MTgsImV4cCI6MjA5NDc5MzcxOH0.y96jBpi9ECy1RU76q4AuZQFlqPVrS6CJDwNyx__2K9A';
   var FALLBACK_EMAIL    = 'contact.undindustries@gmail.com';
 
+  // ── ACCESS AUTHORISATION ────────────────────────────────────────────────────
+  // The exact words the customer affirms. Stored verbatim with the ticket so there is
+  // never a question of WHICH wording they agreed to — a consent record that only stores
+  // "true" proves nothing about what was consented to.
+  //
+  // Bump ACCESS_TERMS_VERSION whenever this text changes, so old tickets keep the wording
+  // that was actually shown at the time.
+  //
+  // Three things this must establish, which the previous wording did not:
+  //   1. AUTHORISATION to access — not merely a promise to hand over credentials.
+  //   2. AUTHORITY — that this person may lawfully grant access to that property.
+  //   3. SCOPE — limited to the work ordered, on the URL they named.
+  var ACCESS_TERMS_VERSION = '2026-07-19';
+  var ACCESS_AUTH_TEXT =
+    'I authorise UND Industries (Universal Network Development LLC) to access the website ' +
+    'or system I have identified above, using the access method I have chosen, for the sole ' +
+    'purpose of performing the service I ordered. I confirm I own this property or am ' +
+    'authorised to grant this access. I understand access should be temporary and revocable, ' +
+    'and that I may revoke it at any time. I will complete the access steps within 24 hours ' +
+    'so work can begin.';
+
   // Access methods with real steps the buyer follows. No passwords — invites/scoped only.
   var ACCESS_METHODS = {
     github_collaborator: {
@@ -49,6 +70,16 @@
       steps: 'We\'ll email you a Google Meet / Zoom link. You share your screen and we walk through the work together. We never take control unless you grant it. Good for quick fixes or sensitive setups.'
     }
   };
+
+  // Same-origin Cloudflare trace — gives the client IP with no cross-origin call, so it
+  // works under the page CSP (connect-src 'self' + supabase). Best-effort: a null IP is
+  // acceptable in the consent record, a blocked page is not. Mirrors services.js:115.
+  function clientIp() {
+    return fetch('/cdn-cgi/trace')
+      .then(function (r) { return r.text(); })
+      .then(function (t) { var m = t.match(/(?:^|\n)ip=([^\n]+)/); return m ? m[1].trim() : null; })
+      .catch(function () { return null; });
+  }
 
   function esc(s) {
     if (s === null || s === undefined) return '';
@@ -118,7 +149,14 @@
         var doneQuery = sb.from('service_tickets')
           .select('ticket_number,service_name,intake_status')
           .eq('user_id', session.user.id)
-          .in('intake_status', ['submitted','in_progress','complete'])
+          // CANONICAL VOCABULARY: awaiting_intake | submitted | in_progress | delivered
+          // (supabase/fulfillment_chain.sql:12 — the schema that defines the column).
+          // 'complete' was MY invention (commit 2abeb4d) and it is not a real state. Nexus,
+          // which fulfils through Qwep, writes 'delivered'. So a Qwep-fulfilled order fell
+          // outside this filter and VANISHED from the customer's own dashboard: they paid,
+          // the work was done, and their order silently disappeared. 'complete' is kept in
+          // the list only so tickets written by the old code still show up.
+          .in('intake_status', ['submitted','in_progress','delivered','complete'])
           .order('created_at', { ascending: false })
           .limit(5);
 
@@ -242,7 +280,7 @@
         '<div class="si-consent-row">' +
           '<label class="si-check-label">' +
             '<input type="checkbox" id="si-confirm-' + idx + '" required> ' +
-            '<span>I\'ve read the access steps above and will complete them within 24 hours so work can begin. I understand that credentials should be temporary and revokable.</span>' +
+            '<span>' + esc(ACCESS_AUTH_TEXT) + '</span>' +
           '</label>' +
         '</div>' +
 
@@ -310,7 +348,7 @@
       if (!problem) { showErr(statusEl, 'Please describe the problem.'); return; }
       if (!outcome) { showErr(statusEl, 'Please describe your desired outcome.'); return; }
       if (!access) { showErr(statusEl, 'Please choose an access method.'); return; }
-      if (!confirmChk.checked) { showErr(statusEl, 'Please confirm you will complete the access steps.'); return; }
+      if (!confirmChk.checked) { showErr(statusEl, 'Please tick the box to authorise access, or we cannot begin the work.'); return; }
 
       submitBtn.disabled = true;
       submitBtn.textContent = 'Submitting…';
@@ -322,7 +360,34 @@
         desired_outcome: outcome,
         notes:          notes || null,
         access_method_label: ACCESS_METHODS[access] ? ACCESS_METHODS[access].label : access,
-        submitted_at:   new Date().toISOString()
+        submitted_at:   new Date().toISOString(),
+
+        // ── ACCESS AUTHORISATION RECORD (added 2026-07-19) ──────────────────
+        // GAP FOUND: the checkout consent (tos_consents, doc:'cart_checkout') records
+        // terms/privacy/refund and the non-refundable acknowledgement — but NOTHING about
+        // authorising us to access the customer's systems. The intake checkbox was a UI
+        // gate only: its value was read to enable the button (line ~293) and then thrown
+        // away. So we performed admin work on third-party systems with no stored record
+        // of who authorised it, for what, or when.
+        //
+        // The practical grant is real — the customer performs the granting act themselves
+        // (inviting us to a repo, creating a scoped staff account). What was missing is the
+        // EVIDENCE: scope, authority, and a timestamp. That record is the whole defence if
+        // anyone later disputes what was permitted.
+        //
+        // Recorded here rather than in a separate table so it travels with the ticket it
+        // authorises — the authorisation and the job it covers can never drift apart.
+        access_authorization: {
+          granted:          true,
+          statement:        ACCESS_AUTH_TEXT,
+          scope_url:        url,
+          method:           access,
+          method_label:     ACCESS_METHODS[access] ? ACCESS_METHODS[access].label : access,
+          authority_warranted: true,   // they affirm they may grant access to this property
+          terms_version:    ACCESS_TERMS_VERSION,
+          granted_at:       new Date().toISOString(),
+          user_agent:       navigator.userAgent
+        }
       };
 
       // Re-verify session freshness before write
@@ -335,7 +400,54 @@
           return;
         }
 
-        sb.from('service_tickets')
+        // ── record the access authorisation as a first-class consent ──────────
+        // The statement also lives on the ticket (orderDetails.access_authorization) so
+        // evidence survives even if this insert fails. This row is the CANONICAL copy:
+        // tos_consents is where every other agreement lives, so "show me everything this
+        // customer agreed to" has to be one query, not two places I have to remember.
+        //
+        // FAIL-OPEN, deliberately. If the consent table rejects the write, the customer
+        // still gets their order submitted — they did authorise us, and blocking a paid
+        // order over a bookkeeping failure punishes them for our bug. The ticket copy is
+        // the fallback record, and the failure is logged so it can be reconciled.
+        clientIp().then(function (ip) {
+          var consentRow = {
+            user_id: sess2.user.id,
+            doc: 'site_access_authorization',
+            version: ACCESS_TERMS_VERSION,
+            detail: {
+              statement:    ACCESS_AUTH_TEXT,
+              ticket:       ticket.ticket_number,
+              service:      ticket.service_name || ticket.service_slug || null,
+              scope_url:    url,
+              method:       access,
+              method_label: ACCESS_METHODS[access] ? ACCESS_METHODS[access].label : access,
+              accepted:     ['site_access', 'authority_to_grant', 'scope_limited'],
+              page:         'service-intake'
+            },
+            ip: ip,
+            user_agent: navigator.userAgent
+          };
+          return sb.from('tos_consents').insert(consentRow).select('id').single()
+            .then(function (cIns) {
+              if (cIns.error || !cIns.data) throw new Error(cIns.error ? cIns.error.message : 'no row');
+              // Kept in order_details, NOT written to service_tickets.consent_id — that
+              // column is already occupied by the CHECKOUT agreement (services.js:360),
+              // and a ticket can only reference one. Overwriting it would trade the
+              // purchase agreement for the access grant; we need both. Two consents,
+              // one ticket: the purchase in the column, the access grant in the JSON.
+              orderDetails.access_authorization.consent_id = cIns.data.id;
+              orderDetails.access_authorization.ip = ip;
+            })
+            .catch(function (e) {
+              console.error('[intake] access consent insert failed', e && e.message);
+              orderDetails.access_authorization.consent_id = null;
+              orderDetails.access_authorization.consent_write_error = String(e && e.message || e);
+              orderDetails.access_authorization.ip = ip;
+            });
+        }).then(function () {
+
+        return sb.from('service_tickets')
           .update({
             order_details:    orderDetails,
             access_method:    access,
@@ -362,6 +474,7 @@
               return;
             }
             showSuccess(form, successEl);
+            notifyOwner(ticket.ticket_number);
           })
           .catch(function(err) {
             console.error('[intake] update threw', err);
@@ -369,12 +482,34 @@
             submitBtn.disabled = false;
             submitBtn.textContent = 'Submit Order Details';
           });
+
+        });   // end clientIp/consent chain
       }).catch(function() {
         showErr(statusEl, 'Session check failed. Please refresh.');
         submitBtn.disabled = false;
         submitBtn.textContent = 'Submit Order Details';
       });
     });
+  }
+
+  // Tell the owner that access has arrived and the delivery clock has started.
+  //
+  // Added 2026-07-19. Payment already emailed him; the moment work can ACTUALLY START did
+  // not, so he had to notice it by opening a dashboard. MSA section 7 measures the delivery
+  // window from receipt of access, so this is the moment that matters most.
+  //
+  // Fire-and-forget on purpose: the ticket is already saved and the customer has already
+  // been shown success. A notification failure must never turn a completed submission into
+  // an error message for them. The endpoint re-reads the ticket server-side, so it cannot
+  // be used to fake an alert or probe someone else's order.
+  function notifyOwner(ticketNumber) {
+    try {
+      fetch('/api/intake-notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ticket: String(ticketNumber) })
+      }).catch(function () { /* silent: customer flow is already complete */ });
+    } catch (_) { /* ditto */ }
   }
 
   function showSuccess(form, successEl) {

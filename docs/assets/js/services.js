@@ -3,7 +3,7 @@
 // (2) preceded by an explicit, logged agreement to the Terms/Refund policy,
 // and (3) guarded against accidental double purchases — so we hold real,
 // timestamped proof of consent. Only AFTER that record is written do we send
-// the buyer to PayPal. If we can't write the record, we do NOT send them to pay.
+// the buyer to Stripe checkout. If we can't write the record, we do NOT send them to pay.
 //
 // Runs as an external file on purpose: the page's CSP is `script-src 'self'`
 // (no 'unsafe-inline'), so inline <script> is blocked. This is allowed.
@@ -15,15 +15,20 @@
   var TERMS_VERSION = '2026-06-13';
   var RECENT_HOURS  = 12; // window for "you already started this order"
 
-  // Public, fixed catalog. Amounts mirror the PayPal links exactly; the real
-  // charge is enforced by PayPal's hosted page (these are just our record).
+  // Public, fixed catalog. Amounts mirror the Supabase store_products price for
+  // each slug; the real charge is resolved server-side by Stripe (our record/display).
   // Keys whose `pay` starts with 'https://buy.stripe.com/PLACEHOLDER_' are treated
   // as NOT YET LIVE: their buttons render as "Coming soon" and are non-clickable.
   var SERVICES = {
-    // Original Website Fixes — LIVE (real PayPal links)
-    quick:   { slug: 'website-fix-quick',    name: 'Website Quick Fix',    cents:  9900, pay: 'https://www.paypal.com/ncp/payment/SCTUJTJ77AK6Q' },
-    bundle:  { slug: 'website-fix-bundle',   name: 'Website Fix Bundle',   cents: 19900, pay: 'https://www.paypal.com/ncp/payment/2H8HXYU2JMHPG' },
-    cleanup: { slug: 'website-fix-cleanup',  name: 'Website Full Cleanup', cents: 34900, pay: 'https://www.paypal.com/ncp/payment/XFGQG3RN3MMS8' },
+    // Original Website Fixes — LIVE via STRIPE Checkout (/api/create-checkout-session).
+    // PayPal removed 2026-07-10 — see PAYMENTS-DECISION-remove-paypal.md for the reason.
+    // The 'stripe' sentinel (no 'paypal.com', no 'PLACEHOLDER_') routes these through the
+    // server-side Stripe session, which resolves the price from Supabase by SLUG — exactly how
+    // PayPal did it, so the same products are charged the same amounts. Reverse by restoring
+    // pay:'https://www.paypal.com/checkout' if ever needed.
+    quick:   { slug: 'website-fix-quick',    name: 'Website Quick Fix',    cents:  9900, pay: 'stripe' },
+    bundle:  { slug: 'website-fix-bundle',   name: 'Website Fix Bundle',   cents: 19900, pay: 'stripe' },
+    cleanup: { slug: 'website-fix-cleanup',  name: 'Website Full Cleanup', cents: 34900, pay: 'stripe' },
 
     // Shopify Services — PLACEHOLDER (gate until real Stripe links are wired)
     shopify_quick:  { slug: 'shopify-quick-cleanup',   name: 'Shopify Quick Cleanup',        cents: 14900, pay: 'https://buy.stripe.com/PLACEHOLDER_SHOPIFY_QUICK' },
@@ -46,14 +51,14 @@
     return !!(s && s.pay && s.pay.indexOf('PLACEHOLDER_') === -1);
   }
 
-  // Referral codes → a discount + the discounted PayPal links you create.
-  // TO ACTIVATE: make discounted PayPal links (e.g. 10% off) the same way you
+  // Referral codes → a discount + the discounted checkout links you create.
+  // TO ACTIVATE: make discounted checkout links (e.g. 10% off) the same way you
   // made the originals, then fill `pay` + `cents` below and uncomment a code.
   // Until then, codes simply won't validate (no broken half-discounts).
   var REFERRAL = {
     // 'FRIEND10': {
     //   off: 0.10, label: '10% off', referrer: 'launch-promo',
-    //   pay:   { quick: '', bundle: '', cleanup: '' },          // discounted PayPal links
+    //   pay:   { quick: '', bundle: '', cleanup: '' },          // discounted checkout links
     //   cents: { quick: 8900, bundle: 17900, cleanup: 31400 }   // discounted amounts (display + record)
     // }
   };
@@ -336,24 +341,9 @@
           user_agent: ua
         };
 
-        // Detect payment routing: PayPal items have a paypal.com pay URL.
-        // Mixed carts (PayPal + Stripe) are blocked — each payment page is
-        // separate and we cannot split one order across two providers.
-        var paypalItems  = effList.filter(function(item) { return item.eff.pay && item.eff.pay.indexOf('paypal.com') !== -1; });
-        var stripeItems  = effList.filter(function(item) { return item.eff.pay && item.eff.pay.indexOf('paypal.com') === -1; });
-        var isPayPalOnly = paypalItems.length === effList.length;
-        var isStripeOnly = stripeItems.length  === effList.length;
-
-        if (!isPayPalOnly && !isStripeOnly) {
-          showErr('Your cart mixes PayPal and card services — please check out each separately.');
-          mGo.disabled = false; mGo.textContent = 'Agree & Checkout';
-          return;
-        }
-        if (isPayPalOnly && effList.length > 1) {
-          showErr('PayPal services must be purchased one at a time. Please remove extra items and try again.');
-          mGo.disabled = false; mGo.textContent = 'Agree & Checkout';
-          return;
-        }
+        // All services check out through Stripe (server-side Checkout Session;
+        // price resolved from Supabase by slug). PayPal was removed 2026-07-10 —
+        // see PAYMENTS-DECISION-remove-paypal.md.
 
         sb.from('tos_consents').insert(consentRow).select('id').single().then(function (cIns) {
           if (cIns.error || !cIns.data) throw new Error(cIns.error ? cIns.error.message : 'consent insert failed');
@@ -368,7 +358,7 @@
               intake_status: 'awaiting_intake',
               amount_cents: item.eff.cents,
               consent_id: cIns.data.id,
-              detail: { source: isPayPalOnly ? 'paypal_checkout' : 'cart_checkout' }
+              detail: { source: 'cart_checkout' }
             };
           });
 
@@ -380,14 +370,6 @@
           mBody.innerHTML = '<p class="svc-modal-p"><strong>Order recorded.</strong> Redirecting to payment…</p>';
           mGo.style.display = 'none'; mCancel.style.display = 'none';
 
-          if (isPayPalOnly) {
-            // PayPal path: store ticket so purchase-complete.html can show it,
-            // then navigate to the PayPal hosted payment page.
-            try { sessionStorage.setItem('svc_last_ticket', ticketsStr); } catch (_) {}
-            window.location.href = effList[0].eff.pay;
-            return;
-          }
-
           // Stripe path: create a server-side Checkout Session.
           var tkn = session.access_token;
           var payloadItems = effList.map(function(item) { return { slug: item.svc.slug, quantity: 1 }; });
@@ -395,7 +377,7 @@
           fetch('/api/create-checkout-session', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tkn },
-            body: JSON.stringify({ items: payloadItems, ticket: ticketsStr })
+            body: JSON.stringify({ items: payloadItems, ticket: ticketsStr, returnTo: 'services' })
           })
           .then(function(r) {
             if (!r.ok) {
@@ -468,21 +450,108 @@
     addToCart(key);
   }
 
+  // ── AVAILABILITY RENDERING ──────────────────────────────────────────────────
+  // Rewritten 2026-07-19. Availability is now DATA in Supabase
+  // (store_products.availability), not a hardcoded PLACEHOLDER string. Alex can pause
+  // one service, or the whole store, from the dashboard with NO DEPLOY. That is the fix
+  // for the 2026-06-17 gate that stayed shut 32 days because reopening needed a push.
+  //
+  // FAIL CLOSED, ALWAYS. The HTML ships every button `disabled`; this code only ever
+  // UNLOCKS. So if Supabase is unreachable, if this script throws, or if a slug is
+  // unknown, nothing is purchasable. Never take money we cannot verify we are meant to
+  // take. (site-state.js deliberately fails OPEN on the site banner — inventing an
+  // outage is its own harm. Availability is the opposite trade, on purpose.)
+  var SVC_STATE = {
+    live:     { text: 'Add to Cart',             enabled: true,  title: '' },
+    soon:     { text: '🔒 Coming Soon', enabled: false, title: 'Not yet available' },
+    paused:   { text: 'Temporarily Unavailable',  enabled: false, title: 'Paused — at capacity' },
+    waitlist: { text: 'Join the Waitlist',        enabled: true,  title: 'Join the waitlist' },
+    hidden:   { text: '',                         enabled: false, title: '' }
+  };
+
+  function paintButton(a, key) {
+    var svc = SERVICES[key];
+    if (!svc) return;
+    var slug = svc.slug;
+    var st = 'soon', note = null;
+
+    if (window.UNDSiteState) {
+      st = window.UNDSiteState.availabilityOf(slug);
+      note = window.UNDSiteState.noteOf(slug);
+      var mode = window.UNDSiteState.get().mode;
+
+      // SITE-WIDE OVERRIDES. Deliberate, not incidental:
+      //   maintenance → EVERYTHING stops, waitlist included. The site is being worked
+      //                 on; capturing a signup we might drop is worse than nothing.
+      //   closed      → no PURCHASING, but a waitlist stays open. Being at capacity is
+      //                 exactly when you want to capture demand rather than lose it.
+      if (mode === 'maintenance') {
+        st = (st === 'hidden') ? 'hidden' : 'paused';
+      } else if (mode === 'closed' && st === 'live') {
+        st = 'paused';
+      }
+    }
+    var cfg = SVC_STATE[st] || SVC_STATE.soon;
+
+    if (st === 'hidden') {
+      var card = a.closest ? a.closest('.svc-card') : null;
+      if (card) card.style.display = 'none';
+      return;
+    }
+
+    a.textContent = cfg.text;
+    a.setAttribute('title', cfg.title);
+    a.setAttribute('data-svc-state', st);
+    if (cfg.enabled) {
+      a.removeAttribute('disabled');
+      a.removeAttribute('aria-disabled');
+      a.classList.remove('btn-cs');
+      a.classList.add('btn', 'btn-primary', 'btn-full', 'svc-paybtn');
+    } else {
+      a.setAttribute('disabled', 'disabled');
+      a.setAttribute('aria-disabled', 'true');
+      a.classList.add('btn-cs');
+      a.classList.remove('btn-primary', 'svc-paybtn');
+    }
+
+    // Optional per-service note ("Back Aug 1", "2 slots left") straight from the DB.
+    var noteEl = a.parentNode ? a.parentNode.querySelector('.svc-avail-note') : null;
+    if (note) {
+      if (!noteEl) {
+        noteEl = document.createElement('div');
+        noteEl.className = 'svc-avail-note';
+        a.parentNode.insertBefore(noteEl, a.nextSibling);
+      }
+      noteEl.textContent = note;
+    } else if (noteEl) {
+      noteEl.remove();
+    }
+  }
+
   var btns = document.querySelectorAll('[data-pay]');
   for (var i = 0; i < btns.length; i++) {
     (function (a) {
       var key = a.getAttribute('data-pay');
-      // Visually disable placeholder buttons so the state is clear before click
-      if (!isLive(key)) {
-        a.setAttribute('disabled', 'disabled');
-        a.setAttribute('aria-disabled', 'true');
-        a.setAttribute('title', 'Coming soon');
-        // Replace the button text with "Coming soon" but keep the original text in data-orig
-        a.dataset.orig = a.textContent;
-        a.textContent = 'Coming Soon';
-      }
-      a.addEventListener('click', function (e) { e.preventDefault(); book(key); });
+      a.addEventListener('click', function (e) {
+        e.preventDefault();
+        if (a.hasAttribute('disabled')) return;   // hard stop on a locked button
+        book(key);
+      });
     }(btns[i]));
+  }
+
+  // Paint when real availability arrives, and repaint on every change. site-state.js
+  // re-polls every 60s and on tab focus, so pausing a service in Supabase reaches open
+  // browsers within a minute — no deploy, no developer.
+  function repaintAll() {
+    var list = document.querySelectorAll('[data-pay]');
+    for (var n = 0; n < list.length; n++) {
+      paintButton(list[n], list[n].getAttribute('data-pay'));
+    }
+  }
+  if (window.UNDSiteState) {
+    window.UNDSiteState.ready(repaintAll);
+    document.addEventListener('und:site-state', repaintAll);
   }
 
   // ---- package details ("What's included" → popup, then Book flows from it) ----
@@ -603,7 +672,7 @@
     }(qbtns[k]));
   }
 
-  // ---- referral code (applies a discount + discounted PayPal link if configured) ----
+  // ---- referral code (applies a discount + discounted checkout link if configured) ----
   var refInput = document.getElementById('ref-input');
   var refBtn   = document.getElementById('ref-apply');
   if (refBtn && refInput) {

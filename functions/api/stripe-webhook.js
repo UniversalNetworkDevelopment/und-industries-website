@@ -19,9 +19,11 @@ import {
   getUserIdByCustomer,
   logEvent,
   markTicketPaid,
+  getProductBySlug,
 } from '../util/supabase.js';
 import { verifyStripeSignature } from '../util/stripe.js';
 import { generateLicenseKey } from '../util/license.js';
+import { sendEmail, ownerEmail, ownerSaleEmail, customerConfirmEmail } from '../util/email.js';
 
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -63,7 +65,7 @@ export async function onRequestPost(context) {
   try {
     switch (event.type) {
       case 'checkout.session.completed':
-        await handleCheckoutCompleted(env, event.data.object);
+        await handleCheckoutCompleted(env, event.data.object, request, event.id);
         break;
       case 'customer.subscription.created':
       case 'customer.subscription.updated':
@@ -107,7 +109,7 @@ export async function onRequestPost(context) {
   });
 }
 
-async function handleCheckoutCompleted(env, session) {
+async function handleCheckoutCompleted(env, session, request, eventId) {
   const md = session.metadata || {};
   const userId = session.client_reference_id || md.supabase_user_id;
   if (!userId) return;
@@ -162,6 +164,113 @@ async function handleCheckoutCompleted(env, session) {
       source: 'stripe',
       stripe_session_id: session.id,
     });
+  }
+
+  // ── NOTIFY (added 2026-07-19) ─────────────────────────────────────────────
+  // This is the piece whose absence kept the buy buttons disabled for 32 days. The
+  // original design tried to reach Alex via a Postgres trigger POSTing to
+  // 127.0.0.1:3133 — Supabase's own loopback, permanently unreachable. Sending from
+  // HERE means notification runs server-side and never depends on his PC being awake.
+  //
+  // DELIBERATELY LAST, AND DELIBERATELY NON-FATAL. The purchase, ticket and entitlement
+  // are already durably written above. If email fails we log it and still ack 2xx —
+  // making Stripe retry a fulfilled order to re-attempt an email would risk double
+  // grants to fix a strictly lesser problem. A failed email is recoverable; a lost
+  // entitlement is not.
+  await notifyOrder(env, session, items, md, request, eventId);
+}
+
+async function notifyOrder(env, session, items, md, request, eventId) {
+  try {
+    const origin = request ? new URL(request.url).origin : 'https://universalnetworkdevelopment.com';
+
+    // ── RESOLVE REAL PRODUCT NAMES ────────────────────────────────────────────
+    // BUG FOUND 2026-07-19 by tracing the data instead of assuming it:
+    // create-checkout-session.js:133 writes metadata as { i, s, t, q } — there is NO name
+    // field. The email fell back to the SLUG, so a paying customer would have received
+    // "Order confirmed — one step to start your website-fix-cleanup".
+    //
+    // Fixed by looking the title up here rather than adding it to metadata: Stripe caps
+    // each metadata VALUE at 500 characters, and names would silently truncate the items
+    // JSON somewhere around the 6th line item — corrupting fulfilment to fix cosmetics.
+    // A lookup has no such ceiling and cannot go stale.
+    //
+    // Falls back to a de-slugged title ("website-fix-cleanup" -> "Website Fix Cleanup") if
+    // the lookup fails, so the worst case is still readable prose, never a raw slug.
+    const named = await Promise.all(items.map(async (i) => {
+      let name = null;
+      try {
+        if (i.s) {
+          const p = await getProductBySlug(env, i.s);
+          if (p && p.title) name = p.title;
+        }
+      } catch (_) { /* fall through to the de-slug */ }
+      if (!name) {
+        name = String(i.s || 'Service')
+          .split('-')
+          .map(w => w ? w.charAt(0).toUpperCase() + w.slice(1) : w)
+          .join(' ');
+      }
+      return { name, slug: i.s, qty: i.q || 1 };
+    }));
+
+    const summary = named.length > 1 ? named.length + ' items' : (named[0] && named[0].name) || 'your order';
+
+    const order = {
+      amount: session.amount_total || 0,
+      email: (session.customer_details && session.customer_details.email) || session.customer_email || null,
+      ticket: md.ticket_number || null,
+      sessionId: session.id,
+      summary,
+      items: named,
+    };
+
+    // Idempotency keys are derived from the Stripe EVENT id, so a retried webhook cannot
+    // send a second copy of either email (Resend honours the key for 24h — well beyond
+    // Stripe's retry window).
+    const owner = ownerSaleEmail(order);
+    const r1 = await sendEmail(env, {
+      to: ownerEmail(env),
+      subject: owner.subject,
+      html: owner.html,
+      text: owner.text,
+      replyTo: order.email || undefined,   // reply goes straight to the customer
+      idempotencyKey: 'owner-' + eventId,
+    });
+    if (!r1.ok) {
+      await logEvent(env, {
+        user_id: null, action: 'owner_sale_email_failed', severity: 'critical',
+        ip: 'worker', device_fingerprint: 'resend',
+        detail: 'session ' + session.id + ': ' + r1.error,
+      });
+    }
+
+    if (order.email) {
+      const cust = customerConfirmEmail(order, origin);
+      const r2 = await sendEmail(env, {
+        to: order.email,
+        subject: cust.subject,
+        html: cust.html,
+        text: cust.text,
+        replyTo: ownerEmail(env),
+        idempotencyKey: 'cust-' + eventId,
+      });
+      if (!r2.ok) {
+        await logEvent(env, {
+          user_id: null, action: 'customer_confirm_email_failed', severity: 'error',
+          ip: 'worker', device_fingerprint: 'resend',
+          detail: 'session ' + session.id + ': ' + r2.error,
+        });
+      }
+    }
+  } catch (err) {
+    // Never let a notification bug undo a completed fulfilment.
+    try {
+      await logEvent(env, {
+        user_id: null, action: 'order_notify_threw', severity: 'error',
+        ip: 'worker', device_fingerprint: 'resend', detail: err.message,
+      });
+    } catch (_) {}
   }
 }
 

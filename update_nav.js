@@ -1,3 +1,7 @@
+// DEPRECATED (2026-07-10): superseded by build.mjs, which injects the shared
+// nav + footer from partials/ into every page. Do NOT run this script — it only
+// ever applied one old nav change by literal string match and can re-introduce
+// drift. Kept for reference only. Use:  node build.mjs
 const fs = require('fs');
 const path = require('path');
 

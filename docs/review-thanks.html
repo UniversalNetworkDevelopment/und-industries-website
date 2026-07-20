@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'">
+<title>Thanks for the feedback | UND Industries</title>
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="alternate icon" href="assets/favicon.ico" sizes="16x16 32x32 48x48 256x256">
+<link rel="stylesheet" href="assets/css/styles.css?v=1781800001">
+<style>
+  /* Standalone landing page — arrived at from an EMAIL, so it must make sense with no
+     prior context and no navigation history. Deliberately minimal: one message, one
+     optional action, nothing to get lost in. */
+  .rt-wrap{min-height:70vh;display:flex;align-items:center;justify-content:center;padding:48px 20px}
+  .rt-card{max-width:520px;width:100%;text-align:center;background:rgba(20,20,27,.72);
+    border:1px solid rgba(124,92,255,.28);border-radius:18px;padding:44px 34px;
+    box-shadow:0 24px 70px rgba(0,0,0,.45)}
+  .rt-kicker{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.72rem;letter-spacing:.18em;
+    text-transform:uppercase;color:#9a8cff;margin-bottom:20px}
+  .rt-stars{font-size:2.1rem;letter-spacing:.14em;margin:0 0 18px;line-height:1}
+  .rt-on{color:#d9a441}
+  .rt-off{color:#3a3a46}
+  .rt-card h1{margin:0 0 12px;font-size:1.55rem;line-height:1.3;color:#f4f4f7}
+  .rt-card p{margin:0 0 14px;color:#a9a9b6;line-height:1.65;font-size:1rem}
+  .rt-actions{margin-top:26px;display:flex;gap:11px;justify-content:center;flex-wrap:wrap}
+  .rt-btn{display:inline-block;text-decoration:none;padding:12px 22px;border-radius:10px;
+    font-weight:600;font-size:.95rem;transition:background .15s,border-color .15s}
+  .rt-primary{background:#7c5cff;color:#fff;border:1px solid #7c5cff}
+  .rt-primary:hover{background:#6b4ae0}
+  .rt-ghost{color:#c9bcff;border:1px solid rgba(124,92,255,.32)}
+  .rt-ghost:hover{background:rgba(124,92,255,.12)}
+  .rt-note{margin-top:24px;padding-top:18px;border-top:1px solid rgba(255,255,255,.07);
+    font-size:.86rem;color:#8a8a96;line-height:1.6}
+  .rt-note a{color:#c9bcff}
+  @media(max-width:520px){.rt-card{padding:34px 22px}.rt-card h1{font-size:1.32rem}}
+</style>
+</head>
+<body>
+
+<div class="rt-wrap">
+  <div class="rt-card" id="rt-card">
+    <!-- Populated by review-thanks.js. Static fallback below is what a user sees if JS is
+         blocked — it must still be a complete, sensible message, never an empty shell. -->
+    <div class="rt-kicker">UND Industries</div>
+    <h1 id="rt-title">Thank you</h1>
+    <p id="rt-body">Your feedback has been recorded. We appreciate you taking the time.</p>
+    <div class="rt-actions" id="rt-actions">
+      <a class="rt-btn rt-ghost" href="index.html">Back to site</a>
+    </div>
+    <div class="rt-note">
+      Something not right? Reply to your confirmation email, or write to
+      <a href="mailto:contact.undindustries@gmail.com">contact.undindustries@gmail.com</a>
+      &mdash; we would rather fix it than leave you stuck with it.
+    </div>
+  </div>
+</div>
+
+<script src="assets/js/review-thanks.js"></script>
+</body>
+</html>

@@ -77,6 +77,25 @@
     });
   }
 
+  // ── Shared-chrome active state ────────────────────────────
+  // The nav + footer are injected from shared partials (build.mjs) with NO
+  // per-page "active" marker. Highlight the current page's link here, matched
+  // by filename so it works on every page with zero per-page edits.
+  (function () {
+    var here = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+    document.querySelectorAll('.nav-links a[href], .footer a[href]').forEach(function (a) {
+      var href = (a.getAttribute('href') || '').split(/[?#]/)[0].toLowerCase();
+      if (!href || href !== here) return;
+      a.classList.add('active');
+      a.setAttribute('aria-current', 'page');
+      var menu = a.closest('.nav-dropdown-menu');   // sub-link → light up its parent toggle too
+      if (menu && menu.parentElement) {
+        var toggle = menu.parentElement.querySelector('.nav-dropdown-toggle');
+        if (toggle) { toggle.classList.add('active'); toggle.setAttribute('aria-current', 'page'); }
+      }
+    });
+  })();
+
   var body = document.body;
 
   // ── Supabase ──────────────────────────────────────────────

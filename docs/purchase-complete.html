@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -9,6 +9,8 @@
   <title>Order Confirmed &mdash; U.N.D Industries</title>
   <link rel="stylesheet" href="assets/css/styles.css?v=1781800001">
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="alternate icon" href="assets/favicon.ico" sizes="16x16 32x32 48x48 256x256">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <style>
     .pc-main { min-height: 70vh; display: flex; align-items: flex-start; padding: 4rem 0; }
     .pc-card {
@@ -118,7 +120,7 @@
           purchase-complete.js mounts into #pc-status.
           It reads ?session_id= for Stripe product purchases, polls for the
           purchase + entitlement, and renders the license key / access note.
-          For PayPal service purchases (no session_id) or when a ?ticket= param
+          For service purchases (no session_id) or when a ?ticket= param
           is present, #pc-service-section is shown instead and routes the buyer
           to service-intake.html to complete the order.
         -->
@@ -166,17 +168,19 @@
             <li><a href="about.html">About</a></li>
             <li><a href="services.html">Services</a></li>
             <li><a href="shopify.html">Shopify</a></li>
+            <li><a href="automation.html">Automations</a></li>
             <li><a href="store.html">Store</a></li>
             <li><a href="music.html">Music</a></li>
             <li><a href="contact.html">Contact</a></li>
           </ul>
         </div>
         <div class="footer-col">
-          <h4>Support</h4>
+          <h4>Music</h4>
           <ul class="footer-links">
-            <li><a href="customer-service.html">Customer Service</a></li>
-            <li><a href="contact.html">Contact</a></li>
-            <li><a href="login.html">Account</a></li>
+            <li><a href="https://open.spotify.com/artist/09cvXQPxvhR6oRSv964gAh" target="_blank" rel="noopener noreferrer">Spotify</a></li>
+            <li><a href="https://music.apple.com/us/artist/und-tyzen/1826707894" target="_blank" rel="noopener noreferrer">Apple Music</a></li>
+            <li><a href="https://www.youtube.com/@UNDTyzen" target="_blank" rel="noopener noreferrer">YouTube</a></li>
+            <li><a href="https://www.bandlab.com/und_tyzen" target="_blank" rel="noopener noreferrer">BandLab</a></li>
           </ul>
         </div>
       </div>
@@ -198,6 +202,7 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
+  <script src="assets/js/site-state.js"></script>
   <script src="assets/js/main.js"></script>
   <script src="assets/js/purchase-complete.js"></script>
   <script src="assets/js/feedback.js"></script>

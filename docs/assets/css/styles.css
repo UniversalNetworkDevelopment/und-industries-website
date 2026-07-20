@@ -2677,6 +2677,54 @@ button.sidebar-link {
 }
 .store-modal-series strong { color: var(--accent-light); }
 
+/* ── Utility + component styles (2026-07-10) ───────────────────────────────
+   Classes used in the HTML that had NO CSS definition (see WEBSITE-AUDIT.md, L1).
+   Additive only — no existing rule is modified. ── */
+
+/* Screen-reader-only: visually hidden, still announced by assistive tech.
+   Fixes the "Search products" label rendering visibly on store.html. */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Muted-text utility (mirrors the --text-muted token). */
+.text-muted { color: var(--text-muted); }
+
+/* Ghost button — transparent until hover. Composes with the base .btn. */
+.btn-ghost {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+}
+.btn-ghost:hover {
+  background: var(--bg-card-hover);
+  color: var(--text);
+}
+
+/* Dashboard "Tickets & Orders" — responsive card grid. */
+.tickets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+/* Loading spinner (shown on the dashboard while tickets load). */
+.loading-spinner {
+  width: 34px; height: 34px;
+  margin: 28px auto;
+  border: 3px solid var(--bg-card-hover);
+  border-top-color: var(--accent-light);
+  border-radius: var(--radius-full);
+  animation: und-spin 0.8s linear infinite;
+}
+@keyframes und-spin { to { transform: rotate(360deg); } }
+
 /* Chat — online count + typing indicator */
 .chat-online {
   font-size: 0.72rem;
@@ -2977,3 +3025,22 @@ button.sidebar-link {
   }
 }
 
+
+/* ── availability note (DB-driven, from store_products.availability_note) ──
+   Small line under a service button: "Back Aug 1", "2 slots left". Written by
+   services.js paintButton() when the DB supplies one. Added 2026-07-19. */
+.svc-avail-note{
+  margin-top:8px;
+  font-size:.78rem;
+  line-height:1.4;
+  color:#9a8cff;
+  text-align:center;
+  opacity:.9;
+}
+.btn-cs[data-svc-state="paused"]{
+  border-color:rgba(245,158,11,.42);
+  color:#fcd9a0;
+}
+.btn-cs[data-svc-state="quote"]{
+  border-color:rgba(124,92,255,.30);
+}

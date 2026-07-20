@@ -35,15 +35,27 @@
 
         container.innerHTML = tickets.map(t => {
             const date = new Date(t.created_at).toLocaleDateString();
-            const evidenceHtml = t.status === 'complete' 
-                ? `<a href="https://wgcgzuflpxijhzlpphab.supabase.co/storage/v1/object/public/evidence_archives/${t.ticket_number}_evidence.zip" class="btn btn-outline btn-sm mt-12" target="_blank">Download Evidence Pack</a>`
-                : '';
+            // EVIDENCE PACK — deliberately OFF. Do not "fix" this by flipping it on.
+            //
+            // This was gated on `status === 'complete'`, which is not a real value (the
+            // canonical set is new|scoped|paid|in_progress|delivered|closed), so the link
+            // never rendered. That bug was accidentally load-bearing: the storage bucket
+            // it points at DOES NOT EXIST — see SUPABASE_MISSING.md:14. Correcting the
+            // status alone would hand every paying customer a 404 at the exact moment
+            // they are happiest with us.
+            //
+            // Two things must be true before this returns: (1) the `evidence_archives`
+            // bucket exists, and (2) the ticket records that a pack was actually uploaded
+            // FOR IT — a per-ticket fact, not an inference from delivery status. Guessing
+            // the object URL from the ticket number is what produced the 404 in the first
+            // place. EVIDENCE_SYSTEM_SPEC.md has the intent.
+            const evidenceHtml = '';
                 
             return `
                 <div class="card ticket-card mb-12">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                         <strong>${t.service_slug.toUpperCase()}</strong>
-                        <span class="badge ${t.status === 'complete' ? 'badge-success' : 'badge-warning'}">${t.status.toUpperCase()}</span>
+                        <span class="badge ${t.status === 'delivered' ? 'badge-success' : 'badge-warning'}">${t.status.toUpperCase()}</span>
                     </div>
                     <div class="text-sm text-muted">Ticket #: ${t.ticket_number}</div>
                     <div class="text-sm text-muted">Date: ${date}</div>

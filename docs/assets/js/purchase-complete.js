@@ -6,13 +6,13 @@
 //      URL has ?session_id=cs_… — poll purchases + entitlements, render
 //      the order summary and license key (existing behaviour, preserved).
 //
-//   B. PAYPAL service purchase (website fixes, etc.):
-//      URL has ?ticket=<ticket_number>[,…] — PayPal returns the buyer here
+//   B. SERVICE purchase (website fixes, etc.) — ticket-based return:
+//      URL has ?ticket=<ticket_number>[,…] — the buyer returns here
 //      with the ticket number(s) services.js stored in sessionStorage before
-//      redirecting them to PayPal. Show the intake CTA and link them to
+//      redirecting them to checkout. Show the intake CTA and link them to
 //      service-intake.html?ticket=… so we can collect what we need to fulfill.
-//      Also triggered when there is NO ?session_id at all (buyer arrived from
-//      PayPal with no Stripe param) — same treatment.
+//      Also triggered when there is NO ?session_id at all (buyer arrived
+//      without a Stripe session) — same treatment.
 //
 // No inline <script> — this is an external file. CSP: script-src 'self' OK.
 (function () {
@@ -55,7 +55,7 @@
     return new Promise(function (resolve) { setTimeout(resolve, ms); });
   }
 
-  // ---- Path B: service purchase (PayPal) ----
+  // ---- Path B: service purchase (ticket-based return) ----
   // Called when there is no Stripe session_id, or when ?ticket= is present.
   // Shows the intake CTA and wires the "Submit Order Details" link.
   function showServiceIntakeCTA(ticket) {
@@ -150,7 +150,7 @@
     return;
   }
 
-  // No session_id → PayPal return (service purchase) with no ticket in URL.
+  // No session_id → service purchase return with no ticket in URL.
   // Check sessionStorage for a ticket the services.js flow may have saved,
   // then show the intake CTA.
   if (!sessionId) {

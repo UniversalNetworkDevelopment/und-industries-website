@@ -1,0 +1,493 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; connect-src 'self' https://*.supabase.co wss://*.supabase.co; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; base-uri 'self'; form-action 'self'; frame-ancestors *;">
+  <meta name="theme-color" content="#0d0d0f">
+  <meta name="description" content="Same-day website fixes and AI/automation development by U.N.D Industries. Flat rates, fast turnaround, U.S.-based developer.">
+  <title>Services &mdash; Website Fixes & AI Development | U.N.D Industries</title>
+  <link rel="stylesheet" href="assets/css/styles.css?v=1781800001">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <style>
+    .svc-hero { padding: calc(var(--nav-h) + 56px) 0 40px; text-align: center; }
+    .svc-hero h1 { font-size: clamp(2rem, 5vw, 3.2rem); margin: 0 0 12px; }
+    .svc-hero p { color: var(--text-muted); max-width: 640px; margin: 0 auto; font-size: 1.05rem; }
+    .svc-badges { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 18px; }
+    .svc-badge { background: #15151a; border: 1px solid rgba(255,255,255,.1); border-radius: 999px; padding: 6px 14px; font-size: .85rem; color: var(--text-muted); }
+    .svc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; margin: 36px 0; }
+    @media (min-width: 1080px) { .svc-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); } }
+    
+    .svc-card {
+      background: rgba(21, 21, 26, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px;
+      padding: 26px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .svc-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(124,92,255,0.4);
+      box-shadow: 0 12px 40px rgba(124,92,255,0.15);
+    }
+    .svc-card.featured { border-color: #7c5cff; box-shadow: 0 0 0 1px #7c5cff, 0 12px 40px rgba(124,92,255,.18); overflow: visible; position: relative; }
+    .svc-card .tag { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: #7c5cff; color: #fff; font-size: .7rem; font-weight: 700; padding: 4px 14px; border-radius: 999px; letter-spacing: .5px; white-space: nowrap; z-index: 2; }
+    .svc-card h3 { margin: 0 0 4px; font-size: 1.25rem; }
+    .svc-price { font-size: 2.4rem; font-weight: 800; margin: 8px 0 2px; }
+    .svc-price span { font-size: .9rem; font-weight: 500; color: var(--text-muted); }
+    .svc-eta { color: #4de8ff; font-size: .85rem; margin-bottom: 14px; }
+    .svc-list { list-style: none; padding: 0; margin: 0 0 22px; flex: 1; }
+    .svc-list li { padding: 7px 0 7px 26px; position: relative; color: #cfcfe0; font-size: .94rem; }
+    .svc-list li::before { content: "\2713"; position: absolute; left: 0; color: #39ff9d; font-weight: 700; }
+    .svc-paybtn { width: 100%; } .btn-cs + .btn-cs-contact { margin-top: 10px; }
+    .svc-how { background: #121216; border: 1px solid rgba(255,255,255,.07); border-radius: 16px; padding: 30px; margin: 10px 0 36px; }
+    .svc-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 18px; margin-top: 18px; }
+    .svc-step b { display: block; color: #7c5cff; font-size: 1.4rem; margin-bottom: 4px; }
+    .svc-pay-note { text-align: center; color: var(--text-muted); font-size: .9rem; margin-top: 8px; }
+    .svc-details-link { display: block; width: 100%; margin-top: 10px; padding: 4px; background: none; border: none; color: var(--text-muted); font-size: .82rem; cursor: pointer; text-align: center; transition: color .15s; }
+    .svc-details-link:hover { color: #7c5cff; }
+    .svc-modal-input { width: 100%; box-sizing: border-box; margin-bottom: 12px; padding: 11px 13px; background: #0e0e12; border: 1px solid rgba(255,255,255,.12); border-radius: 10px; color: #fff; font-size: .92rem; font-family: inherit; }
+    .svc-modal-input:focus { outline: none; border-color: #7c5cff; }
+    .svc-modal-input::placeholder { color: #6b6b78; }
+    textarea.svc-modal-input { resize: vertical; }
+    .svc-referral { display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; margin: 4px 0; }
+    .svc-referral input { padding: 9px 13px; background: #0e0e12; border: 1px solid rgba(255,255,255,.12); border-radius: 10px; color: #fff; font-size: .9rem; max-width: 220px; }
+    .svc-referral input:focus { outline: none; border-color: #7c5cff; }
+    .ref-note { font-size: .85rem; }
+    .ref-note.ref-ok { color: #39ff9d; }
+    .ref-note.ref-bad { color: #ff8a8a; }
+
+    /* Booking consent modal */
+    .svc-modal { position: fixed; inset: 0; z-index: 1200; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(8,8,12,.78); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+    .svc-modal[hidden] { display: none; }
+    .svc-modal-card { background: #15151a; border: 1px solid rgba(124,92,255,.35); box-shadow: 0 0 0 1px rgba(124,92,255,.25), 0 24px 70px rgba(0,0,0,.6); border-radius: 18px; max-width: 480px; width: 100%; max-height: 90vh; overflow: auto; padding: 28px; position: relative; }
+    .svc-modal-x { position: absolute; top: 12px; right: 16px; background: none; border: none; color: var(--text-muted); font-size: 1.7rem; line-height: 1; cursor: pointer; }
+    .svc-modal-x:hover { color: #fff; }
+    .svc-modal-title { margin: 0 0 6px; font-size: 1.4rem; padding-right: 24px; }
+    .svc-modal-price { font-size: 2rem; font-weight: 800; color: #fff; margin: 0 0 14px; }
+    .svc-modal-p { color: #cfcfe0; font-size: .95rem; line-height: 1.5; margin: 0 0 12px; }
+    .svc-modal-muted { color: var(--text-muted); font-size: .88rem; }
+    .svc-modal-terms { list-style: none; padding: 0; margin: 0 0 18px; }
+    .svc-modal-terms li { position: relative; padding: 6px 0 6px 22px; color: #cfcfe0; font-size: .9rem; line-height: 1.45; }
+    .svc-modal-terms li::before { content: "âœ&ldquo;"; position: absolute; left: 2px; color: #39ff9d; font-weight: 700; }
+    .svc-modal-warn { background: rgba(255,86,86,.1); border: 1px solid rgba(255,86,86,.45); color: #ffd9d9; border-radius: 10px; padding: 12px 14px; font-size: .88rem; line-height: 1.45; margin: 0 0 16px; }
+    .svc-modal-note { background: rgba(77,232,255,.08); border: 1px solid rgba(77,232,255,.3); color: #cfeffd; border-radius: 10px; padding: 10px 14px; font-size: .85rem; line-height: 1.4; margin: 0 0 16px; }
+    .svc-modal-check { display: flex; gap: 10px; align-items: flex-start; color: #cfcfe0; font-size: .85rem; line-height: 1.45; margin: 0 0 12px; cursor: pointer; }
+    .svc-modal-check input { margin-top: 3px; flex: 0 0 auto; width: 16px; height: 16px; accent-color: #7c5cff; }
+    .svc-modal-check a { color: #7c5cff; }
+    .svc-modal-check-warn { color: #ffd9d9; }
+    .svc-modal-err { color: #ff8a8a; font-size: .85rem; margin: 0 0 12px; }
+    .svc-modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px; }
+    @media (max-width: 520px) { .svc-modal-actions { flex-direction: column-reverse; } .svc-modal-actions .btn { width: 100%; } }
+    
+    /* Shopping Cart */
+    .cart-toggle { position: fixed; bottom: 24px; right: 24px; z-index: 900; background: #7c5cff; color: #fff; border: none; border-radius: 50%; width: 56px; height: 56px; box-shadow: 0 4px 20px rgba(124,92,255,.4); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform .2s; }
+    .cart-toggle:hover { transform: scale(1.05); }
+    .cart-toggle-badge { position: absolute; top: -2px; right: -2px; background: #ff395c; color: #fff; font-size: 0.75rem; font-weight: bold; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #08080c; }
+    .cart-panel { position: fixed; top: 0; right: -400px; width: 100%; max-width: 400px; height: 100vh; background: #15151a; border-left: 1px solid rgba(255,255,255,.08); z-index: 1100; box-shadow: -10px 0 30px rgba(0,0,0,.6); transition: right .3s ease; display: flex; flex-direction: column; }
+    .cart-panel.open { right: 0; }
+    .cart-header { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,.05); display: flex; justify-content: space-between; align-items: center; }
+    .cart-header h3 { margin: 0; font-size: 1.25rem; }
+    .cart-close { background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; }
+    .cart-close:hover { color: #fff; }
+    .cart-body { flex: 1; overflow-y: auto; padding: 24px; }
+    .cart-item { display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,.05); }
+    .cart-item-info h4 { margin: 0 0 4px; font-size: 0.95rem; }
+    .cart-item-info p { margin: 0; color: #4de8ff; font-size: 0.85rem; font-weight: bold; }
+    .cart-item-remove { background: none; border: none; color: #ff8a8a; font-size: 0.8rem; cursor: pointer; padding: 4px; }
+    .cart-item-remove:hover { text-decoration: underline; }
+    .cart-empty { text-align: center; color: var(--text-muted); padding: 40px 0; }
+    .cart-footer { padding: 24px; border-top: 1px solid rgba(255,255,255,.05); background: #121216; }
+    .cart-total-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-size: 1.2rem; font-weight: bold; }
+    .cart-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 1050; opacity: 0; visibility: hidden; transition: opacity .3s; }
+    .cart-overlay.open { opacity: 1; visibility: visible; }
+      /* === COMING SOON MODE === */
+    .cart-toggle, .cart-panel, .cart-overlay { display: none !important; }
+    .cs-banner {
+      background: linear-gradient(135deg, rgba(124,92,255,0.15), rgba(77,232,255,0.08));
+      border: 1px solid rgba(124,92,255,0.35);
+      border-radius: 14px;
+      padding: 18px 24px;
+      margin: 0 0 32px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .cs-banner-icon { font-size: 1.6rem; flex: 0 0 auto; }
+    .cs-banner-text { flex: 1; }
+    .cs-banner-text strong { display: block; color: #fff; margin-bottom: 4px; font-size: 1rem; }
+    .cs-banner-text span { color: #8888a0; font-size: .9rem; }
+    .cs-banner-cta { flex: 0 0 auto; }
+    .btn-cs {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 11px 16px;
+      background: rgba(124,92,255,0.08);
+      border: 1px solid rgba(124,92,255,0.25);
+      border-radius: 10px;
+      color: #7c5cff;
+      font-size: .88rem;
+      font-weight: 600;
+      cursor: default;
+      pointer-events: none;
+      letter-spacing: .03em;
+    }
+    .btn-cs-contact {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 11px 16px;
+      background: rgba(57,255,157,0.07);
+      border: 1px solid rgba(57,255,157,0.25);
+      border-radius: 10px;
+      color: #39ff9d;
+      font-size: .88rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background .2s;
+    }
+    .btn-cs-contact:hover { background: rgba(57,255,157,0.14); }
+  </style>
+</head>
+<body data-page="services">
+
+  <nav class="nav" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">U.N.D <span>Industries</span></a>
+      <ul class="nav-links" id="nav-links" role="list">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li class="nav-dropdown">
+          <a href="services.html" class="nav-dropdown-toggle">Services <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></a>
+          <ul class="nav-dropdown-menu">
+            <li><a href="services.html">Website Fixes</a></li>
+            <li><a href="shopify.html">Shopify Services</a></li>
+            <li><a href="automation.html">Automations &amp; AI</a></li>
+          </ul>
+        </li>
+        <li><a href="store.html">Store</a></li>
+        <li><a href="music.html">Music</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li class="nav-mobile-auth"><a href="login.html">Login</a></li>
+        <li class="nav-mobile-auth"><a href="register.html">Sign Up</a></li>
+      </ul>
+      <div class="nav-cta">
+        <a href="login.html" class="btn btn-outline btn-sm">Login</a>
+        <a href="register.html" class="btn btn-primary btn-sm">Sign Up</a>
+      </div>
+      <button class="nav-hamburger" id="nav-hamburger" aria-label="Toggle navigation" aria-expanded="false" type="button">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+    </div>
+  </nav>
+
+  <main>
+    <header class="svc-hero">
+      <div class="container">
+        <h1>Website Fixes &amp; AI Development</h1>
+        <p>Got a broken website or need something built? I'm a U.S.-based developer who fixes the stuff costing you customers &mdash; fast, flat-rate, and I confirm exactly what I'll do before touching anything live.</p>
+        <div class="svc-badges">
+          <span class="svc-badge">&#9889; Same-to-next-day</span>
+          <span class="svc-badge">&#128203; Flat rates, no surprises</span>
+          <span class="svc-badge">&#128737; U.S.-based &middot; Florida</span>
+          <span class="svc-badge">&#128172; I never break what works</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="container">
+      <!-- COMING SOON BANNER -->
+      <div class="cs-banner">
+        <div class="cs-banner-icon">&#128640;</div>
+        <div class="cs-banner-text">
+          <strong>Online ordering coming soon</strong>
+          <span>Our payment backend is being upgraded to enterprise standards. In the meantime, contact us directly &mdash; same turnaround, same flat rates.</span>
+        </div>
+        <div class="cs-banner-cta">
+          <a href="contact.html" class="btn btn-primary btn-sm">Contact Us &rarr;</a>
+        </div>
+      </div>
+      <!-- Website Fixes -->
+      <h2 style="margin-top: 24px; margin-bottom: 8px;">Website Fixes</h2>
+      <div class="svc-grid">
+        <div class="svc-card">
+          <h3>Quick Fix</h3>
+          <div class="svc-price">$99</div>
+          <div class="svc-eta">Delivered in 24 hours</div>
+          <ul class="svc-list">
+            <li>One specific problem fixed</li>
+            <li>Broken page, form, or link</li>
+            <li>Mobile layout glitch</li>
+          </ul>
+          <button class="btn-cs" disabled>&#128274; Coming Soon</button><a class="btn-cs-contact" href="contact.html">✉ Inquire Now</a>
+        </div>
+        <div class="svc-card featured">
+          <span class="tag">MOST POPULAR</span>
+          <h3>Fix Bundle</h3>
+          <div class="svc-price">$199</div>
+          <div class="svc-eta">Delivered in 48 hours</div>
+          <ul class="svc-list">
+            <li>Up to 3 issues fixed</li>
+            <li>Full once-over of your site</li>
+            <li>Mobile + speed check</li>
+          </ul>
+          <button class="btn-cs" disabled>&#128274; Coming Soon</button><a class="btn-cs-contact" href="contact.html">✉ Inquire Now</a>
+        </div>
+        <div class="svc-card">
+          <h3>Full Cleanup</h3>
+          <div class="svc-price">$349</div>
+          <div class="svc-eta">Delivered in 72 hours</div>
+          <ul class="svc-list">
+            <li>Everything in the Bundle</li>
+            <li>Speed optimization</li>
+            <li>SEO basics + working contact form</li>
+          </ul>
+          <button class="btn-cs" disabled>&#128274; Coming Soon</button><a class="btn-cs-contact" href="contact.html">✉ Inquire Now</a>
+        </div>
+      </div>
+
+      <!-- Shopify Services -->
+      <h2 style="margin-top: 48px; margin-bottom: 8px;">Shopify Services</h2>
+      <div class="svc-grid">
+        <div class="svc-card">
+          <h3>Quick Cleanup</h3>
+          <div class="svc-price">$149</div>
+          <div class="svc-eta">Delivered in 48 hours</div>
+          <ul class="svc-list">
+            <li>Theme cleanup</li>
+            <li>Mobile layout fixes</li>
+            <li>Basic speed pass</li>
+          </ul>
+          <button class="btn-cs" disabled>&#128274; Coming Soon</button><a class="btn-cs-contact" href="contact.html">✉ Inquire Now</a>
+        </div>
+        <div class="svc-card featured">
+          <span class="tag">AGENCY FAVORITE</span>
+          <h3>Professionalization</h3>
+          <div class="svc-price">$299</div>
+          <div class="svc-eta">Delivered in 3&ldquo;5 days</div>
+          <ul class="svc-list">
+            <li>Homepage cleanup</li>
+            <li>Search bar tuning</li>
+            <li>Product tagging</li>
+          </ul>
+          <button class="btn-cs" disabled>&#128274; Coming Soon</button><a class="btn-cs-contact" href="contact.html">✉ Inquire Now</a>
+        </div>
+        <div class="svc-card">
+          <h3>Dropshipping Integration</h3>
+          <div class="svc-price">$249</div>
+          <div class="svc-eta">Delivered in 2&ldquo;3 days</div>
+          <ul class="svc-list">
+            <li>Supplier setup &amp; syncing</li>
+            <li>Order automation</li>
+            <li>Testing</li>
+          </ul>
+          <button class="btn-cs" disabled>&#128274; Coming Soon</button><a class="btn-cs-contact" href="contact.html">✉ Inquire Now</a>
+        </div>
+        <div class="svc-card">
+          <h3>Full Shopify Build</h3>
+          <div class="svc-price">From $499</div>
+          <div class="svc-eta">Custom delivery</div>
+          <ul class="svc-list">
+            <li>Starter: $499</li>
+            <li>Standard: $799</li>
+            <li>Premium: $1,299</li>
+          </ul>
+          <button class="btn-cs" disabled>&#128274; Coming Soon</button><a class="btn-cs-contact" href="contact.html">✉ Inquire Now</a>
+        </div>
+      </div>
+
+      <!-- Automation & AI -->
+      <h2 style="margin-top: 48px; margin-bottom: 8px;">Automation &amp; AI</h2>
+      <div class="svc-grid">
+        <div class="svc-card">
+          <h3>Starter Automation</h3>
+          <div class="svc-price">$199</div>
+          <div class="svc-eta">Save hours instantly</div>
+          <ul class="svc-list">
+            <li>1&ldquo;2 workflows</li>
+            <li>Email automation</li>
+            <li>Basic triggers</li>
+          </ul>
+          <button class="btn-cs" disabled>&#128274; Coming Soon</button><a class="btn-cs-contact" href="contact.html">✉ Inquire Now</a>
+        </div>
+        <div class="svc-card featured">
+          <span class="tag">GROWTH</span>
+          <h3>Advanced Automation</h3>
+          <div class="svc-price">$399</div>
+          <div class="svc-eta">Scale your business</div>
+          <ul class="svc-list">
+            <li>Multi-step workflows</li>
+            <li>Payment automation</li>
+            <li>Data movement between apps</li>
+          </ul>
+          <button class="btn-cs" disabled>&#128274; Coming Soon</button><a class="btn-cs-contact" href="contact.html">✉ Inquire Now</a>
+        </div>
+        <div class="svc-card">
+          <h3>Enterprise Automation</h3>
+          <div class="svc-price">Custom</div>
+          <div class="svc-eta">Full AI integration</div>
+          <ul class="svc-list">
+            <li>AI chatbots</li>
+            <li>API integrations</li>
+            <li>Full business logic systems</li>
+          </ul>
+          <button class="btn-cs" disabled>&#128274; Coming Soon</button><a class="btn-cs-contact" href="contact.html">✉ Inquire Now</a>
+        </div>
+      </div>
+
+      <!-- Growth & Maintenance -->
+      <h2 style="margin-top: 48px; margin-bottom: 8px;">Growth, Speed, &amp; Maintenance</h2>
+      <div class="svc-grid">
+        <div class="svc-card">
+          <h3>SEO Overhaul</h3>
+          <div class="svc-price">$249</div>
+          <ul class="svc-list">
+            <li>Keyword setup</li>
+            <li>Structure &amp; headings</li>
+          </ul>
+          <button class="btn-cs" disabled>&#128274; Coming Soon</button><a class="btn-cs-contact" href="contact.html">✉ Inquire Now</a>
+        </div>
+        <div class="svc-card">
+          <h3>Speed Optimization</h3>
+          <div class="svc-price">From $149</div>
+          <ul class="svc-list">
+            <li>Speed Pass: $149</li>
+            <li>Full Speed Overhaul: $249</li>
+          </ul>
+          <button class="btn-cs" disabled>&#128274; Coming Soon</button><a class="btn-cs-contact" href="contact.html">✉ Inquire Now</a>
+        </div>
+        <div class="svc-card">
+          <h3>Maintenance Plans</h3>
+          <div class="svc-price">From $49<span>/mo</span></div>
+          <ul class="svc-list">
+            <li>Basic: $49/mo</li>
+            <li>Standard: $99/mo</li>
+            <li>Premium: $199/mo</li>
+          </ul>
+          <button class="btn-cs" disabled>&#128274; Coming Soon</button><a class="btn-cs-contact" href="contact.html">✉ Inquire Now</a>
+        </div>
+        <div class="svc-card">
+          <h3>Consulting</h3>
+          <div class="svc-price">$149</div>
+          <ul class="svc-list">
+            <li>Strategy Session</li>
+            <li>Hourly at $50/hr</li>
+          </ul>
+          <button class="btn-cs" disabled>&#128274; Coming Soon</button><a class="btn-cs-contact" href="contact.html">✉ Inquire Now</a>
+        </div>
+      </div>
+
+      <div class="svc-referral">
+        <input type="text" id="ref-input" placeholder="Referral code (optional)" autocomplete="off" aria-label="Referral code">
+        <button type="button" id="ref-apply" class="btn btn-outline btn-sm">Apply</button>
+        <span class="ref-note" id="ref-note" role="status" aria-live="polite"></span>
+      </div>
+
+      <p class="svc-pay-note">Online ordering is coming soon. Until then &mdash; <a href="contact.html">contact us directly</a> to get started. Same services, same prices, same turnaround.</p>
+
+      <section class="svc-how">
+        <h2 style="margin:0;">How it works</h2>
+        <div class="svc-steps">
+          <div class="svc-step"><b>1</b>Pick a package &amp; make a free account</div>
+          <div class="svc-step"><b>2</b>Agree to the terms &amp; pay the flat rate securely</div>
+          <div class="svc-step"><b>3</b>Tell me exactly what's broken &mdash; I confirm I can do it</div>
+          <div class="svc-step"><b>4</b>Fixed in 24&ldquo;72h with before/after proof</div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div>
+          <div class="footer-brand">U.N.D <span>Industries</span></div>
+          <p class="footer-desc">U.N.D Industries &mdash; Universal Network Development LLC.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Pages</h4>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="shopify.html">Shopify</a></li>
+            <li><a href="automation.html">Automations</a></li>
+            <li><a href="store.html">Store</a></li>
+            <li><a href="music.html">Music</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Music</h4>
+          <ul class="footer-links">
+            <li><a href="https://open.spotify.com/artist/09cvXQPxvhR6oRSv964gAh" target="_blank" rel="noopener noreferrer">Spotify</a></li>
+            <li><a href="https://music.apple.com/us/artist/und-tyzen/1826707894" target="_blank" rel="noopener noreferrer">Apple Music</a></li>
+            <li><a href="https://www.youtube.com/@UNDTyzen" target="_blank" rel="noopener noreferrer">YouTube</a></li>
+            <li><a href="https://www.bandlab.com/und_tyzen" target="_blank" rel="noopener noreferrer">BandLab</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p class="footer-copy">&copy; <span data-year>2026</span> U.N.D Industries. All rights reserved.</p>
+        <div class="footer-legal-row">
+          <a href="customer-service.html" class="footer-legal-link">Support</a>
+          <a href="privacy.html" class="footer-legal-link">Privacy Policy</a>
+          <a href="terms.html" class="footer-legal-link">Terms of Use</a>
+          <a href="refund.html" class="footer-legal-link">Refund Policy</a>
+          <a href="security.html" class="footer-legal-link">Security Disclaimer</a>
+          <a href="cookie.html" class="footer-legal-link">Cookie Policy</a>
+          <a href="dmca.html" class="footer-legal-link">DMCA</a>
+          <a href="copyright.html" class="footer-legal-link">Copyright</a>
+          <a href="disclaimer.html" class="footer-legal-link">Disclaimer</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Booking gate (login + logged consent + double-buy guard + Stripe checkout) lives in
+       services.js. It MUST be external: this page's CSP is script-src 'self' (no
+       'unsafe-inline'), so an inline <script> here would be blocked by the browser. -->
+  <!-- Shopping Cart UI -->
+  <div class="cart-overlay" id="cart-overlay"></div>
+  <button type="button" class="cart-toggle" id="cart-toggle" aria-label="Open Cart">
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>
+    <span class="cart-toggle-badge" id="cart-badge" style="display:none">0</span>
+  </button>
+  <div class="cart-panel" id="cart-panel">
+    <div class="cart-header">
+      <h3>Your Cart</h3>
+      <button type="button" class="cart-close" id="cart-close" aria-label="Close Cart">&times;</button>
+    </div>
+    <div class="cart-body" id="cart-items">
+      <div class="cart-empty">Your cart is empty.</div>
+    </div>
+    <div class="cart-footer">
+      <div class="cart-total-row">
+        <span>Total</span>
+        <span id="cart-total">$0.00</span>
+      </div>
+      <button type="button" class="btn btn-primary btn-full" id="cart-checkout" disabled>Proceed to Checkout</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/services.js"></script>
+</body>
+</html>
+
+

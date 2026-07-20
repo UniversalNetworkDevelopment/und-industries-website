@@ -9,6 +9,7 @@
 // enough to stop simple bots; Cloudflare WAF rules provide the distributed layer.
 
 import { json, preflight } from '../util/cors.js';
+import { sendEmail, ownerEmail, ownerContactEmail } from '../util/email.js';
 import { getUserFromToken  } from '../util/supabase.js';
 
 const _rl         = new Map(); // ip -> { count: number, resetAt: number }
@@ -93,6 +94,29 @@ export async function onRequestPost(context) {
     const detail = await res.text().catch(() => '');
     console.error('[contact] Supabase insert failed:', res.status, detail);
     return json({ error: 'Message could not be saved. Please try again later.' }, 502, request, env);
+  }
+
+  // ── NOTIFY THE OWNER (added 2026-07-19) ───────────────────────────────────
+  // Until now this endpoint inserted to `contact_messages` and told nobody. A contact
+  // form that emails no one is worse than no contact form: the customer believes they
+  // reached someone. And with the services buy buttons disabled, "Inquire Now" -> this
+  // form was the ONLY conversion path on the site — every message landed in a table
+  // nobody was watching.
+  //
+  // Non-fatal by design: the message is already saved, so a mail failure must never tell
+  // the customer their message was lost. It IS logged, so the failure is not silent.
+  try {
+    const mail = ownerContactEmail({ name, email, subject, message });
+    const sent = await sendEmail(env, {
+      to: ownerEmail(env),
+      subject: mail.subject,
+      html: mail.html,
+      text: mail.text,
+      replyTo: email,          // hitting reply answers the customer directly
+    });
+    if (!sent.ok) console.error('[contact] owner notification failed:', sent.error);
+  } catch (err) {
+    console.error('[contact] owner notification threw:', err.message);
   }
 
   return json({ ok: true }, 200, request, env);
