@@ -139,6 +139,50 @@ if (QUICK) {
   }
 }
 
+// ── 2b. LIVE ENDPOINT CONFIG ─────────────────────────────────────────────────
+// GAP IN THIS GATE, found 2026-07-20: section 2 verified live DATA dependencies but never
+// asked whether the deployed WORKERS are configured. So `/api/admin-job` shipped returning
+// 503 "Not configured — missing OWNER_USER_ID", which makes delivery impossible — no receipt,
+// no review request, ever — and preflight passed anyway.
+//
+// A Cloudflare env var is invisible to every local test by construction. The only way to know
+// is to ask production. A gate that only checks what it can see locally certifies the half of
+// the system it never looked at.
+say('\n2b. Live endpoint configuration (is the DEPLOYED code actually configured?)');
+if (QUICK) {
+  say('  ..    skipped (--quick)');
+} else {
+  const SITE = process.env.UND_SITE || 'https://universalnetworkdevelopment.com';
+  const probes = [
+    { path: '/api/admin-job',      method: 'POST', body: '{}',
+      bad: 503, label: 'delivery endpoint',
+      why: 'DELIVERY IS IMPOSSIBLE — no customer can receive a receipt or review request' },
+    { path: '/api/create-checkout-session', method: 'POST', body: '{}',
+      bad: 503, label: 'checkout endpoint', why: 'nobody can pay' },
+    { path: '/api/stripe-webhook', method: 'POST', body: '{}',
+      bad: 404, label: 'stripe webhook', why: 'every post-payment step is dead code' },
+  ];
+  for (const p of probes) {
+    try {
+      const r = await fetch(SITE + p.path, {
+        method: p.method, headers: { 'Content-Type': 'application/json' }, body: p.body,
+      });
+      let detail = '';
+      try { const j = await r.json(); detail = j && j.error ? j.error : ''; } catch (_) {}
+      if (r.status === p.bad) {
+        fail(`${p.label} is ${r.status}`, `${detail || 'not configured'} — ${p.why}`,
+             'Set the missing variable in Cloudflare Pages -> Settings -> Environment variables, then redeploy.');
+      } else {
+        // 400/401 are HEALTHY here: the worker ran and rejected our deliberately invalid
+        // request. That is the endpoint proving it is alive and validating.
+        pass(`${p.label} configured`, `HTTP ${r.status}`);
+      }
+    } catch (e) {
+      warn(`${p.label} unreachable`, e.message, 'check the site is deployed');
+    }
+  }
+}
+
 // ── 3. unpushed work ─────────────────────────────────────────────────────────
 // "if you make an update for the website and dont push you fucked up" — Alex, 2026-07-20.
 say('\n3. Working tree');
