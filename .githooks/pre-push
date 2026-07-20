@@ -1,0 +1,52 @@
+#!/bin/sh
+# .githooks/pre-push — runs tools/preflight.mjs and BLOCKS the push if it fails.
+#
+# Installed with:  git config core.hooksPath .githooks
+# (Kept in the repo rather than .git/hooks so it survives a fresh clone and is reviewable.)
+#
+# WHY THIS IS A HOOK AND NOT A CHECKLIST ITEM
+# On 2026-07-20 every test suite was green and pushing would still have disabled every buy
+# button on the site: the client had been changed to read availability from a database column
+# that does not exist in the live project. Mocked tests cannot catch that — the mock always
+# has the column. Only asking the real database does.
+#
+# A checklist you can forget is not a control. This runs whether or not anyone remembers it.
+#
+# To bypass in a genuine emergency:  git push --no-verify
+# If you type that, you are asserting you have personally verified the live schema. Alex's
+# rule: "if you make an update for the website and dont push you fucked up" — the answer to
+# that is to FIX the blocker and push, not to skip the check and push something broken.
+
+echo ""
+echo "── pre-push: verifying this deploy is safe ─────────────────────────────"
+
+if ! command -v node >/dev/null 2>&1; then
+  echo "  node not found — cannot run preflight."
+  echo "  Refusing to push blind. Install node or use --no-verify if you have verified manually."
+  exit 1
+fi
+
+node "$(git rev-parse --show-toplevel)/tools/preflight.mjs"
+STATUS=$?
+
+if [ $STATUS -ne 0 ]; then
+  echo ""
+  echo "PUSH BLOCKED. Fix the blockers above, or push with --no-verify if you have"
+  echo "personally verified the live schema is ready."
+  echo ""
+  echo "Remember the other half (DEPLOY-RUNBOOK.md): if you turned the maintenance"
+  echo "splash ON, it must go OFF in this same session. A splash left up is a closed shop."
+  echo ""
+  exit 1
+fi
+
+echo ""
+echo "Preflight passed. Pushing."
+echo "AFTER the deploy goes live:"
+echo "  1. Cloudflare Pages -> confirm the build SUCCEEDED (a red build means the live"
+echo "     site is still the OLD code — a push is not a deploy)."
+echo "  2. If maintenance mode is on, turn it OFF now:"
+echo "       UPDATE public.site_status SET mode='open' WHERE id=1;"
+echo "  3. Load the site LOGGED OUT: no splash, buy buttons enabled, one reaches Stripe."
+echo ""
+exit 0
