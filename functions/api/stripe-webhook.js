@@ -109,10 +109,45 @@ export async function onRequestPost(context) {
   });
 }
 
+// A paid session we cannot fulfil must NEVER exit quietly. Added 2026-07-25.
+// The early `return`s below used to leave silently: no throw means the caller treats it as
+// SUCCESS, marks the event processed and acks 200 - so Stripe never retries, nothing is written,
+// and nobody is told. The customer's card was charged and no record of it exists anywhere.
+// Plausible trigger, not theoretical: Stripe metadata has size limits, so a LARGE cart can
+// truncate `metadata.items` into unparseable JSON - meaning the biggest orders fail hardest.
+// We cannot fix missing metadata by retrying (it will be missing again), so the rule is:
+// record what we DO know, and make it loud.
+async function flagOrphanPayment(env, session, request, reason) {
+  const detail =
+    `UNFULFILLED PAID SESSION (${reason}). session=${session.id || 'unknown'} ` +
+    `amount=${session.amount_total != null ? session.amount_total : '?'} ${session.currency || ''} ` +
+    `payment_intent=${session.payment_intent || 'none'} email=${(session.customer_details && session.customer_details.email) || 'unknown'}. ` +
+    `Money was taken and could not be matched to a fulfillable order. Reconcile by hand in Stripe.`;
+  try {
+    await logEvent(env, {
+      user_id: session.client_reference_id || null,
+      action: 'stripe_orphan_payment',
+      severity: 'error',
+      ip: request && request.headers ? (request.headers.get('cf-connecting-ip') || 'unknown') : 'unknown',
+      device_fingerprint: request && request.headers ? (request.headers.get('user-agent') || 'unknown') : 'unknown',
+      detail,
+    });
+  } catch (e) {
+    // Audit logging itself failed - still surface it in the platform log so it is not invisible.
+    console.error('[stripe-webhook] ORPHAN PAYMENT and audit log failed:', detail, e && e.message);
+  }
+  console.error('[stripe-webhook] ORPHAN PAYMENT:', detail);
+}
+
 async function handleCheckoutCompleted(env, session, request, eventId) {
   const md = session.metadata || {};
   const userId = session.client_reference_id || md.supabase_user_id;
-  if (!userId) return;
+  if (!userId) {
+    // Cannot write a purchase row (it is keyed to a user), so the audit trail is the only
+    // place this money can be recorded. Do not throw: a retry cannot invent the missing id.
+    await flagOrphanPayment(env, session, request, 'no client_reference_id / supabase_user_id');
+    return;
+  }
 
   if (md.kind === 'subscription' || session.mode === 'subscription') {
     // Subscription specifics arrive via customer.subscription.* events.
@@ -131,7 +166,30 @@ async function handleCheckoutCompleted(env, session, request, eventId) {
   if (!items.length && md.product_id) {
     items = [{ i: md.product_id, s: md.product_slug, t: md.product_type, q: 1 }];
   }
-  if (!items.length) return;
+  if (!items.length) {
+    // We know WHO paid and HOW MUCH, just not WHAT for. Record the payment against the account
+    // anyway so the money is never invisible and the row is joinable to the customer, then alert.
+    // Entitlements are deliberately NOT granted - we must not guess what to hand over.
+    await flagOrphanPayment(env, session, request, 'metadata.items missing or unparseable (cart too large?)');
+    try {
+      await recordPurchase(env, {
+        user_id: userId,
+        product_id: null,
+        product_slug: null,
+        title: 'UNRESOLVED - order metadata missing, reconcile in Stripe',
+        amount_cents: session.amount_total,
+        currency: session.currency,
+        stripe_session_id: session.id,
+        stripe_payment_intent: session.payment_intent || null,
+        status: 'paid',
+      });
+    } catch (e) {
+      // Let this one propagate: unlike missing metadata, a failed WRITE is worth retrying,
+      // and the caller turns a throw into a 500 so Stripe redelivers the event.
+      throw e;
+    }
+    return;
+  }
 
   // One order row per session (purchases.stripe_session_id is unique).
   await recordPurchase(env, {

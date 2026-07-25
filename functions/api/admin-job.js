@@ -185,9 +185,59 @@ export async function onRequestPost(context) {
   }
 
   // ── deliver ───────────────────────────────────────────────────────────────
+  //
+  // ACCEPTANCE GATE (added 2026-07-25). Before this, `deliver` would write intake_status=
+  // 'delivered' AND send the customer "your work is complete" in the SAME request, with the
+  // only guards being that the ticket existed, was paid, and was not already delivered.
+  // Nothing compared what was DELIVERED against what was ORDERED, and an agent key could fire
+  // it head-less as 'qwep'/'nexus'/'axiom' with no person involved. Since the completion email
+  // carries a fixed idempotencyKey, a wrong one can never be corrected by re-sending.
+  // Three rules now hold, in increasing order of importance:
+  //   1. An AGENT may not deliver. Only a signed-in human may tell a customer their work is done.
+  //   2. The work must be DESCRIBED (workDone non-empty) - an undescribed delivery is unverifiable.
+  //   3. The deliverer must explicitly assert the work matches the order (matches_order === true),
+  //      and that assertion is recorded WITH the actor and timestamp, so acceptance is attributable.
+  //
+  // NOTE ON ALERTING: this function runs on Cloudflare, so it CANNOT reach the local AI Hub
+  // (127.0.0.1:3134). A refusal here is returned to the caller AND written to the audit log; the
+  // local agent that was refused is responsible for raising it on the hub, which is what actually
+  // toasts the owner. A gate that stops a thing without telling a human is the same silent
+  // failure it was built to prevent.
+  if (isAgent) {
+    await logEvent(env, {
+      user_id: t.user_id || null,
+      action: 'delivery_refused_agent',
+      severity: 'warning',
+      detail: `Agent '${actor}' attempted to deliver ${ticket} and was refused. ` +
+              `Only a signed-in human may send a customer completion email. AWAITING OWNER APPROVAL.`,
+    }).catch(() => {});
+    return json({
+      error: 'Agents may not deliver. A human must confirm the work matches the order.',
+      awaiting_owner_approval: true,
+      ticket,
+      hint: 'Raise this on the AI Hub so the owner is alerted, then have the owner deliver from the admin.',
+    }, 403, request, env);
+  }
+
   const workDone = Array.isArray(body.workDone)
     ? body.workDone.map(w => String(w).slice(0, 300)).filter(Boolean).slice(0, 20)
     : [];
+
+  if (!workDone.length) {
+    return json({ error: 'workDone is required: describe what was actually done before delivering.' },
+                400, request, env);
+  }
+  if (body.matches_order !== true) {
+    const want = (t.intake_data && (t.intake_data.desired_outcome || t.intake_data.problem)) || null;
+    return json({
+      error: 'Confirm the work matches what was ordered: send matches_order: true.',
+      ordered: want,
+      hint: 'This is the acceptance record. It is stored with your name and the timestamp.',
+    }, 400, request, env);
+  }
+  // The deliverable itself (a URL, a file reference, or a description). Recorded because the
+  // artifact was previously stored NOWHERE - the proof said work happened but not what was handed over.
+  const deliverable = String(body.deliverable || '').slice(0, 1000) || null;
 
   const patch = await sb(env, 'service_tickets?ticket_number=eq.' + encodeURIComponent(ticket), {
     method: 'PATCH',
@@ -201,7 +251,22 @@ export async function onRequestPost(context) {
       intake_status: 'delivered',
       status:        'delivered',
       completed_at:  now,
-      intake_data: { ...(t.intake_data || {}), delivered_at: now, work_done: workDone },
+      intake_data: {
+        ...(t.intake_data || {}),
+        delivered_at: now,
+        work_done: workDone,
+        // THE ACCEPTANCE RECORD. Who asserted the work matches the order, and when. Stored on
+        // the ticket so account -> order -> acceptance is retrievable without a separate lookup.
+        deliverable,
+        acceptance: {
+          matches_order: true,
+          asserted_by: actor,
+          asserted_at: now,
+          // Snapshot what was ORDERED at the moment of acceptance, so a later edit to the intake
+          // cannot silently change what the delivery was accepted against.
+          ordered_snapshot: (t.intake_data && (t.intake_data.desired_outcome || t.intake_data.problem)) || null,
+        },
+      },
     }),
   });
   if (!patch.ok) return json({ error: 'Could not update ticket.' }, 502, request, env);
