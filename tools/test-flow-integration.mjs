@@ -144,9 +144,17 @@ ok('started_at recorded', !!DB.service_tickets[0].intake_data.started_at);
 
 section('5. Deliver -> proof + review email');
 SENT.length = 0;
+// ACCEPTANCE GATE (2026-07-25): delivery now requires an explicit assertion that the work
+// matches what was ordered, plus a non-empty description of the work. This is not the test
+// being bent to fit the code - the CONTRACT changed deliberately, because previously anything
+// holding a key could mark a job delivered and email the customer "your work is complete"
+// with nothing comparing delivered against ordered. The stricter contract is asserted here,
+// and section 5b proves the gate actually refuses the cases it exists to refuse.
 r = await adminJob.onRequestPost({ env: ENV, request: req('https://x.test/api/admin-job',
   { method: 'POST', headers: OWNER, body: JSON.stringify({ ticket: 'UND-2607-01031', action: 'deliver',
-    workDone: ['Fixed the contact form', 'Repaired 3 broken links'] }) }) });
+    workDone: ['Fixed the contact form', 'Repaired 3 broken links'],
+    matches_order: true,
+    deliverable: 'https://customer-site.test/ - contact form + links verified working' }) }) });
 j = await r.json();
 ok('returns ok', j.ok === true);
 // CANONICAL terminal state is 'delivered' (supabase/fulfillment_chain.sql:12) — the same
@@ -222,6 +230,39 @@ r = await adminJob.onRequestPost({ env: ENV, request: req('https://x.test/api/ad
     body: JSON.stringify({ ticket: 'UND-2607-01031', action: 'note', agent: 'Alex Ekwueme (owner)', note: 'y' }) }) });
 ok('bogus agent name is not accepted verbatim', r.status === 200);
 // (whitelist collapses anything unrecognised to 'agent'; asserted on a real delivery below)
+
+section('5c. Acceptance gate must REFUSE what it exists to refuse');
+// A gate is only real if it is proven to say NO. These use a fresh paid ticket so the
+// already-delivered guard cannot be what refuses them.
+DB.service_tickets.push({ id: 'gate1', ticket_number: 'UND-2607-05555', service_slug: 'website-fix-quick',
+  status: 'paid', intake_status: 'in_progress',
+  intake_data: { desired_outcome: 'make the checkout work on mobile' }, user_id: 'u3' });
+
+SENT.length = 0;
+// (a) An AGENT must never be able to tell a customer their work is done.
+r = await adminJob.onRequestPost({ env: ENV, request: req('https://x.test/api/admin-job',
+  { method: 'POST', headers: AGENT_HDR, body: JSON.stringify({ ticket: 'UND-2607-05555', action: 'deliver',
+    agent: 'qwep', workDone: ['did the thing'], matches_order: true }) }) });
+ok('agent delivery refused (403)', r.status === 403, 'got ' + r.status);
+j = await r.json().catch(() => ({}));
+ok('  tells the caller it awaits the owner', j.awaiting_owner_approval === true);
+ok('  ticket NOT marked delivered', DB.service_tickets.find(t => t.ticket_number === 'UND-2607-05555').intake_status !== 'delivered');
+ok('  customer NOT emailed', SENT.length === 0);
+
+// (b) A delivery with no description of the work is unverifiable.
+r = await adminJob.onRequestPost({ env: ENV, request: req('https://x.test/api/admin-job',
+  { method: 'POST', headers: OWNER, body: JSON.stringify({ ticket: 'UND-2607-05555', action: 'deliver',
+    workDone: [], matches_order: true }) }) });
+ok('empty workDone refused (400)', r.status === 400, 'got ' + r.status);
+
+// (c) Nobody may deliver without asserting it matches the order.
+r = await adminJob.onRequestPost({ env: ENV, request: req('https://x.test/api/admin-job',
+  { method: 'POST', headers: OWNER, body: JSON.stringify({ ticket: 'UND-2607-05555', action: 'deliver',
+    workDone: ['did the thing'] }) }) });
+ok('missing matches_order refused (400)', r.status === 400, 'got ' + r.status);
+j = await r.json().catch(() => ({}));
+ok('  echoes what was ORDERED so it can be checked', j.ordered === 'make the checkout work on mobile');
+ok('  still no customer email from any refusal', SENT.length === 0);
 
 section('6. Double-deliver must NOT re-send');
 SENT.length = 0;
