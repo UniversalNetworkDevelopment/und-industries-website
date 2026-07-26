@@ -143,9 +143,41 @@ async function main() {
     }
 
     log('\nPending:');
-    for (const p of pending) log(`    ${p.f}${p.danger.length ? '   [DESTRUCTIVE: ' + p.danger.join(', ') + ']' : ''}`);
+    for (const p of pending) log(`    ${p.f}  sha=${sha(p.sql).slice(0, 12)}${p.danger.length ? '   [DESTRUCTIVE: ' + p.danger.join(', ') + ']' : ''}`);
 
-    if (!APPLY) { log('\nDRY RUN - nothing executed. Re-run with --apply to execute.'); return; }
+    // ── READ BEFORE YOU TOUCH - ENFORCED, NOT ADVISED ──────────────────────
+    // Applying SQL is the most consequential mutation in this whole system, and it was the one
+    // thing that could slip past every existing guard: enforce-read-first.ps1 denies Edit/Write
+    // on a file nobody read, but `node tools/migrate.mjs --apply` is a Bash call, so the runner
+    // could have executed a migration NOBODY had opened. The rule is not a suggestion, so it
+    // cannot rely on good intentions - it has to be a gate.
+    //
+    // So --apply alone is refused. You must pass --confirm=<token>, where the token is printed
+    // ONLY by the dry run and is derived from the exact bytes of every pending file. Change a
+    // file, or add one, and the token changes and the apply refuses. There is no way to reach
+    // execution without having first seen the dry run for these exact contents.
+    const token = sha(pending.map(p => p.f + ':' + sha(p.sql)).join('|')).slice(0, 16);
+
+    if (!APPLY) {
+      log('\n--- SQL to be executed (read it) ---');
+      for (const p of pending) {
+        log(`\n===== ${p.f} =====`);
+        log(p.sql.trim());
+      }
+      log(`\nDRY RUN - nothing executed.`);
+      log(`To apply THESE EXACT files:\n    node tools/migrate.mjs --apply --confirm=${token}`);
+      return;
+    }
+
+    const given = (process.argv.find(a => a.startsWith('--confirm=')) || '').split('=')[1];
+    if (given !== token) {
+      log('\nREFUSED: --apply requires --confirm=<token> from a dry run of these exact files.');
+      log(given ? `  token given:    ${given}` : '  no --confirm given');
+      log(`  token expected: ${token}`);
+      log('  The pending files changed since your dry run, or you have not run one.');
+      log('  Run `node tools/migrate.mjs` first, READ the SQL it prints, then apply.');
+      process.exit(1);
+    }
 
     for (const p of pending) {
       // Each migration is its own transaction: one failure rolls itself back and stops the run,
