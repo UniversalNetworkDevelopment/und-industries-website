@@ -17,11 +17,37 @@ function adminHeaders(env, extra) {
   );
 }
 
+// EVERY Supabase call is bounded. Added 2026-07-26 after an audit found 25 fetch() calls across
+// the site and ZERO with a timeout. A fetch with no deadline does not fail - it HANGS, and a
+// request that hangs is worse than one that errors: the customer sees a spinner that never
+// resolves and never learns anything went wrong, and no alarm fires because nothing "failed".
+// A request stuck forever is the un-catchable version of a silent failure.
+//
+// 10s is deliberately generous for a database call and still far below the point where a human
+// gives up. On timeout we throw a NAMED error so callers (and the audit trail) can tell
+// "the database was too slow" apart from "the database said no" - two different problems that
+// used to look identical.
+const REST_TIMEOUT_MS = 10_000;
+
 async function rest(env, path, init) {
-  const res = await fetch(env.SUPABASE_URL + '/rest/v1/' + path, init);
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), REST_TIMEOUT_MS);
+  let res;
+  try {
+    res = await fetch(env.SUPABASE_URL + '/rest/v1/' + path, { ...init, signal: ctrl.signal });
+  } catch (e) {
+    // AbortError is the timeout; anything else is a genuine network failure. Name both.
+    const timedOut = e && (e.name === 'AbortError' || String(e).includes('aborted'));
+    throw new Error(
+      'Supabase REST ' + ((init && init.method) || 'GET') + ' ' + path + ' -> ' +
+      (timedOut ? 'TIMEOUT after ' + REST_TIMEOUT_MS + 'ms' : 'NETWORK ERROR: ' + String((e && e.message) || e))
+    );
+  } finally {
+    clearTimeout(timer);
+  }
   if (!res.ok) {
     const detail = await res.text();
-    throw new Error('Supabase REST ' + (init.method || 'GET') + ' ' + path + ' -> ' + res.status + ': ' + detail);
+    throw new Error('Supabase REST ' + ((init && init.method) || 'GET') + ' ' + path + ' -> ' + res.status + ': ' + detail);
   }
   const text = await res.text();
   if (!text) return null;
@@ -170,6 +196,22 @@ export async function setProfilePlan(env, userId, fields) {
   });
 }
 
+// The audit log must never lose an event, and must never take down the request it is
+// recording. Rewritten 2026-07-26 after TWO failures proved both halves matter:
+//
+//   1. `system_logs` did not exist AT ALL for weeks. Every write 400'd, this function caught it,
+//      console.error'd into an ephemeral Cloudflare log, and returned as if it had worked. The
+//      audit trail reported success while recording nothing.
+//   2. Once the table WAS created, three call sites still failed: they send severity:'critical',
+//      which the table's CHECK constraint rejects. Among them `owner_sale_email_failed` - the
+//      alarm for "a customer paid and Alex was never told", i.e. the single event most worth
+//      keeping. A schema/vocabulary mismatch silently destroyed the loudest alarm in the system.
+//
+// So a swallowed failure is not acceptable here, but neither is throwing (that would fail a
+// checkout because its LOGGING failed). The answer is a fallback write: if the real row is
+// rejected, retry once with a minimal row that cannot violate the schema, tagged so the
+// original rejection is itself in the record. An audit write that gets rejected must leave a
+// trace that it was rejected - otherwise the log's silence is indistinguishable from health.
 export async function logEvent(env, event) {
   try {
     await rest(env, 'system_logs', {
@@ -177,7 +219,35 @@ export async function logEvent(env, event) {
       headers: adminHeaders(env),
       body: JSON.stringify(event),
     });
+    return { ok: true };
   } catch (e) {
-    console.error('Failed to log event to Supabase:', e);
+    const reason = String((e && e.message) || e).slice(0, 400);
+    console.error('logEvent REJECTED, attempting fallback row:', reason);
+    try {
+      // Minimal shape only: action + severity 'error' (always legal) + everything we know about
+      // the original event folded into detail as text. No optional columns, nothing that can
+      // violate a constraint. If the schema drifts again, THIS still lands.
+      await rest(env, 'system_logs', {
+        method: 'POST',
+        headers: adminHeaders(env),
+        body: JSON.stringify({
+          action: 'logevent_rejected',
+          severity: 'error',
+          detail:
+            'Original action=' + String((event && event.action) || 'unknown') +
+            ' severity=' + String((event && event.severity) || 'unknown') +
+            ' user_id=' + String((event && event.user_id) || 'none') +
+            ' | rejected because: ' + reason +
+            ' | original detail: ' + String((event && event.detail) || '').slice(0, 600),
+        }),
+      });
+      return { ok: false, fallback: true, reason };
+    } catch (e2) {
+      // Both writes failed - the log table is unreachable or gone. Nothing left but the
+      // platform log; say so explicitly so it is greppable rather than a generic error.
+      console.error('AUDIT TRAIL DOWN - system_logs unwritable. Event LOST:',
+                    JSON.stringify(event), 'first=', reason, 'fallback=', String((e2 && e2.message) || e2));
+      return { ok: false, lost: true, reason };
+    }
   }
 }
