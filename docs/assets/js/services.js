@@ -543,11 +543,44 @@
   // Paint when real availability arrives, and repaint on every change. site-state.js
   // re-polls every 60s and on tab focus, so pausing a service in Supabase reaches open
   // browsers within a minute — no deploy, no developer.
+  // THE PAGE MUST NOT CONTRADICT THE STORE. Added 2026-07-26.
+  //
+  // services.html carried a hardcoded "Online ordering coming soon" banner whose primary CTA
+  // sent people to the contact page, plus a second "coming soon" line under the packages -
+  // while four services were LIVE and sellable and the checkout worked end to end. ~1.94k
+  // visitors, zero purchases. The store was open and the page told every single visitor it
+  // was shut. A hardcoded status string is a claim about live state that nothing verifies:
+  // exactly the defect class that made a health endpoint say OPERATIONAL while it was down.
+  //
+  // So the banner is now DERIVED, never asserted: it is shown only while nothing is actually
+  // purchasable, and it disappears the moment any service goes 'live' in Supabase. Flip a
+  // product live and the page corrects itself within a minute - no deploy, no developer, and
+  // no way for the copy to drift from the truth again. Same rule in reverse: pause everything
+  // and the banner comes back on its own, so customers are never sent to a dead checkout.
+  function syncComingSoonBanner() {
+    var banner = document.querySelector('.cs-banner');
+    var payNote = document.querySelector('.svc-pay-note');
+    if (!banner && !payNote) return;
+    var anyLive = false;
+    for (var k in SERVICES) {
+      if (!Object.prototype.hasOwnProperty.call(SERVICES, k)) continue;
+      var st = window.UNDSiteState
+        ? window.UNDSiteState.availabilityOf(SERVICES[k].slug)
+        : null;
+      if (st === 'live') { anyLive = true; break; }
+    }
+    // Unknown availability (site-state not loaded / DB unreachable) is treated as NOT live, so
+    // we fail toward the honest "coming soon" message rather than toward a broken buy button.
+    if (banner)  banner.style.display  = anyLive ? 'none' : '';
+    if (payNote) payNote.style.display = anyLive ? 'none' : '';
+  }
+
   function repaintAll() {
     var list = document.querySelectorAll('[data-pay]');
     for (var n = 0; n < list.length; n++) {
       paintButton(list[n], list[n].getAttribute('data-pay'));
     }
+    syncComingSoonBanner();
   }
   if (window.UNDSiteState) {
     window.UNDSiteState.ready(repaintAll);
@@ -675,7 +708,21 @@
   // ---- referral code (applies a discount + discounted checkout link if configured) ----
   var refInput = document.getElementById('ref-input');
   var refBtn   = document.getElementById('ref-apply');
-  if (refBtn && refInput) {
+
+  // Do not advertise a feature that cannot succeed. The REFERRAL map is empty (codes are
+  // commented-out examples), so every code a customer typed returned "That code isn't valid."
+  // - a visible input with a 100% failure rate, which reads as a broken site. Meanwhile the
+  // REAL discount path already works: create-checkout-session.js sets allow_promotion_codes,
+  // so Stripe's own checkout shows a promo field that actually validates, server-side.
+  // Hidden while the map is empty, and it reappears by itself the moment a code is added.
+  var hasCodes = false;
+  for (var rk in REFERRAL) { if (Object.prototype.hasOwnProperty.call(REFERRAL, rk)) { hasCodes = true; break; } }
+  if (!hasCodes) {
+    var refBox = document.querySelector('.svc-referral');
+    if (refBox) refBox.style.display = 'none';
+  }
+
+  if (hasCodes && refBtn && refInput) {
     refBtn.addEventListener('click', function (e) { e.preventDefault(); applyReferral(refInput.value); });
     refInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); applyReferral(refInput.value); } });
   }
