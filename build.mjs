@@ -17,6 +17,8 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+// execFileSync with an argument array, never a shell string — no interpolation, no shell.
+import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
@@ -53,6 +55,37 @@ for (const f of files) {
   else if (footHits > 1) warnings.push(f + ': ' + footHits + ' footer.footer blocks — footer left untouched');
 
   if (html !== before) { fs.writeFileSync(p, html); changed++; touched.push(f); }
+}
+
+// ── BUILD STAMP — so "did my push actually deploy?" stops being unanswerable ──
+//
+// There was no way to tell whether the code running on universalnetworkdevelopment.com matched
+// the code in the repo. A push is not a deploy: if the Cloudflare build fails, the site keeps
+// serving the OLD code and nothing anywhere says so. That is this ecosystem's one recurring
+// defect - a state nobody verifies - sitting on the deployment layer.
+//
+// Cloudflare Pages sets CF_PAGES_COMMIT_SHA during the build, so stamping it here means the
+// LIVE SITE carries proof of exactly which commit produced it. tools/deploy-verify.mjs then
+// compares that against local git HEAD. Locally (no CF vars) it falls back to git so the file
+// is still meaningful during development.
+try {
+  const sha =
+    process.env.CF_PAGES_COMMIT_SHA ||
+    (() => { try { return execFileSync('git', ['rev-parse','HEAD'], { encoding: 'utf8' }).trim(); } catch { return null; } })();
+  const info = {
+    commit: sha,
+    shortCommit: sha ? sha.slice(0, 7) : null,
+    branch: process.env.CF_PAGES_BRANCH || null,
+    builtAt: new Date().toISOString(),
+    // Distinguishes a real Cloudflare build from someone running build.mjs on their laptop.
+    builtBy: process.env.CF_PAGES_COMMIT_SHA ? 'cloudflare-pages' : 'local',
+  };
+  fs.writeFileSync(path.join(DOCS, 'build-info.json'), JSON.stringify(info, null, 2) + '\n');
+  console.log('  build stamp    : ' + (info.shortCommit || 'unknown') + ' (' + info.builtBy + ')');
+} catch (e) {
+  // A stamp failure must be loud. A silent miss would make deploy-verify report "no stamp",
+  // which reads as "the deploy failed" - a false alarm is how a real alarm gets ignored.
+  console.log('  !! BUILD STAMP FAILED: ' + e.message + ' — deploy-verify will not be able to check this build');
 }
 
 console.log('build.mjs — shared chrome sync');
