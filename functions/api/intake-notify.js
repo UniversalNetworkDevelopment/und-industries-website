@@ -20,6 +20,7 @@
 
 import { json, preflight } from '../util/cors.js';
 import { sendEmail, ownerEmail } from '../util/email.js';
+import { getCustomerEmail } from '../util/supabase.js';
 
 const TICKET_RE = /^UND-\d{4}-\d{4,6}$/;
 
@@ -45,9 +46,19 @@ export async function onRequestPost(context) {
 
   try {
     // Re-read server-side. The caller's claim about state is not evidence.
+    //
+    // `order_details`, NOT `intake_data` — there is no intake_data column and never has been, so
+    // this select returned HTTP 400 (Postgres 42703) and the `r.ok ? r.json() : null` below turned
+    // it into null. The handler then returned `{ok:false}` with HTTP 200: the customer's browser
+    // saw success, the owner NEVER got the "access received" email, and nothing was logged
+    // anywhere. MSA §7 starts the delivery clock at access — this was the exact moment nobody was
+    // ever told about, and it failed behind a 200. See docs/assets/js/service-intake.js:357 for
+    // the write side; the two were introduced in the same commit (5430fe9) and never matched.
+    //
+    // `user_id` is selected because the customer's email address is NOT in the ticket JSON.
     const rows = await fetch(
       env.SUPABASE_URL + '/rest/v1/service_tickets' +
-      '?select=ticket_number,service_name,service_slug,intake_status,status,intake_data' +
+      '?select=ticket_number,service_name,service_slug,intake_status,status,order_details,user_id' +
       '&ticket_number=eq.' + encodeURIComponent(ticket) + '&limit=1',
       { headers: {
           apikey: env.SUPABASE_SERVICE_ROLE_KEY,
@@ -62,7 +73,16 @@ export async function onRequestPost(context) {
       return json({ ok: false }, 200, request, env);
     }
 
-    const d = t.intake_data || {};
+    const d = t.order_details || {};
+    // THE KEYS HAVE TO MATCH THE WRITER, NOT WHAT SOUNDS RIGHT. This email asked for `site_url`,
+    // `platform`, `contact_email` and `description`. The intake form
+    // (docs/assets/js/service-intake.js:357-390) writes exactly: target_url, problem,
+    // desired_outcome, notes, access_method_label, submitted_at, access_authorization. So even
+    // once the column name was fixed, every row in this table would have rendered BLANK — a
+    // delivered email that says nothing, which is worse than no email because it looks handled.
+    // The two most valuable fields the customer actually gives us (problem, desired_outcome) were
+    // not being shown at all.
+    const contact = await getCustomerEmail(env, t.user_id).catch(() => null);
     const line = (k, v) => v
       ? '<tr><td style="padding:6px 12px 6px 0;color:#6c6c78;font-size:13px;white-space:nowrap;">' +
         k + '</td><td style="padding:6px 0;font-size:14px;color:#1c1c22;">' + esc(v) + '</td></tr>'
@@ -78,10 +98,12 @@ export async function onRequestPost(context) {
         esc(t.service_name || t.service_slug || 'Service') + ' &middot; ' + esc(ticket) + '</p>' +
         '<table role="presentation" cellpadding="0" cellspacing="0" border="0" ' +
         'style="width:100%;background:#fafafc;border:1px solid #e8e8ee;padding:14px 16px;">' +
-        line('Site', d.site_url || d.website || d.url) +
-        line('Platform', d.platform) +
-        line('Contact', d.contact_email || d.email) +
-        line('Notes', d.notes || d.description) +
+        line('Site', d.target_url) +
+        line('Problem', d.problem) +
+        line('Wanted', d.desired_outcome) +
+        line('Access', d.access_method_label) +
+        line('Contact', contact) +
+        line('Notes', d.notes) +
         '</table>' +
         '<p style="margin:16px 0 0;padding:12px 14px;background:#f4f1fd;border-left:3px solid #7c5cff;' +
         'font-size:14px;color:#31314a;">Your stated delivery window is measured from <b>now</b>, ' +
@@ -90,8 +112,11 @@ export async function onRequestPost(context) {
         '</div>',
       text: 'ACCESS RECEIVED — ' + ticket + '\n' +
         (t.service_name || t.service_slug || 'Service') + '\n\n' +
-        'Site: ' + (d.site_url || d.website || d.url || '(see ticket)') + '\n' +
-        'Platform: ' + (d.platform || '-') + '\n\n' +
+        'Site: ' + (d.target_url || '(see ticket)') + '\n' +
+        'Problem: ' + (d.problem || '-') + '\n' +
+        'Wanted: ' + (d.desired_outcome || '-') + '\n' +
+        'Access: ' + (d.access_method_label || '-') + '\n' +
+        'Contact: ' + (contact || '(unknown)') + '\n\n' +
         'Delivery window starts NOW, not at payment.',
     });
 

@@ -106,6 +106,30 @@ export async function saveCustomerMapping(env, userId, stripeCustomerId, email) 
   });
 }
 
+// THE ONE PLACE THAT ANSWERS "what is this customer's email address?".
+//
+// It existed nowhere, and that absence had a cost: admin-job.js read the address out of the
+// ticket's own JSON blob (`contact_email`), a key NOTHING has ever written. So `to` was always
+// null and the "your work is complete" email was never sent to anybody, while the endpoint
+// returned HTTP 200 with a warning nobody reads.
+//
+// `customers.email` is the right source because it is already populated for every paying user:
+// create-checkout-session.js:61 calls saveCustomerMapping(env, user.id, customerId, user.email)
+// before Stripe is ever reached, and a service ticket cannot exist without a checkout. So this
+// works for EXISTING tickets too — no backfill, no new column, no schema change.
+//
+// Returns null when genuinely unknown. Callers must treat null as "cannot contact this customer"
+// and say so loudly, never as "no email needed".
+export async function getCustomerEmail(env, userId) {
+  if (!userId) return null;
+  const rows = await rest(
+    env,
+    'customers?user_id=eq.' + encodeURIComponent(userId) + '&select=email&limit=1',
+    { headers: adminHeaders(env) }
+  );
+  return (rows && rows[0] && rows[0].email) || null;
+}
+
 export async function getUserIdByCustomer(env, stripeCustomerId) {
   const rows = await rest(
     env,

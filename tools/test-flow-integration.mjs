@@ -25,11 +25,30 @@ const DB = {
     service_slug: 'website-fix-cleanup',
     status: 'paid',
     intake_status: 'submitted',
-    intake_data: { site_url: 'https://brightpathdental.com', platform: 'WordPress',
-                   contact_email: 'sarah@brightpathdental.com', contact_name: 'Sarah' },
+    // THIS SEED IS THE REASON THE TEST NEVER CAUGHT THE BUG. It used to read
+    //   intake_data: { site_url, platform, contact_email, contact_name }
+    // — a column that does not exist, holding four keys that nothing has ever written. The
+    // handlers were driven against this mock, so the suite asserted what the CODE did rather
+    // than what the DATABASE holds, and passed green while every real delivery was dead.
+    // A fixture is a claim about production. This one is now copied from the actual writer,
+    // docs/assets/js/service-intake.js:357-390, and from the live column list.
+    order_details: {
+      target_url:          'https://brightpathdental.com',
+      problem:             'checkout breaks on mobile',
+      desired_outcome:     'working mobile checkout',
+      notes:               null,
+      access_method_label: 'WordPress admin invite',
+      submitted_at:        '2026-07-19T10:05:00Z',
+    },
     user_id: 'user-uuid-1234',
     created_at: '2026-07-19T10:00:00Z',
   }],
+  // The customer's email address lives HERE, not on the ticket. create-checkout-session.js:61
+  // writes this row before Stripe is ever reached, so it exists for every paying user. The old
+  // fixture had no customers table at all, which is precisely why nothing noticed that the
+  // completion email was reading an address out of a JSON blob that never contained one.
+  customers: [{ user_id: 'user-uuid-1234', stripe_customer_id: 'cus_mock',
+                email: 'sarah@brightpathdental.com' }],
   store_products: [{ slug: 'website-fix-cleanup', title: 'Website Full Cleanup',
                      price_cents: 34900, currency: 'usd', type: 'service', id: 'prod-1' }],
   product_usage_proof: [],
@@ -58,7 +77,12 @@ globalThis.fetch = async (url, init = {}) => {
       const q = u.split('?')[1] || '';
       const eq = [...q.matchAll(/([a-z_]+)=eq\.([^&]+)/g)];
       for (const [, col, val] of eq) rows = rows.filter(r => String(r[col]) === decodeURIComponent(val));
-      return { ok: true, status: 200, json: async () => rows };
+      // `text` as well as `json`: util/supabase.js rest() reads res.text() and parses it, so a
+      // mock that only implements json() throws TypeError on every helper that goes through
+      // rest() — and the throw lands in a caller's catch and looks like "no data" rather than
+      // "your fixture is wrong". A mock must match the REAL Response surface, not just the part
+      // the first caller happened to use.
+      return { ok: true, status: 200, json: async () => rows, text: async () => JSON.stringify(rows) };
     }
     if (method === 'POST') {
       (DB[table] = DB[table] || []).push(body);
@@ -140,7 +164,7 @@ let j = await r.json();
 ok('returns ok', j.ok === true, JSON.stringify(j).slice(0, 90));
 ok('ticket is now in_progress', DB.service_tickets[0].intake_status === 'in_progress',
    DB.service_tickets[0].intake_status);
-ok('started_at recorded', !!DB.service_tickets[0].intake_data.started_at);
+ok('started_at recorded', !!DB.service_tickets[0].order_details.started_at);
 
 section('5. Deliver -> proof + review email');
 SENT.length = 0;
@@ -167,7 +191,7 @@ ok('ticket is delivered (canonical state)', DB.service_tickets[0].intake_status 
 ok('status advanced past paid', DB.service_tickets[0].status === 'delivered',
    DB.service_tickets[0].status);
 ok('completed_at stamped (Nexus cockpit counts on it)', !!DB.service_tickets[0].completed_at);
-ok('delivered_at recorded', !!DB.service_tickets[0].intake_data.delivered_at);
+ok('delivered_at recorded', !!DB.service_tickets[0].order_details.delivered_at);
 ok('reports customer_emailed truthfully', j.customer_emailed === true, String(j.customer_emailed));
 
 const proof = DB.product_usage_proof[0];
@@ -236,7 +260,7 @@ section('5c. Acceptance gate must REFUSE what it exists to refuse');
 // already-delivered guard cannot be what refuses them.
 DB.service_tickets.push({ id: 'gate1', ticket_number: 'UND-2607-05555', service_slug: 'website-fix-quick',
   status: 'paid', intake_status: 'in_progress',
-  intake_data: { desired_outcome: 'make the checkout work on mobile' }, user_id: 'u3' });
+  order_details: { desired_outcome: 'make the checkout work on mobile' }, user_id: 'u3' });
 
 SENT.length = 0;
 // (a) An AGENT must never be able to tell a customer their work is done.
@@ -273,7 +297,7 @@ ok('no duplicate email', SENT.length === 0);
 
 section('7. Deliver an UNPAID ticket must refuse');
 DB.service_tickets.push({ id: 'aaa', ticket_number: 'UND-2607-09999', service_slug: 'website-fix-quick',
-  status: 'checkout_started', intake_status: 'awaiting_intake', intake_data: {}, user_id: 'u2' });
+  status: 'checkout_started', intake_status: 'awaiting_intake', order_details: {}, user_id: 'u2' });
 r = await adminJob.onRequestPost({ env: ENV, request: req('https://x.test/api/admin-job',
   { method: 'POST', headers: OWNER, body: JSON.stringify({ ticket: 'UND-2607-09999', action: 'deliver' }) }) });
 ok('unpaid -> 409', r.status === 409, 'got ' + r.status);

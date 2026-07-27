@@ -40,17 +40,39 @@ const HUB = 'http://127.0.0.1:3134/api/v1/hub/issue';
 // ── THE RECORD. Add a table here; nothing else changes. ──────────────────────
 // `critical: true` means a failure to export it fails the whole run — these are the rows that
 // constitute the legal record. Non-critical tables are exported best-effort.
+// VERIFIED AGAINST THE LIVE DATABASE 2026-07-26. The first version of this list was written
+// from the repo's .sql files and included `policy_acceptance_logs` as CRITICAL — that table does
+// not exist in the live project. The nightly backup would have failed on a critical table every
+// single night, forever, alerting about a problem that was actually a typo in this list. A backup
+// configured against a schema nobody checked is not a backup. Ground truth:
+// E:\SQL-Registry\LIVE-SCHEMA-2026-07-26.sql
 const TABLES = [
-  { name: 'customers',              critical: true },
-  { name: 'purchases',              critical: true },
-  { name: 'tos_consents',           critical: true },
-  { name: 'policy_acceptance_logs', critical: true },
-  { name: 'service_tickets',        critical: true },
-  { name: 'entitlements',           critical: true },
-  { name: 'subscriptions',          critical: false },
-  { name: 'service_reviews',        critical: false },
-  { name: 'audit_logs',             critical: false },
-  { name: 'webhook_events',         critical: false },
+  // ── the legal record: who agreed to what, what they paid, what was done for them ──
+  { name: 'customers',                 critical: true },
+  { name: 'purchases',                 critical: true },
+  { name: 'entitlements',              critical: true },
+  { name: 'tos_consents',              critical: true },
+  { name: 'legal_signatures',          critical: true },
+  { name: 'service_tickets',           critical: true },
+  { name: 'product_usage_proof',       critical: true },   // proof of delivery, insert-only
+  // ── money ──
+  { name: 'ledger',                    critical: true },
+  { name: 'processed_financial_events',critical: true },
+  { name: 'subscriptions',             critical: false },
+  // ── the security/audit trail ──
+  { name: 'system_logs',               critical: true },
+  { name: 'data_access_log',           critical: false },
+  { name: 'audit_logs',                critical: false },
+  { name: 'webhook_events',            critical: false },
+  // ── customer voice + support history ──
+  { name: 'service_reviews',           critical: false },
+  { name: 'feedback',                  critical: false },
+  { name: 'contact_messages',          critical: false },
+  { name: 'support_tickets',           critical: false },
+  { name: 'cs_messages',               critical: false },
+  { name: 'referral_redemptions',      critical: false },
+  // ── catalog: rebuildable in principle, but 13 live tables have NO sql file, so keep it ──
+  { name: 'store_products',            critical: false },
 ];
 
 const PAGE = 1000;   // PostgREST default cap; paginate so a big table is never silently truncated.
@@ -137,6 +159,14 @@ async function main() {
   const manifest = { exported_at: new Date().toISOString(), source: url, tables: {} };
   const failures = [];
 
+  // A MISSING TABLE IS A CONFIG ERROR, NOT AN EXPORT FAILURE - and the two must never look
+  // alike. PostgREST answers PGRST205 ("could not find the table") for a table that does not
+  // exist, versus a real error for one that does. Treating "I was told to back up something
+  // that isn't there" as "the backup failed" is how a permanently broken job hides behind a
+  // plausible alarm: you would see a nightly failure and assume the database was unreachable.
+  // Name it precisely instead, and keep exporting everything that DOES exist.
+  const missing = [];
+
   for (const t of TABLES) {
     try {
       const rows = await fetchAll(url, key, t.name);
@@ -153,15 +183,44 @@ async function main() {
       manifest.tables[t.name] = { rows: rows.length, bytes: back.length, sha256: read, critical: !!t.critical };
       log(`  ok   ${t.name.padEnd(24)} ${String(rows.length).padStart(6)} rows  ${read.slice(0, 12)}`);
     } catch (e) {
-      manifest.tables[t.name] = { error: e.message, critical: !!t.critical };
-      failures.push({ table: t.name, critical: !!t.critical, error: e.message });
-      log(`  FAIL ${t.name.padEnd(24)} ${e.message}`);
+      const msg = String(e && e.message || e);
+      // PGRST205 / "could not find the table" = the table does not exist. That is a mistake in
+      // TABLES above, not a backup failure, and it must be reported as its own category.
+      if (/PGRST205|could not find the table/i.test(msg)) {
+        manifest.tables[t.name] = { missing: true, critical: !!t.critical };
+        missing.push({ table: t.name, critical: !!t.critical });
+        log(`  MISSING ${t.name.padEnd(21)} table does not exist in this database`);
+      } else {
+        manifest.tables[t.name] = { error: msg, critical: !!t.critical };
+        failures.push({ table: t.name, critical: !!t.critical, error: msg });
+        log(`  FAIL ${t.name.padEnd(24)} ${msg}`);
+      }
     }
   }
+  manifest.missing = missing;
 
   manifest.failures = failures;
   writeFileSync(join(dir, 'manifest.json'), JSON.stringify(manifest, null, 2));
   prune();
+
+  // A table configured here that does not exist is MY mistake, reported as its own thing so it
+  // can never be mistaken for "the database was unreachable". Loud, but it does not fail the run
+  // when the table is optional - the rest of the backup is still valid and still worth having.
+  if (missing.length) {
+    log(`\nCONFIG: ${missing.length} configured table(s) do not exist: ${missing.map(m => m.table).join(', ')}`);
+    log('  Fix the TABLES list in this file. Ground truth: E:\\SQL-Registry\\LIVE-SCHEMA-<date>.sql');
+    const criticalMissing = missing.filter(m => m.critical);
+    if (criticalMissing.length) {
+      await notifyHub('Record export MISCONFIGURED - a CRITICAL table does not exist',
+        `Configured but absent: ${criticalMissing.map(m => m.table).join(', ')}. ` +
+        `Either the table was never created, or this list is wrong. The legal record is NOT fully backed up.`,
+        'warning');
+      log(`EXPORT INCOMPLETE - ${criticalMissing.length} CRITICAL table(s) are configured but do not exist.`);
+      process.exit(1);
+    }
+    await notifyHub('Record export: configured tables missing',
+      `Absent (non-critical): ${missing.map(m => m.table).join(', ')}`, 'warning');
+  }
 
   const criticalFails = failures.filter(f => f.critical);
   if (criticalFails.length) {
@@ -174,8 +233,9 @@ async function main() {
     await notifyHub('Record export completed with non-critical failures',
                     failures.map(f => `${f.table}: ${f.error}`).join(' | '), 'warning');
   }
+  const exported = Object.values(manifest.tables).filter(t => !t.missing && !t.error).length;
   const total = Object.values(manifest.tables).reduce((n, t) => n + (t.rows || 0), 0);
-  log(`\nEXPORT OK - ${total} rows across ${Object.keys(manifest.tables).length} tables -> ${dir}`);
+  log(`\nEXPORT OK - ${total} rows across ${exported} tables -> ${dir}`);
 }
 
 main().catch(async (e) => {

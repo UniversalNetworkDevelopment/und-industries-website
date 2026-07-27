@@ -23,7 +23,7 @@
 // OWNER_USER_ID, so access follows the account and dies with the session.
 
 import { json, preflight } from '../util/cors.js';
-import { getUserFromToken, logEvent } from '../util/supabase.js';
+import { getUserFromToken, logEvent, getCustomerEmail } from '../util/supabase.js';
 import { sendEmail, ownerEmail, serviceCompleteEmail } from '../util/email.js';
 
 const TICKET_RE = /^UND-\d{4}-\d{4,6}$/;
@@ -132,9 +132,23 @@ export async function onRequestPost(context) {
   // ── load the ticket ───────────────────────────────────────────────────────
   // `id` is selected because product_usage_proof.resource_id is a UUID pointing at
   // service_tickets.id — not at the human-readable ticket_number.
+  //
+  // `order_details` — NOT `intake_data`. There has never been an intake_data column on
+  // service_tickets. Commit 5430fe9 (2026-07-20) introduced the WRITE to order_details in
+  // docs/assets/js/service-intake.js and the READS of intake_data here, in one changeset, and the
+  // two halves never met. PostgREST answers an unknown column in a select list with HTTP 400
+  // (Postgres 42703), the `r.ok ? r.json() : null` below collapsed that to null, and the handler
+  // returned "Ticket not found." — a 404 for a ticket that plainly exists.
+  //
+  // The consequence was total and silent: every one of start / deliver / note was dead for every
+  // paid order. The owner could not mark a job in progress (so the customer's dashboard showed
+  // every paid job as never-started, forever), could not deliver, so serviceCompleteEmail never
+  // fired and no paying customer was ever told their work was done or asked for a review, and
+  // product_usage_proof was never written, so the MSA §10.5 dispute evidence does not exist for
+  // any order taken to date. A schema typo wearing a 404's clothing.
   const rows = await sb(env,
     'service_tickets?select=id,ticket_number,service_name,service_slug,status,intake_status,' +
-    'intake_data,user_id,created_at&ticket_number=eq.' + encodeURIComponent(ticket) + '&limit=1'
+    'order_details,user_id,created_at&ticket_number=eq.' + encodeURIComponent(ticket) + '&limit=1'
   ).then(r => (r.ok ? r.json() : null)).catch(() => null);
 
   const t = rows && rows[0];
@@ -159,13 +173,13 @@ export async function onRequestPost(context) {
 
   // ── note only ─────────────────────────────────────────────────────────────
   if (action === 'note') {
-    const notes = Array.isArray(t.intake_data && t.intake_data.owner_notes)
-      ? t.intake_data.owner_notes : [];
+    const notes = Array.isArray(t.order_details && t.order_details.owner_notes)
+      ? t.order_details.owner_notes : [];
     notes.push({ at: now, note: String(body.note || '').slice(0, 2000) });
     await sb(env, 'service_tickets?ticket_number=eq.' + encodeURIComponent(ticket), {
       method: 'PATCH',
       headers: { Prefer: 'return=minimal' },
-      body: JSON.stringify({ intake_data: { ...(t.intake_data || {}), owner_notes: notes } }),
+      body: JSON.stringify({ order_details: { ...(t.order_details || {}), owner_notes: notes } }),
     });
     return json({ ok: true, ticket, action, notes: notes.length }, 200, request, env);
   }
@@ -177,7 +191,7 @@ export async function onRequestPost(context) {
       headers: { Prefer: 'return=minimal' },
       body: JSON.stringify({
         intake_status: 'in_progress',
-        intake_data: { ...(t.intake_data || {}), started_at: now },
+        order_details: { ...(t.order_details || {}), started_at: now },
       }),
     });
     if (!patch.ok) return json({ error: 'Could not update ticket.' }, 502, request, env);
@@ -228,7 +242,7 @@ export async function onRequestPost(context) {
                 400, request, env);
   }
   if (body.matches_order !== true) {
-    const want = (t.intake_data && (t.intake_data.desired_outcome || t.intake_data.problem)) || null;
+    const want = (t.order_details && (t.order_details.desired_outcome || t.order_details.problem)) || null;
     return json({
       error: 'Confirm the work matches what was ordered: send matches_order: true.',
       ordered: want,
@@ -251,8 +265,8 @@ export async function onRequestPost(context) {
       intake_status: 'delivered',
       status:        'delivered',
       completed_at:  now,
-      intake_data: {
-        ...(t.intake_data || {}),
+      order_details: {
+        ...(t.order_details || {}),
         delivered_at: now,
         work_done: workDone,
         // THE ACCEPTANCE RECORD. Who asserted the work matches the order, and when. Stored on
@@ -264,7 +278,7 @@ export async function onRequestPost(context) {
           asserted_at: now,
           // Snapshot what was ORDERED at the moment of acceptance, so a later edit to the intake
           // cannot silently change what the delivery was accepted against.
-          ordered_snapshot: (t.intake_data && (t.intake_data.desired_outcome || t.intake_data.problem)) || null,
+          ordered_snapshot: (t.order_details && (t.order_details.desired_outcome || t.order_details.problem)) || null,
         },
       },
     }),
@@ -294,7 +308,7 @@ export async function onRequestPost(context) {
       throw new Error('ticket has no user_id');
     }
 
-    const startedAt = t.intake_data && t.intake_data.started_at;
+    const startedAt = t.order_details && t.order_details.started_at;
     const elapsedMs = startedAt
       ? Math.max(0, Date.parse(now) - Date.parse(startedAt))
       : null;
@@ -345,13 +359,24 @@ export async function onRequestPost(context) {
   // ── job-complete + review request to the customer ─────────────────────────
   let emailed = false;
   let emailError = null;
-  const to = (t.intake_data && (t.intake_data.contact_email || t.intake_data.email)) || null;
+  // THE ADDRESS DOES NOT LIVE ON THE TICKET, AND RENAMING THE COLUMN WOULD NOT HAVE FIXED THIS.
+  // This previously read `contact_email` / `email` out of the ticket's JSON blob. The intake form
+  // (docs/assets/js/service-intake.js:357-390) writes exactly seven keys — target_url, problem,
+  // desired_outcome, notes, access_method_label, submitted_at, access_authorization — and NONE of
+  // them is an email address. So `to` was null on every single delivery, and the completion email
+  // has never been sent to anyone. Swapping intake_data->order_details alone would have left that
+  // untouched: the endpoint would have stopped 404ing, looked healthy, and still told no customer
+  // their work was done.
+  // The authoritative source is customers.email, populated at checkout before Stripe is reached.
+  const to = await getCustomerEmail(env, t.user_id).catch(() => null);
   if (to) {
     const origin = new URL(request.url).origin;
     const mail = serviceCompleteEmail(
       {
         ticket,
-        name: (t.intake_data && t.intake_data.contact_name) || null,
+        // The intake form never collects a name. Left null deliberately rather than inventing a
+        // fallback — the template greets generically, which is better than greeting them wrongly.
+        name: null,
         summary: t.service_name || t.service_slug || 'service',
         workDone,
       },
