@@ -26,7 +26,36 @@ if ! command -v node >/dev/null 2>&1; then
   exit 1
 fi
 
-node "$(git rev-parse --show-toplevel)/tools/preflight.mjs"
+# ── REFRESH THE BUILD STAMP BEFORE THE PUSH ────────────────────────────────
+# docs/build-info.json carries the commit the live site was built from, and
+# tools/deploy-verify.mjs compares it against local HEAD to answer "did my push actually
+# reach the site?".
+#
+# Cloudflare Pages serves docs/ as STATIC FILES — there is no package.json and no build
+# command, so build.mjs never runs there and CF_PAGES_COMMIT_SHA is never available. The
+# stamp is therefore only ever as fresh as the last local `node build.mjs`.
+#
+# Which means: push without running build.mjs and the stamp goes stale, and deploy-verify
+# reports STALE on a deploy that landed perfectly. A FALSE ALARM IS HOW A REAL ALARM GETS
+# IGNORED — and an ignored deploy check is worse than no deploy check, because it restores
+# the exact blind spot it was built to remove.
+#
+# So the refresh happens here, where it cannot be forgotten, rather than in a runbook step.
+REPO="$(git rev-parse --show-toplevel)"
+if [ -f "$REPO/build.mjs" ]; then
+  node "$REPO/build.mjs" >/dev/null 2>&1
+  if ! git diff --quiet -- "$REPO/docs/build-info.json" 2>/dev/null; then
+    echo "  build stamp was stale — refreshed and staged."
+    git add "$REPO/docs/build-info.json" 2>/dev/null
+    # Amend so the stamp travels in the same commit being pushed, rather than being left
+    # behind as an uncommitted change that would go stale again on the very next push.
+    git commit --amend --no-edit --no-verify >/dev/null 2>&1 \
+      && echo "  stamp folded into the commit being pushed." \
+      || echo "  ! could not fold the stamp in — run 'node build.mjs', commit, and push again."
+  fi
+fi
+
+node "$REPO/tools/preflight.mjs"
 STATUS=$?
 
 if [ $STATUS -ne 0 ]; then
