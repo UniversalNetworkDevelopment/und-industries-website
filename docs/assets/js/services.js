@@ -30,19 +30,23 @@
     bundle:  { slug: 'website-fix-bundle',   name: 'Website Fix Bundle',   cents: 19900, pay: 'stripe' },
     cleanup: { slug: 'website-fix-cleanup',  name: 'Website Full Cleanup', cents: 34900, pay: 'stripe' },
 
-    // Shopify Services — PLACEHOLDER (gate until real Stripe links are wired)
-    shopify_quick:  { slug: 'shopify-quick-cleanup',   name: 'Shopify Quick Cleanup',        cents: 14900, pay: 'https://buy.stripe.com/PLACEHOLDER_SHOPIFY_QUICK' },
-    shopify_pro:    { slug: 'shopify-pro-upgrade',     name: 'Shopify Professionalization',   cents: 29900, pay: 'https://buy.stripe.com/PLACEHOLDER_SHOPIFY_PRO' },
-    shopify_drop:   { slug: 'shopify-dropshipping',    name: 'Dropshipping Integration',      cents: 24900, pay: 'https://buy.stripe.com/PLACEHOLDER_SHOPIFY_DROP' },
-    shopify_custom: { slug: 'shopify-custom-upgrade',  name: 'Custom Shopify Upgrade',        cents: 49900, pay: 'https://buy.stripe.com/PLACEHOLDER_SHOPIFY_CUSTOM' },
+    // Shopify Services — LIVE 2026-07-28. These were never waiting on Stripe payment links; the
+    // PLACEHOLDER URLs were a gate, and the working path never used a payment link at all. All 8
+    // slugs below were verified present in Supabase store_products, published, with price_cents
+    // matching the cents shown here, so the 'stripe' sentinel resolves them exactly like the three
+    // Website Fixes above. See the same-day query in NOTE-PROTOCOL-2.md Rule 0.
+    shopify_quick:  { slug: 'shopify-quick-cleanup',   name: 'Shopify Quick Cleanup',        cents: 14900, pay: 'stripe' },
+    shopify_pro:    { slug: 'shopify-pro-upgrade',     name: 'Shopify Professionalization',   cents: 29900, pay: 'stripe' },
+    shopify_drop:   { slug: 'shopify-dropshipping',    name: 'Dropshipping Integration',      cents: 24900, pay: 'stripe' },
+    shopify_custom: { slug: 'shopify-custom-upgrade',  name: 'Custom Shopify Upgrade',        cents: 49900, pay: 'stripe' },
 
-    // Automation Services — PLACEHOLDER
-    auto_start: { slug: 'auto-starter',  name: 'Starter Automation',  cents: 19900, pay: 'https://buy.stripe.com/PLACEHOLDER_AUTO_STARTER' },
-    auto_adv:   { slug: 'auto-advanced', name: 'Advanced Automation',  cents: 39900, pay: 'https://buy.stripe.com/PLACEHOLDER_AUTO_ADV' },
+    // Automation Services — LIVE 2026-07-28
+    auto_start: { slug: 'auto-starter',  name: 'Starter Automation',  cents: 19900, pay: 'stripe' },
+    auto_adv:   { slug: 'auto-advanced', name: 'Advanced Automation',  cents: 39900, pay: 'stripe' },
 
-    // Growth & Consulting — PLACEHOLDER
-    seo:        { slug: 'seo-overhaul',       name: 'SEO Overhaul',        cents: 24900, pay: 'https://buy.stripe.com/PLACEHOLDER_SEO' },
-    consulting: { slug: 'consulting-session', name: 'Consulting Session',  cents: 14900, pay: 'https://buy.stripe.com/PLACEHOLDER_CONSULT' }
+    // Growth & Consulting — LIVE 2026-07-28
+    seo:        { slug: 'seo-overhaul',       name: 'SEO Overhaul',        cents: 24900, pay: 'stripe' },
+    consulting: { slug: 'consulting-session', name: 'Consulting Session',  cents: 14900, pay: 'stripe' }
   };
 
   // Returns true if a service is live (has a non-placeholder payment link).
@@ -204,6 +208,13 @@
   function addToCart(key) {
     var svc = SERVICES[key];
     if (!svc) return;
+    // W-CART-1 (2026-07-28): a service may appear in the cart AT MOST ONCE.
+    // Before this, every click pushed another copy — click "Add to Cart" three times and you
+    // got three line items, three charges and three tickets for one job. It also made the
+    // ticket-reuse guard below unsound, because reuse is keyed by SLUG: with duplicates allowed,
+    // two line items would collapse onto one reused ticket and the buyer would be charged twice
+    // for a single ticket. Uniqueness here is what makes that guard correct.
+    if (CART.indexOf(key) !== -1) { toggleCart(true); return; }
     CART.push(key);
     saveCart();
     toggleCart(true);
@@ -362,7 +373,47 @@
             };
           });
 
-          return sb.from('service_tickets').insert(ticketRows).select('ticket_number');
+          // W-CART-1 (2026-07-28): REUSE AN UNPAID TICKET RATHER THAN MINTING A SECOND ONE.
+          //
+          // Tickets are written BEFORE the Stripe session exists, so an abandoned or failed
+          // checkout leaves a row behind. Every retry used to insert a whole new set, so one
+          // buyer who tried three times produced three tickets for one job — and the database
+          // then claimed orders that were never paid. That is the mirror image of
+          // `stripe_orphan_payment` (05_system_logs.sql:12): money with no record, versus
+          // record with no money. Both make the books lie.
+          //
+          // A ticket still sitting at 'checkout_started' for this user and slug IS the earlier
+          // attempt, so we reuse its number instead of adding another. Safe only because
+          // addToCart() now guarantees one entry per slug.
+          //
+          // FAILS OPEN, DELIBERATELY. If the lookup errors we fall through to the plain insert,
+          // i.e. exactly the old behaviour. A bookkeeping guard must never be the reason a
+          // paying customer cannot check out.
+          var slugs = effList.map(function (item) { return item.svc.slug; });
+          return sb.from('service_tickets')
+            .select('ticket_number,service_slug')
+            .eq('user_id', user.id)
+            .eq('status', 'checkout_started')
+            .in('service_slug', slugs)
+            .then(function (prior) {
+              if (prior.error || !prior.data || !prior.data.length) {
+                return sb.from('service_tickets').insert(ticketRows).select('ticket_number');
+              }
+              var reused = {};
+              prior.data.forEach(function (r) {
+                if (!reused[r.service_slug]) reused[r.service_slug] = r.ticket_number;
+              });
+              var fresh = ticketRows.filter(function (r) { return !reused[r.service_slug]; });
+              var carried = Object.keys(reused).map(function (s) {
+                return { ticket_number: reused[s] };
+              });
+              if (!fresh.length) return { data: carried, error: null };
+              return sb.from('service_tickets').insert(fresh).select('ticket_number')
+                .then(function (ins) {
+                  if (ins.error || !ins.data) return ins;
+                  return { data: ins.data.concat(carried), error: null };
+                });
+            });
         }).then(function(tIns) {
           if (tIns.error || !tIns.data) throw new Error(tIns.error ? tIns.error.message : 'ticket insert failed');
           var ticketsStr = tIns.data.map(function(r) { return r.ticket_number; }).join(',');
@@ -411,6 +462,13 @@
         }).catch(function (err) {
           showErr("We couldn't record your agreement: " + err.message);
           mGo.disabled = false; mGo.textContent = 'Agree & Checkout';
+          // Line ~375 sets BOTH buttons to display:none for "Redirecting to payment…".
+          // The inner fetch .catch restores them; this outer one did not — so any throw
+          // AFTER the tickets were inserted (e.g. a null session while reading
+          // session.access_token) left the buyer staring at "Order recorded" plus an
+          // error with NO buttons at all. A dead end in the middle of paying, with a
+          // ticket already in the database. Restore here too, matching the inner catch.
+          mGo.style.display = ''; mCancel.style.display = '';
         });
       });
     });
