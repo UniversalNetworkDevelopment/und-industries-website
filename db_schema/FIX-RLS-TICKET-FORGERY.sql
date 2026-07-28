@@ -146,11 +146,30 @@ ORDER BY created_at DESC;
 -- for. Any row here needs looking at before it is fulfilled.
 
 
--- ============================================================================
--- SECTION 4 — IF SOMETHING BREAKS, ROLL BACK
--- ============================================================================
--- Restores the previous (insecure) behaviour exactly. Use only if live checkout
--- or intake stops working and you need the store up while it is diagnosed.
+-- ############################################################################
+-- ##                                                                        ##
+-- ##   STOP. THE FIX ENDS AT SECTION 3. DO NOT RUN WHAT IS BELOW.           ##
+-- ##                                                                        ##
+-- ##   What follows is an EMERGENCY UNDO, not the next step. Running it      ##
+-- ##   REOPENS the hole: it restores table-wide UPDATE to `authenticated`    ##
+-- ##   and puts the loose INSERT policy back.                                ##
+-- ##                                                                        ##
+-- ##   This happened for real on 2026-07-28. The fix was applied correctly,  ##
+-- ##   verified correctly, and then undone within the minute, because the    ##
+-- ##   undo was presented as a numbered step in the same sequence and a      ##
+-- ##   numbered list reads as an instruction to continue. That was a         ##
+-- ##   labelling failure, not a user error.                                  ##
+-- ##                                                                        ##
+-- ##   Run this ONLY if live checkout or intake has actually broken and you  ##
+-- ##   need the store selling while it is diagnosed. Never "just in case".   ##
+-- ##                                                                        ##
+-- ##   AFTER RUNNING IT THE FORGERY PATH IS LIVE AGAIN: create a ticket via  ##
+-- ##   the cart, abandon Stripe, UPDATE your own row to status='paid'.       ##
+-- ##   Re-apply sections 1 and 2 as soon as the breakage is understood.      ##
+-- ##                                                                        ##
+-- ############################################################################
+--
+-- EMERGENCY UNDO (deliberately left commented out — uncomment to use):
 --
 -- GRANT UPDATE ON public.service_tickets TO authenticated;
 -- DROP POLICY IF EXISTS "insert own unpaid ticket only" ON public.service_tickets;
