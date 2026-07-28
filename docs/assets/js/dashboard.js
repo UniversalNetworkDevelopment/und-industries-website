@@ -6,17 +6,28 @@
         const container = document.getElementById('tickets-list-container');
         if (!container) return;
 
-        if (!window.supabase) {
+        // `window.supabase` from the CDN UMD bundle is the LIBRARY NAMESPACE, not a client.
+        // It exposes createClient(); it has no .auth and no .from(). This code used to check
+        // that the namespace existed and then call supabase.auth.getSession() straight on it,
+        // which is undefined.getSession() — a TypeError on the first line that mattered, so
+        // NO customer could ever see their tickets. The catch below reported "Failed to load
+        // tickets", which reads like an empty account rather than a broken page, so it never
+        // looked like a bug. services.js:93 has always done this correctly; this file did not.
+        const SUPABASE_URL      = 'https://wgcgzuflpxijhzlpphab.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndnY2d6dWZscHhpamh6bHBwaGFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMTc3MTgsImV4cCI6MjA5NDc5MzcxOH0.y96jBpi9ECy1RU76q4AuZQFlqPVrS6CJDwNyx__2K9A';
+
+        if (!window.supabase || !window.supabase.createClient) {
             container.innerHTML = '<p class="text-muted">Authentication offline. Cannot load tickets.</p>';
             return;
         }
+        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        const sessionRes = await supabase.auth.getSession();
+        const sessionRes = await sb.auth.getSession();
         if (!sessionRes.data.session) return;
 
         const userId = sessionRes.data.session.user.id;
-        
-        const { data: tickets, error } = await supabase
+
+        const { data: tickets, error } = await sb
             .from('service_tickets')
             .select('*')
             .eq('user_id', userId)

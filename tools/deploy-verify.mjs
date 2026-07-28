@@ -108,10 +108,26 @@ async function main() {
     // The real question is "is the live site serving my current files?", and the honest test is
     // whether the deployed stamp equals the one on disk. Cloudflare serves docs/ statically, so
     // the stamp travels with the code: if the deploy landed, the file matches.
+    // COMPARE AGAINST THE STAMP AS COMMITTED, NOT THE WORKING-TREE FILE.
+    //
+    // Second false alarm, same tool, 2026-07-28. The working-tree copy is NOT what deployed:
+    // .githooks/pre-push runs `node build.mjs` on every push, which rewrites
+    // docs/build-info.json with whatever HEAD is at that moment — AFTER the commit was made.
+    // So the file on disk drifts ahead of the file that actually shipped, and comparing to it
+    // reported STALE on a deploy that had landed perfectly. Verified the same day: the live
+    // site was serving data-details x3 and the W-CART-1 marker while this said "2 commits
+    // behind".
+    //
+    // Only git knows what was actually committed and therefore actually served, so ask git.
+    // Fall back to the working-tree file only if git cannot answer.
     let localStamp = null;
     try {
-      localStamp = JSON.parse(readFileSync(new URL('../docs/build-info.json', import.meta.url), 'utf8'));
-    } catch { /* no local stamp - fall through to the commit comparison below */ }
+      localStamp = JSON.parse(execFileSync('git', ['show', 'HEAD:docs/build-info.json'], { encoding: 'utf8' }));
+    } catch {
+      try {
+        localStamp = JSON.parse(readFileSync(new URL('../docs/build-info.json', import.meta.url), 'utf8'));
+      } catch { /* no stamp anywhere - fall through to the commit comparison below */ }
+    }
 
     if (localStamp && localStamp.commit) {
       result.localStampCommit = localStamp.shortCommit;
