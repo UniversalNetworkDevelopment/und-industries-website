@@ -27,6 +27,11 @@
 //   node tools/deploy-verify.mjs --json
 
 import { execFileSync } from 'node:child_process';
+// readFileSync is used below to read the LOCAL build stamp. It was missing, so that line threw
+// ReferenceError, the bare `catch {}` swallowed it, and the code fell through to the commit
+// comparison that can never match by construction — reporting STALE on a perfect deploy. The
+// false alarm this file's own comments warn about, inside the file that warns about it.
+import { readFileSync } from 'node:fs';
 
 const argv = process.argv.slice(2);
 const JSON_OUT = argv.includes('--json');
