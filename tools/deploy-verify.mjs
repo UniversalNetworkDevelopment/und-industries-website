@@ -91,14 +91,43 @@ async function main() {
     result.verdict = 'UNREACHABLE — could not read the stamp: ' + fetchError;
   } else if (!stamp || !stamp.commit) {
     result.verdict = 'NO STAMP — build-info.json exists but carries no commit.';
-  } else if (stamp.commit === head) {
-    result.verdict = 'DEPLOYED — the live site is running your current commit.';
   } else {
-    const n = commitsBetween(stamp.commit, head);
-    result.behindBy = n;
-    result.verdict = 'STALE — the live site is running OLDER code' +
-      (n !== null ? ` (${n} commit${n === 1 ? '' : 's'} behind)` : '') +
-      '. Your latest push did NOT reach the site. Check the Cloudflare build.';
+    // COMPARE THE LIVE STAMP TO THE LOCAL STAMP FILE, NOT TO A COMMIT HASH.
+    //
+    // The first version compared stamp.commit === git HEAD, which can NEVER match: build.mjs
+    // writes the stamp using HEAD at build time, and the commit that then contains the stamp
+    // has a different hash by definition. It reported STALE on a perfect deploy — a false
+    // alarm, which is how a real alarm gets ignored, restoring the exact blind spot this tool
+    // was built to remove.
+    //
+    // The real question is "is the live site serving my current files?", and the honest test is
+    // whether the deployed stamp equals the one on disk. Cloudflare serves docs/ statically, so
+    // the stamp travels with the code: if the deploy landed, the file matches.
+    let localStamp = null;
+    try {
+      localStamp = JSON.parse(readFileSync(new URL('../docs/build-info.json', import.meta.url), 'utf8'));
+    } catch { /* no local stamp - fall through to the commit comparison below */ }
+
+    if (localStamp && localStamp.commit) {
+      result.localStampCommit = localStamp.shortCommit;
+      if (localStamp.commit === stamp.commit) {
+        result.verdict = 'DEPLOYED — the live site is serving your current build.';
+      } else {
+        const n = commitsBetween(stamp.commit, head);
+        result.behindBy = n;
+        result.verdict = 'STALE — the live site is serving an OLDER build' +
+          (n !== null ? ` (${n} commit${n === 1 ? '' : 's'} behind)` : '') +
+          '. Your latest push did NOT reach the site. Check the Cloudflare build.';
+      }
+    } else if (stamp.commit === head) {
+      result.verdict = 'DEPLOYED — the live site is running your current commit.';
+    } else {
+      const n = commitsBetween(stamp.commit, head);
+      result.behindBy = n;
+      result.verdict = 'STALE — the live site is serving an OLDER build' +
+        (n !== null ? ` (${n} commit${n === 1 ? '' : 's'} behind)` : '') +
+        '. Your latest push did NOT reach the site. Check the Cloudflare build.';
+    }
   }
 
   // builtBy=local means someone ran build.mjs on a laptop and committed the result, so the stamp

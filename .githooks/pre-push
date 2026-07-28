@@ -41,17 +41,25 @@ fi
 # the exact blind spot it was built to remove.
 #
 # So the refresh happens here, where it cannot be forgotten, rather than in a runbook step.
+# A HOOK MUST NEVER REWRITE HISTORY. The first version of this block ran `git commit --amend`
+# to fold the refreshed stamp into the commit being pushed. That was wrong twice over:
+#   1. git had ALREADY resolved which ref to push before the hook ran, so the amend changed
+#      local HEAD while the OLD hash went to the remote — instantly diverging the repo
+#      (observed: local 06fd9c5, remote 8d76b0c, ahead 1 / behind 1).
+#   2. The stamp records HEAD at build time, and the amend then CHANGES that hash — so the
+#      stamp could never match its own commit no matter what. Chicken and egg.
+# It only refreshes and REPORTS now. deploy-verify compares the live stamp against the LOCAL
+# STAMP FILE rather than against a commit hash, so the file matching is what matters, not the SHA.
 REPO="$(git rev-parse --show-toplevel)"
 if [ -f "$REPO/build.mjs" ]; then
   node "$REPO/build.mjs" >/dev/null 2>&1
   if ! git diff --quiet -- "$REPO/docs/build-info.json" 2>/dev/null; then
-    echo "  build stamp was stale — refreshed and staged."
-    git add "$REPO/docs/build-info.json" 2>/dev/null
-    # Amend so the stamp travels in the same commit being pushed, rather than being left
-    # behind as an uncommitted change that would go stale again on the very next push.
-    git commit --amend --no-edit --no-verify >/dev/null 2>&1 \
-      && echo "  stamp folded into the commit being pushed." \
-      || echo "  ! could not fold the stamp in — run 'node build.mjs', commit, and push again."
+    echo ""
+    echo "  ! BUILD STAMP IS STALE and is NOT in this push."
+    echo "    deploy-verify compares the live stamp to your local one, so it will report"
+    echo "    STALE until this is committed. Commit it and push again:"
+    echo "        git add docs/build-info.json && git commit -m 'refresh build stamp'"
+    echo ""
   fi
 fi
 
