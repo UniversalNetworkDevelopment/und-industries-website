@@ -122,6 +122,17 @@ const req = (url, opts = {}) => new Request(url, opts);
 const adminJob = (await import('../functions/api/admin-job.js'));
 const intakeNotify = (await import('../functions/api/intake-notify.js'));
 const review = (await import('../functions/api/review.js'));
+const { reviewSig } = (await import('../functions/util/sign.js'));
+
+// A star link exactly as the completion email mints it. Before 2026-08-01 the test called
+// /api/review with no signature and asserted status=ok — encoding the vulnerability as the
+// expected behaviour. Ticket numbers are sequential and there is no FK on
+// service_reviews.ticket_number, so that "passing" test was describing an endpoint anyone could
+// write to. The signed helper below is what a real customer holds; the forgery cases in section 9
+// are what everyone else holds.
+const starLink = async (ticket, rating) =>
+  'https://x.test/api/review?ticket=' + encodeURIComponent(ticket) + '&rating=' + rating +
+  '&sig=' + encodeURIComponent(await reviewSig(ENV, ticket, rating));
 
 console.log('ORDER FLOW — INTEGRATION');
 
@@ -305,8 +316,7 @@ ok('unpaid -> 409', r.status === 409, 'got ' + r.status);
 // ── REVIEW ──────────────────────────────────────────────────────────────────
 section('8. Star rating capture');
 SENT.length = 0;
-r = await review.onRequestGet({ env: ENV, request: req(
-  'https://x.test/api/review?ticket=UND-2607-01031&rating=5') });
+r = await review.onRequestGet({ env: ENV, request: req(await starLink('UND-2607-01031', 5)) });
 ok('redirects to the thanks page', r.status === 302);
 ok('  carries status=ok', /status=ok/.test(r.headers.get('location') || ''), r.headers.get('location'));
 ok('rating row written', DB.service_reviews.length === 1);
@@ -314,7 +324,7 @@ ok('  correct value', DB.service_reviews[0]?.rating === 5);
 ok('owner alerted', SENT.length === 1);
 
 section('9. Hostile / duplicate ratings');
-r = await review.onRequestGet({ env: ENV, request: req('https://x.test/api/review?ticket=UND-2607-01031&rating=4') });
+r = await review.onRequestGet({ env: ENV, request: req(await starLink('UND-2607-01031', 4)) });
 ok('second rating refused (one per ticket)', /status=already/.test(r.headers.get('location') || ''));
 ok('  original value untouched', DB.service_reviews[0]?.rating === 5);
 for (const [label, qs] of [['rating=9', 'ticket=UND-2607-01031&rating=9'],
@@ -327,10 +337,41 @@ for (const [label, qs] of [['rating=9', 'ticket=UND-2607-01031&rating=9'],
 }
 ok('no junk rows created', DB.service_reviews.length === 1, DB.service_reviews.length + ' rows');
 
+// ── THE FORGERY THAT USED TO WORK ───────────────────────────────────────────
+// Ticket numbers are sequential, so 'guess a neighbour' is the whole attack. Because
+// service_reviews has a UNIQUE index and first-write-wins, a forged row does not just add noise —
+// it PERMANENTLY blocks the real customer's rating, which comes back 'already' and is discarded.
+// These four cases are the regression guard for that.
+section('9b. Review forgery is rejected');
+const before = DB.service_reviews.length;
+const forgeries = [
+  ['unsigned link (the original hole)', 'ticket=UND-2607-01032&rating=1'],
+  ['made-up signature',                 'ticket=UND-2607-01032&rating=1&sig=aaaaaaaaaaaaaaaaaaaaaa'],
+  ['valid sig replayed at another rating',
+    'ticket=UND-2607-01031&rating=1&sig=' + encodeURIComponent(await reviewSig(ENV, 'UND-2607-01031', 5))],
+  ['valid sig replayed on the NEXT sequential ticket',
+    'ticket=UND-2607-01032&rating=1&sig=' + encodeURIComponent(await reviewSig(ENV, 'UND-2607-01031', 1))],
+];
+for (const [label, qs] of forgeries) {
+  const rr = await review.onRequestGet({ env: ENV, request: req('https://x.test/api/review?' + qs) });
+  const loc = rr.headers.get('location') || '';
+  ok('  rejects ' + label, /status=badsig/.test(loc), loc.split('?')[1]);
+}
+ok('  forgery wrote nothing', DB.service_reviews.length === before, DB.service_reviews.length + ' rows');
+
+// A correctly signed link for a job that was never delivered must still be refused — the
+// signature proves origin, not that the work happened.
+r = await review.onRequestGet({ env: ENV, request: req(await starLink('UND-2607-09999', 5)) });
+ok('  signed link for an UNDELIVERED job refused',
+  /status=notdelivered/.test(r.headers.get('location') || ''), r.headers.get('location'));
+
 section('10. Low rating escalates');
 DB.service_reviews.length = 0;
 SENT.length = 0;
-await review.onRequestGet({ env: ENV, request: req('https://x.test/api/review?ticket=UND-2607-09999&rating=2') });
+// Needs a genuinely delivered ticket now that ratings require one — 09999 is the unpaid fixture.
+DB.service_tickets.push({ id: 'bbb', ticket_number: 'UND-2607-01033', service_slug: 'website-fix-quick',
+  status: 'paid', intake_status: 'delivered', order_details: {}, user_id: 'u3' });
+await review.onRequestGet({ env: ENV, request: req(await starLink('UND-2607-01033', 2)) });
 ok('owner alerted on 2 stars', SENT.length === 1);
 ok('  subject flags it LOW', /LOW RATING/.test(SENT[0]?.subject || ''), SENT[0]?.subject);
 ok('  body says reach out today', /Reach out today/i.test(SENT[0]?.html || ''));

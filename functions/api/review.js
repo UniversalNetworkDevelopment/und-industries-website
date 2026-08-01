@@ -77,9 +77,19 @@ export async function onRequestGet(context) {
       } }
     ).then(r => r.ok ? r.json() : null).catch(() => null);
 
+    // `status` is NOT still 'paid' at this point. admin-job.js:264 writes status='delivered'
+    // AND intake_status='delivered' together, so a delivered ticket has moved past 'paid'
+    // entirely — an earlier version of this check tested status==='paid' and rejected every
+    // genuinely delivered job. The integration suite caught it; the assumption had never been
+    // checked against what delivery actually writes.
+    //
+    // intake_status is the state that matters, because it is the one both fulfilment routes
+    // agree on (owner via admin-job, agent via UND-Nexus). 'complete' is the invalid value the
+    // old code wrote and those tickets are genuinely delivered. `status` is checked only to
+    // exclude a ticket that never got paid at all.
     const j = job && job[0];
     if (!j) return fail('badref');
-    if (j.status !== 'paid') return fail('notdelivered');
+    if (j.status !== 'paid' && j.status !== 'delivered') return fail('notdelivered');
     if (j.intake_status !== 'delivered' && j.intake_status !== 'complete') return fail('notdelivered');
 
     // One rating per ticket. A second click must not silently change the score — if the
