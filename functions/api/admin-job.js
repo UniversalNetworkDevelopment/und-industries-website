@@ -371,7 +371,11 @@ export async function onRequestPost(context) {
   const to = await getCustomerEmail(env, t.user_id).catch(() => null);
   if (to) {
     const origin = new URL(request.url).origin;
-    const mail = serviceCompleteEmail(
+    // `await` + `env`: the star links are now HMAC-signed (util/sign.js), which makes minting them
+    // async and needs the signing key. Without the await this passes a Promise to sendEmail and
+    // the customer receives an email body of "[object Promise]".
+    const mail = await serviceCompleteEmail(
+      env,
       {
         ticket,
         // The intake form never collects a name. Left null deliberately rather than inventing a

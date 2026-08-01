@@ -4,29 +4,20 @@
 // Accepts an optional Authorization: Bearer <supabase-access-token> to associate
 // the message with a logged-in user. Anonymous submissions are allowed (user_id null).
 //
-// Rate limit: 3 submissions per IP per 60 seconds.
-// Uses a module-level Map — per-worker-instance, not globally coordinated. Good
-// enough to stop simple bots; Cloudflare WAF rules provide the distributed layer.
+// Rate limit: 3 submissions per IP per 60 seconds, via util/ratelimit.js.
+// Moved out of this file 2026-08-01. It was a private const here, so the two unauthenticated
+// endpoints written afterwards (review.js, intake-notify.js) shipped with no limit at all — the
+// discipline was correct and simply could not travel. Same semantics, same caveats, now shared.
 
 import { json, preflight } from '../util/cors.js';
 import { sendEmail, ownerEmail, ownerContactEmail } from '../util/email.js';
 import { getUserFromToken  } from '../util/supabase.js';
+import { allow } from '../util/ratelimit.js';
 
-const _rl         = new Map(); // ip -> { count: number, resetAt: number }
 const RL_MAX      = 3;
 const RL_WINDOW   = 60_000; // ms
 
-function checkRateLimit(ip) {
-  const now  = Date.now();
-  const slot = _rl.get(ip);
-  if (!slot || now >= slot.resetAt) {
-    _rl.set(ip, { count: 1, resetAt: now + RL_WINDOW });
-    return true;
-  }
-  if (slot.count >= RL_MAX) return false;
-  slot.count++;
-  return true;
-}
+const checkRateLimit = (ip) => allow('contact', ip, RL_MAX, RL_WINDOW);
 
 const NAME_MAX    = 200;
 const EMAIL_MAX   = 500;

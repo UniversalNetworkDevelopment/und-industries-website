@@ -18,6 +18,8 @@
 // No SDK — Workers have fetch, and the Resend REST API is one POST.
 // Verified against https://resend.com/docs/api-reference/emails/send-email on 2026-07-19.
 
+import { reviewSig } from './sign.js';
+
 const RESEND_ENDPOINT = 'https://api.resend.com/emails';
 
 // ── MOJIBAKE DETECTION + REPAIR ─────────────────────────────────────────────
@@ -363,9 +365,20 @@ export function customerConfirmEmail(order, origin) {
  * has acted against it; it is also just dishonest. Low raters additionally get an easy
  * "tell us what went wrong" path, but nobody is BLOCKED from reviewing publicly.
  */
-export function serviceCompleteEmail(job, origin, reviewUrl) {
-  const rate = (n) => origin + '/review?ticket=' + encodeURIComponent(job.ticket || '') +
-    '&rating=' + n;
+export async function serviceCompleteEmail(env, job, origin, reviewUrl) {
+  // '/review' — NOT '/api/review'. The handler is functions/api/review.js, which Cloudflare Pages
+  // routes at /api/review; there is no docs/review.html and no _redirects file, so every star in
+  // every completion email pointed at a 404. The two halves were written to different addresses
+  // and nothing ever compared them, because the sending half had never actually run (the customer
+  // email address was read from the wrong column, so `to` was null on every delivery — see
+  // admin-job.js:365). Two silent faults hid each other: the link nobody could click was broken,
+  // and the endpoint nobody could reach was wide open.
+  //
+  // `sig` makes the link unforgeable — see util/sign.js for the poisoning attack it closes.
+  const ticket = job.ticket || '';
+  const sigs = await Promise.all([1, 2, 3, 4, 5].map((n) => reviewSig(env, ticket, n)));
+  const rate = (n) => origin + '/api/review?ticket=' + encodeURIComponent(ticket) +
+    '&rating=' + n + '&sig=' + encodeURIComponent(sigs[n - 1]);
 
   // Stars as individual linked cells — an <a> per rating. Emails cannot run JS, so the
   // rating has to be carried in the URL and captured server-side on click.

@@ -114,6 +114,22 @@
         + 'confirmation email with a number from 1 to 5 and we will record it.';
     },
 
+    // Added 2026-08-01 with the signed review links. A real customer reaches this only if their
+    // email client mangled the URL, so the copy blames the link and not them, and never implies
+    // they did something suspicious. Anyone forging a link sees the same page and learns nothing.
+    badsig: function () {
+      titleEl.textContent = 'That link did not check out';
+      bodyEl.textContent = 'Rating links are tied to a specific order, and this one did not match '
+        + '— usually a sign the address got clipped or rewritten in transit. Reply to your '
+        + 'completion email with a number from 1 to 5 and we will record it by hand.';
+    },
+
+    notdelivered: function () {
+      titleEl.textContent = 'That order is not finished yet';
+      bodyEl.textContent = 'We only take a rating once the work is actually delivered, so nothing '
+        + 'was recorded. You will get a fresh link the moment your order is complete.';
+    },
+
     savefailed: function () {
       titleEl.textContent = 'We could not save that';
       bodyEl.textContent = 'Your rating did not record — that is our problem, not yours. Reply to '

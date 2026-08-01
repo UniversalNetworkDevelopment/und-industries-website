@@ -15,12 +15,24 @@
 //   * It NEVER trusts the caller for content — it re-reads the ticket server-side.
 //   * It only proceeds if the ticket really is `submitted`. A forged call about a ticket
 //     that has not had intake does nothing.
-//   * It returns no customer data to the caller, so it cannot be used to probe tickets.
-//   * Worst case abuse is a duplicate email to the OWNER about a genuine ticket.
+//   * It returns no customer data to the caller.
+//   * Rate limited per IP (added 2026-08-01).
+//
+// THE CLAIM THAT WAS WRONG (audited 2026-08-01):
+// This header used to end "worst case abuse is a duplicate email to the OWNER" and claim the
+// endpoint "cannot be used to probe tickets". Both were too generous. Ticket numbers are
+// SEQUENTIAL — the live table runs UND-2606-01001, 01002, 01003 — so the range is walkable, and
+// there was no limit on how fast. Worst case was therefore not one duplicate email but an
+// unbounded flood to the owner's inbox, which burns the Resend quota and can get the sending
+// domain flagged as a spam source — that would take out every transactional email the business
+// runs on, including receipts. And {ok:true} vs {ok:false} IS a probe: it confirms which ticket
+// numbers exist and are awaiting work. It reveals nothing about who or what, so the oracle is
+// minor, but "cannot be used to probe" was simply not true.
 
 import { json, preflight } from '../util/cors.js';
 import { sendEmail, ownerEmail } from '../util/email.js';
 import { getCustomerEmail } from '../util/supabase.js';
+import { allow, callerIp } from '../util/ratelimit.js';
 
 const TICKET_RE = /^UND-\d{4}-\d{4,6}$/;
 
@@ -33,6 +45,13 @@ export async function onRequestPost(context) {
 
   if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) {
     return json({ ok: false }, 200, request, env);   // never block the customer's flow
+  }
+
+  // 5 per minute. A real customer submits intake once, so this is far above any honest use and
+  // far below what makes flooding worthwhile. Returns the same {ok:false} shape as every other
+  // rejection: a limiter that announces itself just tells the caller how to pace around it.
+  if (!allow('intake-notify', callerIp(request), 5, 60_000)) {
+    return json({ ok: false }, 200, request, env);
   }
 
   let ticket = '';
