@@ -108,8 +108,15 @@
     .svc-modal-err { color: #ff8a8a; font-size: .85rem; margin: 0 0 12px; }
     .svc-modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px; }
     @media (max-width: 520px) { .svc-modal-actions { flex-direction: column-reverse; } .svc-modal-actions .btn { width: 100%; } }
-      /* === COMING SOON MODE === */
-    .cart-toggle, .cart-panel, .cart-overlay { display: none !important; }
+      /* === COMING SOON MODE ===
+         Removed 2026-07-28. The rule here was:
+             .cart-toggle, .cart-panel, .cart-overlay { display: none !important; }
+         Added 2026-06-17 (commit 80c4a59) to close the shop, never removed. It hid
+         the whole cart UI unconditionally, so "Add to Cart" worked silently and the
+         panel opened invisibly — no cart, no checkout, no sign-in modal reachable.
+
+         DO NOT REINSTATE. Closing the shop is DATA: store_products.availability or
+         site_status.mode in Supabase. Those need no deploy to reopen. */
     .cs-banner {
       background: linear-gradient(135deg, rgba(124,92,255,0.15), rgba(77,232,255,0.08));
       border: 1px solid rgba(124,92,255,0.35);

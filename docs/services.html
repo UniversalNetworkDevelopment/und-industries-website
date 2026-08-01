@@ -108,8 +108,27 @@
     .cart-total-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-size: 1.2rem; font-weight: bold; }
     .cart-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 1050; opacity: 0; visibility: hidden; transition: opacity .3s; }
     .cart-overlay.open { opacity: 1; visibility: visible; }
-      /* === COMING SOON MODE === */
-    .cart-toggle, .cart-panel, .cart-overlay { display: none !important; }
+      /* === COMING SOON MODE ===
+         The rule that used to live here was:
+             .cart-toggle, .cart-panel, .cart-overlay { display: none !important; }
+         Added 2026-06-17 in commit 80c4a59 to close the shop, and never removed.
+
+         It hid the ENTIRE cart UI unconditionally: the floating cart button, the
+         slide-out panel, and the overlay. "Add to Cart" still added the item and
+         still called toggleCart(true) — the panel got its .open class and slid to
+         right:0 — but display:none !important meant nothing ever appeared. No cart,
+         no checkout button, and therefore no way to reach the sign-in modal.
+
+         The buy buttons were later reopened through Supabase store_products
+         .availability, so the page LOOKED open. This CSS was not part of that
+         switch, so it stayed shut. The site has been advertising three purchasable
+         services while being impossible to buy from.
+
+         DO NOT REINSTATE THIS. Closing the shop is DATA, not CSS: set
+         store_products.availability (per service) or site_status.mode (whole site)
+         in Supabase. Those take effect with no deploy, which is the entire reason
+         they exist — a gate you can only reopen with a push is a gate that stays
+         shut, and this one stayed shut for weeks. */
     .cs-banner {
       background: linear-gradient(135deg, rgba(124,92,255,0.15), rgba(77,232,255,0.08));
       border: 1px solid rgba(124,92,255,0.35);

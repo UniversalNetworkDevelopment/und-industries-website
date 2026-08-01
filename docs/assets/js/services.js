@@ -96,6 +96,9 @@
 
   // initialize cart
   renderCart();
+  // Determine signed-in state immediately so the cart can state the account
+  // requirement up front rather than only when checkout blocks the buyer.
+  refreshAuthState();
 
   // footer year (the inline script that used to do this was removed for CSP)
   var yEl = document.querySelector('[data-year]');
@@ -126,13 +129,66 @@
   
   // ---- cart ui logic ----
   function saveCart() { try { localStorage.setItem('svc_cart', JSON.stringify(CART)); } catch(e) {} renderCart(); }
+  // ── SIGNED-IN STATE, SURFACED IN THE UI ────────────────────────────────────
+  // 2026-07-28. Checking out requires a free account, and until now the site never
+  // said so until the buyer had already picked a service, opened the cart, and
+  // pressed "Proceed to Checkout" — three steps in. Only THEN did an account
+  // modal appear. The modal itself was fine; the problem was that the
+  // requirement was invisible right up to the moment it blocked you, and an
+  // unexplained wall at the end of a purchase reads as a broken site, not as a
+  // sign-up step. People leave instead of registering.
+  //
+  // So the requirement is now stated where it is incurred: in the cart, the
+  // moment there is something to buy.
+  var IS_SIGNED_IN = null; // null = not determined yet
+  function refreshAuthState() {
+    if (!sb) { IS_SIGNED_IN = false; renderCart(); return; }
+    sb.auth.getSession().then(function (r) {
+      IS_SIGNED_IN = !!(r && r.data && r.data.session);
+      renderCart();
+    }).catch(function () {
+      // Unknown is NOT the same as signed in. Telling someone an account is
+      // needed when it turns out they had one costs a sentence; hiding it
+      // costs the sale.
+      IS_SIGNED_IN = false;
+      renderCart();
+    });
+  }
+  if (sb && sb.auth && sb.auth.onAuthStateChange) {
+    sb.auth.onAuthStateChange(function () { refreshAuthState(); });
+  }
+
   function renderCart() {
     var cBadge = document.getElementById('cart-badge');
     var cItems = document.getElementById('cart-items');
     var cTotal = document.getElementById('cart-total');
     var cCheck = document.getElementById('cart-checkout');
     if (!cBadge || !cItems) return;
-    
+
+    // Say it plainly, in the cart, as soon as there is something in it.
+    var notice = document.getElementById('cart-auth-notice');
+    if (!notice && cCheck && cCheck.parentNode) {
+      notice = document.createElement('p');
+      notice.id = 'cart-auth-notice';
+      notice.style.cssText = 'margin:0 0 10px;font-size:.82rem;line-height:1.4;color:#cbb8ff;' +
+        'background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.35);' +
+        'border-radius:10px;padding:10px 12px;';
+      cCheck.parentNode.insertBefore(notice, cCheck);
+    }
+    if (notice) {
+      var needsAccount = (IS_SIGNED_IN === false) && CART.length > 0;
+      notice.hidden = !needsAccount;
+      if (needsAccount) {
+        notice.innerHTML = 'You’ll need a free account to check out — it takes about 30 seconds, ' +
+          'and it’s how you get a ticket number to track your order.';
+      }
+    }
+    if (cCheck) {
+      cCheck.textContent = (IS_SIGNED_IN === false && CART.length > 0)
+        ? 'Sign in & Checkout'
+        : 'Proceed to Checkout';
+    }
+
     var totalCents = 0;
     cBadge.textContent = CART.length;
     cBadge.style.display = CART.length > 0 ? 'flex' : 'none';
