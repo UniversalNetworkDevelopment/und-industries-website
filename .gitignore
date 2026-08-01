@@ -50,3 +50,6 @@ desktop.ini
 *.db
 
 qwep/
+
+# Local one-shot operational script, not part of the site.
+PUSH-CLEANED-HISTORY.cmd
