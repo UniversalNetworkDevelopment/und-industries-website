@@ -575,8 +575,20 @@
   // unknown, nothing is purchasable. Never take money we cannot verify we are meant to
   // take. (site-state.js deliberately fails OPEN on the site banner — inventing an
   // outage is its own harm. Availability is the opposite trade, on purpose.)
+  //
+  // `inquiry` added 2026-08-02 — the INQUIRY LANE (E:\Plans\INQUIRY-LANE-AND-AUTONOMY-LADDER.md).
+  // A service in this state does not sell itself: the button opens the quote modal, Alex is
+  // emailed, and he quotes and fulfils by hand. That is deliberate and temporary. The fulfilment
+  // chain is already human-approval-only (admin-job.js refuses agent-initiated delivery), so this
+  // makes the FRONT DOOR tell the truth about how the business actually runs, instead of taking
+  // money up front for a pipeline that has never once completed.
+  //
+  // It costs no deploy to move a service either way — availability is a column in Supabase, so
+  // `inquiry` -> `live` is a dashboard edit the moment the autonomous path is trusted. That is the
+  // whole point: this is a bridge with the switch left in.
   var SVC_STATE = {
     live:     { text: 'Add to Cart',             enabled: true,  title: '' },
+    inquiry:  { text: 'Request a Quote',          enabled: true,  title: 'Tell us what you need — we reply with a plan and a flat quote. No obligation.' },
     soon:     { text: '🔒 Coming Soon', enabled: false, title: 'Not yet available' },
     paused:   { text: 'Temporarily Unavailable',  enabled: false, title: 'Paused — at capacity' },
     waitlist: { text: 'Join the Waitlist',        enabled: true,  title: 'Join the waitlist' },
@@ -649,6 +661,13 @@
       a.addEventListener('click', function (e) {
         e.preventDefault();
         if (a.hasAttribute('disabled')) return;   // hard stop on a locked button
+
+        // INQUIRY LANE. The state is read at CLICK time, not at wiring time, because
+        // paintButton() runs after Supabase answers — reading it here means the routing always
+        // matches the label the customer is actually looking at. A button that says "Request a
+        // Quote" and then charges a card would be the worst possible version of this bug.
+        if (a.getAttribute('data-svc-state') === 'inquiry') { showQuote(key); return; }
+
         book(key);
       });
     }(btns[i]));
@@ -763,11 +782,22 @@
   }
 
   // ---- AI / custom-build quote request (logs to the owner inbox via /api/contact) ----
-  function showQuote() {
+  // `key` added 2026-08-02 for the inquiry lane. Optional on purpose: called with no argument this
+  // is still the generic "custom build" quote it always was, so the existing [data-quote] hook is
+  // unchanged. Called WITH a service key it names the service, so the email that reaches Alex says
+  // what the customer actually wants instead of arriving as an unattributed "AI / Custom Build".
+  // Knowing which service was clicked is the difference between a lead and a guess.
+  var QUOTE_SVC = null;
+  function showQuote(key) {
+    QUOTE_SVC = (key && SERVICES[key]) ? SERVICES[key] : null;
     buildModal();
-    mTitle.textContent = 'Request a custom quote';
+    mTitle.textContent = QUOTE_SVC
+      ? ('Request a quote — ' + (QUOTE_SVC.name || QUOTE_SVC.slug))
+      : 'Request a custom quote';
     mBody.innerHTML =
-      '<p class="svc-modal-p svc-modal-muted">AI, automation, chatbots, custom tools, AI-in-Unity — tell me what you need and I’ll reply with a plan + a flat quote. No obligation.</p>' +
+      (QUOTE_SVC
+        ? '<p class="svc-modal-p svc-modal-muted">Tell me about your site and what you need done, and I’ll reply with a plan and a flat quote. No obligation, and nothing is charged until you approve it.</p>'
+        : '<p class="svc-modal-p svc-modal-muted">AI, automation, chatbots, custom tools, AI-in-Unity — tell me what you need and I’ll reply with a plan + a flat quote. No obligation.</p>') +
       '<input class="svc-modal-input" id="q-name" type="text" placeholder="Your name" autocomplete="name">' +
       '<input class="svc-modal-input" id="q-email" type="email" placeholder="Email I should reply to" autocomplete="email">' +
       '<input class="svc-modal-input" id="q-budget" type="text" placeholder="Rough budget (optional)">' +
@@ -787,10 +817,19 @@
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { showErr('Please enter a valid email.'); return; }
     if (msg.length < 5) { showErr('Tell me a bit about what you need.'); return; }
     mGo.disabled = true; mGo.textContent = 'Sending…'; showErr('');
+    // Name the service in BOTH the subject and the body. The subject is what Alex sees in a phone
+    // notification and decides whether to open; the body is what survives if the subject is ever
+    // rewritten or truncated by a mail client. Belt and braces on the one field that turns a
+    // generic contact form into an actionable lead.
     var payload = {
       name: name, email: email,
-      subject: 'AI / Custom Build — Quote Request',
-      message: msg + (budget ? '\n\nRough budget: ' + budget : '')
+      subject: QUOTE_SVC
+        ? ('Quote request — ' + (QUOTE_SVC.name || QUOTE_SVC.slug))
+        : 'AI / Custom Build — Quote Request',
+      message: msg
+        + (budget ? '\n\nRough budget: ' + budget : '')
+        + (QUOTE_SVC ? '\n\nService requested: ' + (QUOTE_SVC.name || QUOTE_SVC.slug)
+                       + ' (' + QUOTE_SVC.slug + ')' : '')
     };
     function send(token) {
       var headers = { 'Content-Type': 'application/json' };
