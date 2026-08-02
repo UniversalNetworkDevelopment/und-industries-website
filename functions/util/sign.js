@@ -54,15 +54,36 @@ export async function sign(env, label, message) {
 }
 
 /**
- * Constant-time verify. The comparison is length-checked first and then XOR-accumulated so an
- * attacker cannot learn the correct prefix from response timing. Over the public internet a
- * timing side-channel on an HMAC compare is impractical anyway, but it costs three lines.
+ * Constant-time verify.
+ *
+ * Uses crypto.subtle.timingSafeEqual, matching util/stripe.js:88-96 — this codebase already had a
+ * signature comparison and already documented the right way to do it. The first version of this
+ * function hand-rolled a XOR loop AND early-returned on a length mismatch, which is precisely what
+ * the comment over there says not to do because it leaks the expected length via timing. The
+ * practical risk was negligible (the signature is a fixed 22 chars, and network jitter dwarfs the
+ * signal) but reimplementing a solved problem slightly worse is how two files drift apart.
+ *
+ * timingSafeEqual is a Workers extension to crypto.subtle and is absent under Node, where the
+ * tests run — hence the fallback, which stays constant-time with respect to the expected length
+ * and folds the length difference into the same accumulator rather than branching on it.
  */
 export async function verify(env, label, message, candidate) {
   const expected = await sign(env, label, message);
-  if (!expected || typeof candidate !== 'string' || candidate.length !== expected.length) return false;
-  let diff = 0;
-  for (let i = 0; i < expected.length; i++) diff |= expected.charCodeAt(i) ^ candidate.charCodeAt(i);
+  if (!expected || typeof candidate !== 'string') return false;
+
+  const a = enc.encode(expected);
+  const b = enc.encode(candidate);
+
+  if (typeof crypto.subtle.timingSafeEqual === 'function') {
+    if (a.byteLength !== b.byteLength) {
+      crypto.subtle.timingSafeEqual(a, a);   // compare anyway, so timing does not reveal length
+      return false;
+    }
+    return crypto.subtle.timingSafeEqual(a, b);
+  }
+
+  let diff = a.byteLength ^ b.byteLength;
+  for (let i = 0; i < a.byteLength; i++) diff |= a[i] ^ (b[i] === undefined ? 0 : b[i]);
   return diff === 0;
 }
 
