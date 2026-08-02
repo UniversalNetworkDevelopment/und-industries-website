@@ -74,11 +74,16 @@ export async function getUserFromToken(env, accessToken) {
   }
 }
 
+// `availability` added to the select 2026-08-02. Callers must be able to refuse a sale for a
+// product that is not actually for sale, and they cannot check a column that was never fetched.
+// is_published alone is NOT sufficient: a product can be published (visible in the catalogue) and
+// still be 'soon', 'paused' or 'inquiry' — on 2026-08-02, 11 of the 15 published, priced products
+// were 'soon' and every one of them was purchasable.
 export async function getProductBySlug(env, slug) {
   const rows = await rest(
     env,
     'store_products?slug=eq.' + encodeURIComponent(slug) +
-      '&is_published=eq.true&select=id,slug,title,price_cents,currency,type&limit=1',
+      '&is_published=eq.true&select=id,slug,title,price_cents,currency,type,availability&limit=1',
     { headers: adminHeaders(env) }
   );
   return rows && rows[0] ? rows[0] : null;

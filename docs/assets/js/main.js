@@ -1111,6 +1111,48 @@
     return { music: '🎵', game: '🎮', software: '💾', story: '📖' }[type] || '📦';
   }
 
+  // ── Store — AVAILABILITY ────────────────────────────────────────────────────
+  // Added 2026-08-02. The store page had NO concept of availability at all — this whole file
+  // contained zero references to it — so it rendered a working Buy button for every published
+  // product with a price, whatever its state.
+  //
+  // That was not theoretical. Measured on the live database the same day: of the 15 products the
+  // store offered for sale, ELEVEN were availability='soon' — $149 through $3,500, including
+  // ai-integration at $3,500. services.html showed those same products as a disabled
+  // "🔒 Coming Soon"; /store sold them. Two storefronts over one catalogue, and only one of them
+  // was reading the flag that says whether we can actually deliver. Taking money for work marked
+  // unavailable is the worst failure this site can have, and it was live.
+  //
+  // FAIL CLOSED, matching services.js:573-577 — this function only ever UNLOCKS. An unknown,
+  // missing or misspelt value is treated as not-for-sale, so a typo in the database costs a lost
+  // sale rather than an order nobody can fulfil.
+  //
+  // Deliberately reads the product row, NOT window.UNDSiteState: store.html does not load
+  // site-state.js, and inventing a second source of truth for the same fact is precisely how
+  // these two pages drifted apart in the first place. `availability` is already selected here
+  // (the query is select('*')), so this needs no extra request.
+  var STORE_BUYABLE = 'live';
+  function storeAvailability(p) {
+    var a = p && typeof p.availability === 'string' ? p.availability : '';
+    return a || 'soon';
+  }
+  function storeCanBuy(p) {
+    return storeAvailability(p) === STORE_BUYABLE
+      && typeof p.price_cents === 'number' && p.price_cents > 0;
+  }
+  // What to show INSTEAD of a buy button. 'inquiry' is the one state that still wants the
+  // customer to act, so it gets a real link to the contact form rather than a dead label.
+  function storeUnavailableHtml(p) {
+    var a = storeAvailability(p);
+    if (a === 'hidden') return '';
+    if (a === 'inquiry') {
+      return '<a class="btn btn-primary btn-sm store-card-quote" href="contact.html?about='
+        + encodeURIComponent(p.slug) + '">Request a Quote</a>';
+    }
+    var label = { soon: 'Coming Soon', paused: 'Unavailable', waitlist: 'Join the Waitlist' }[a] || 'Unavailable';
+    return '<span class="store-card-unavailable">' + escapeHtml(label) + '</span>';
+  }
+
   // ── Store — slug helper ───────────────────────────────────
   function slugify(str) {
     return String(str).toLowerCase()
@@ -1131,6 +1173,7 @@
     }
 
     grid.innerHTML = products.map(function (p) {
+      var avail = storeAvailability(p);
       var price = formatPrice(p.price_cents, p.currency);
       var cats  = (p.cats || []).map(function (c) {
         return '<span class="store-cat-pill">' + escapeHtml(c.label) + '</span>';
@@ -1152,9 +1195,9 @@
           '<span class="store-card-price">' + escapeHtml(price) + '</span>' +
           '<button type="button" class="btn btn-outline btn-sm store-view-btn" ' +
             'data-slug="' + escapeHtml(p.slug) + '" aria-label="View ' + escapeHtml(p.title) + '">View</button>' +
-          (typeof p.price_cents === 'number' && p.price_cents > 0
+          (storeCanBuy(p)
             ? '<button type="button" class="btn btn-primary btn-sm store-card-add" data-add-slug="' + escapeHtml(p.slug) + '" aria-label="Add ' + escapeHtml(p.title) + ' to cart">Add</button>'
-            : '') +
+            : storeUnavailableHtml(p)) +
         '</div>' +
       '</div>';
     }).join('');
@@ -1296,12 +1339,15 @@
       '<div class="store-modal-desc">' + escapeHtml(product.long_description || product.short_description) + '</div>' +
       '<div class="store-modal-footer">' +
         '<span class="store-modal-price">' + escapeHtml(price) + '</span>' +
-        (typeof product.price_cents === 'number' && product.price_cents > 0
+        (storeCanBuy(product)
           ? ('<button type="button" class="btn btn-outline store-buy-btn" data-checkout-slug="' + escapeHtml(product.slug) + '">Buy Now</button>' +
              '<button type="button" class="btn btn-primary store-add-btn" data-add-slug="' + escapeHtml(product.slug) + '">Add to Cart</button>')
           : (product.external_url && /^https?:\/\//i.test(product.external_url)
               ? '<a href="' + escapeHtml(product.external_url) + '" class="btn btn-primary" target="_blank" rel="noopener noreferrer">' + escapeHtml(externalLabel) + '</a>'
-              : '<button type="button" class="btn btn-outline" disabled>Not available</button>')) +
+              // Same availability gate as the grid card. A free/externally-hosted item keeps its
+              // own link above; anything else that is not 'live' must not offer a way to pay.
+              : (storeUnavailableHtml(product)
+                  || '<button type="button" class="btn btn-outline" disabled>Not available</button>'))) +
       '</div>';
 
     modal.removeAttribute('hidden');

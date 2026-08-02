@@ -83,6 +83,19 @@ export async function onRequestPost(context) {
       return json({ error: 'Not for sale: ' + product.title }, 400, request, env);
     }
 
+    // Same availability gate as create-checkout-session.js — and it has to be repeated HERE, in
+    // full, because this is a second door to the same money. Found 2026-08-02 only by asking
+    // "who else calls getProductBySlug?" after fixing the Stripe path; fixing one payment
+    // endpoint and assuming the other was fine is how a closed hole stays open.
+    // FAIL CLOSED: only an explicit 'live' may be charged.
+    if (product.availability !== 'live') {
+      return json({
+        error: 'Not currently available for direct purchase: ' + product.title,
+        slug: product.slug,
+        availability: product.availability || null,
+      }, 409, request, env);
+    }
+
     const currency = (product.currency || 'USD').toUpperCase();
     const ticketNumber = payload.ticket || '';
 

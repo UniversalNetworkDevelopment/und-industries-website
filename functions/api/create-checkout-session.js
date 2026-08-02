@@ -122,6 +122,25 @@ export async function onRequestPost(context) {
           return json({ error: 'Not for sale: ' + product.title }, 400, request, env);
         }
 
+        // AVAILABILITY IS PART OF "CAN WE TAKE THIS MONEY", NOT DECORATION (added 2026-08-02).
+        // This endpoint checked that a product existed, was published and had a price — and then
+        // charged for it whatever its availability said. Measured on the live catalogue that day:
+        // 11 of 15 published, priced products were 'soon', and every one could be paid for. The
+        // storefront button was only ever a suggestion; this is the gate that actually holds,
+        // because a stale cart, a back button or a hand-crafted POST all arrive here.
+        //
+        // FAIL CLOSED, matching the storefront: only an explicit 'live' may be charged. A missing
+        // or unrecognised value refuses the sale, so a typo costs a conversation rather than an
+        // order that cannot be delivered. Taking money for work marked unavailable is the single
+        // worst thing this system can do.
+        if (product.availability !== 'live') {
+          return json({
+            error: 'Not currently available for direct purchase: ' + product.title,
+            slug: product.slug,
+            availability: product.availability || null,
+          }, 409, request, env);
+        }
+
         lineItems.push({
           quantity: qty,
           price_data: {
