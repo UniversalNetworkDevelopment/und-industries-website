@@ -55,21 +55,21 @@ COMMENT ON COLUMN public.store_products.availability IS
 --   FROM   pg_constraint
 --   WHERE  conname = 'store_products_availability_chk';
 
--- ── TURNING THE LANE ON (separate, deliberate step — NOT part of this migration) ──
--- Run this ONLY when you actually want the storefront to stop selling services directly. It is
--- kept out of the migration so applying the schema change never silently changes what customers
--- see. Check the result before and after.
+-- ── TURNING THE LANE ON — DELIBERATELY NOT IN THIS FILE ──────────────────────
+-- The row-flipping statements live in task #64, NOT here. Two reasons, and the second one is the
+-- one that matters:
 --
---   -- preview what would change:
---   SELECT slug, title, availability FROM public.store_products
---   WHERE  availability = 'live' AND slug NOT IN ('<any digital product that delivers itself>');
+--   1. Applying a schema change must never silently change what customers see. Widening an
+--      allow-list and switching the storefront's behaviour are different decisions on different
+--      days.
+--   2. tools/migrate.mjs REFUSES any file containing a data-modifying statement, and it scans the
+--      RAW TEXT — comments included. An earlier draft of this file carried the flip statements as
+--      commented-out examples and was correctly refused as destructive. The gate was right and the
+--      file was wrong: a migration should contain only what it runs. Do not re-add them, and do
+--      not reach for --allow-destructive to push a file past a check that is doing its job.
 --
---   -- then, when you mean it:
---   UPDATE public.store_products SET availability = 'inquiry'
---   WHERE  availability = 'live';
---
--- TO REVERSE, at any time, with no deploy:
---   UPDATE public.store_products SET availability = 'live' WHERE availability = 'inquiry';
+-- The preview query, the flip, and the one-line reversal are all recorded in task #64.
+-- Reversal needs no deploy: site-state.js re-reads availability every 60s.
 --
 -- ── READ THIS BEFORE FLIPPING ────────────────────────────────────────────────
 -- Three known gaps make a full flip premature until they are closed (see the task log):
