@@ -25,11 +25,28 @@
 /service-intake.html
   X-Frame-Options: DENY
 
+# CACHE POLICY - added 2026-08-02 after proving a deployed JS fix was not reaching browsers.
+#
+# Measured on the live site: the cached copy of services.js was 42,801 bytes and did NOT contain a
+# change that had already deployed; a cache-busted fetch of the SAME URL returned 45,707 bytes and
+# DID. One URL, two different files, and every returning visitor got the stale one.
+#
+# The CSS had been given a manual ?v=<number> buster. The JS never was, and nothing stamps one at
+# build time - so every client-side fix shipped this year could be sitting behind a stale cache,
+# including the cart repair and the dashboard ticket list. The code was correct, deployed, and
+# simply not running. "Pushed" was never the same thing as "live".
+#
+# max-age=0, must-revalidate keeps the file cached but forces revalidation against the origin: an
+# unchanged asset costs a 304, a changed one is picked up on the very next load. That is the right
+# trade for a site that ships fixes far more often than it serves traffic - and unlike a version
+# query string it cannot be forgotten on the one deploy that mattered.
 /assets/css/*
   Content-Type: text/css; charset=utf-8
+  Cache-Control: public, max-age=0, must-revalidate
 
 /assets/js/*
   Content-Type: application/javascript; charset=utf-8
+  Cache-Control: public, max-age=0, must-revalidate
 
 /*.html
   Content-Type: text/html; charset=utf-8
