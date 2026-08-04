@@ -690,22 +690,31 @@
   // product live and the page corrects itself within a minute - no deploy, no developer, and
   // no way for the copy to drift from the truth again. Same rule in reverse: pause everything
   // and the banner comes back on its own, so customers are never sent to a dead checkout.
+  // 'inquiry' COUNTS AS OPEN (fixed 2026-08-03). This tested `st === 'live'` only, so the moment
+  // every service was moved to the inquiry lane the banner came back on — telling visitors
+  // "Online ordering coming soon, contact us directly" directly above a page of working
+  // "Request a Quote" buttons. Two competing calls to action, and the louder one sent people to a
+  // generic contact form instead of the per-service quote modal that names what they want.
+  //
+  // That is the SAME defect this function was written to kill, just inverted: the page contradicting
+  // the store. The banner's real job is "there is no way to start here" — and in inquiry mode there
+  // very much is one. So the test is now "can a visitor begin at all", not "can they pay instantly".
   function syncComingSoonBanner() {
     var banner = document.querySelector('.cs-banner');
     var payNote = document.querySelector('.svc-pay-note');
     if (!banner && !payNote) return;
-    var anyLive = false;
+    var anyActionable = false;
     for (var k in SERVICES) {
       if (!Object.prototype.hasOwnProperty.call(SERVICES, k)) continue;
       var st = window.UNDSiteState
         ? window.UNDSiteState.availabilityOf(SERVICES[k].slug)
         : null;
-      if (st === 'live') { anyLive = true; break; }
+      if (st === 'live' || st === 'inquiry') { anyActionable = true; break; }
     }
-    // Unknown availability (site-state not loaded / DB unreachable) is treated as NOT live, so
-    // we fail toward the honest "coming soon" message rather than toward a broken buy button.
-    if (banner)  banner.style.display  = anyLive ? 'none' : '';
-    if (payNote) payNote.style.display = anyLive ? 'none' : '';
+    // Unknown availability (site-state not loaded / DB unreachable) is treated as NOT actionable,
+    // so we still fail toward the honest "coming soon" message rather than toward a dead button.
+    if (banner)  banner.style.display  = anyActionable ? 'none' : '';
+    if (payNote) payNote.style.display = anyActionable ? 'none' : '';
   }
 
   function repaintAll() {
