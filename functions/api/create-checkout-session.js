@@ -83,23 +83,36 @@ export async function onRequestPost(context) {
 
     // WHY WE ASK FOR THE NAME — shown on the Stripe payment page (2026-08-04).
     //
-    // billing_address_collection:'required' makes Stripe ask for a name, and an unexplained
-    // demand for a legal name on a payment form reads as either overreach or a scam. Saying
-    // plainly what it is for, and what it is NOT used for, is both the decent thing and the thing
-    // that keeps people from abandoning the checkout.
+    // billing_address_collection:'required' makes Stripe ask for a name, and an unexplained demand
+    // for a legal name on a payment form reads as overreach or a scam. So it gets explained.
     //
-    // EVERY CLAIM HERE IS BACKED BY THE PUBLISHED POLICY — checked against the live /privacy page
-    // on 2026-08-04, which states verbatim: "We do not sell, rent, or trade your personal data."
-    // Never write a promise in a checkout that the policy does not already make; that is how a
-    // reassurance becomes a misrepresentation.
+    // ── IT MUST NOT PROMISE MORE THAN THE POLICY (rewritten same day) ──────────
+    // The first version said the name "is never shown publicly or on your work, and is never sold,
+    // rented or traded". Both are absolutes, and the live /privacy page does NOT support them:
+    //   "No method of transmission or storage is completely secure, and we cannot guarantee
+    //    absolute security."
+    //   "We may also disclose information where required by law, to enforce our agreements, or in
+    //    connection with a merger, acquisition, or sale of assets."
+    // A checkout that guarantees more than the policy creates a SECOND, stricter representation —
+    // and in a dispute the customer points at the stricter one. Reassurance written carelessly
+    // becomes an obligation that cannot be met, which is the same reason the refund policy is
+    // narrow on purpose: never take on a duty you cannot discharge.
     //
-    // Defined ONCE and used by both payment paths, so the subscription and one-time flows cannot
-    // drift into telling customers two different things.
+    // Also, most of this data is not ours to make promises about. The card never touches this
+    // system; Stripe holds the payment record, Supabase the order row, Cloudflare the transport.
+    // Guaranteeing outcomes across three vendors we do not operate is not a commitment, it is a
+    // liability, and a breach at any of them would make the sentence false through no act of ours.
+    //
+    // So: state the PURPOSE, describe PRACTICE in the present tense, and let the Privacy Policy
+    // remain the single authoritative document with its carve-outs intact. Rights reserved, not
+    // signed away in a payment box.
+    //
+    // Defined ONCE and shared by both payment paths so they cannot drift apart.
     const NAME_NOTICE =
-      'The name on your payment method is recorded with your order documents so your agreement, ' +
-      'receipt and any support request identify you correctly. It is held for compliance and for ' +
-      'your own protection, is never shown publicly or on your work, and is never sold, rented or ' +
-      'traded. See our Privacy Policy.';
+      'Your payment provider requires the name on your payment method. We keep it with your order ' +
+      'record for billing, receipts and compliance, and we do not use it for marketing or show it ' +
+      'on public pages. How we handle, retain and share information — and your rights — are set ' +
+      'out in our Privacy Policy.';
 
     let sessionParams;
 
