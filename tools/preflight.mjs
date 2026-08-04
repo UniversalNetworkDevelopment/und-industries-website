@@ -97,13 +97,30 @@ if (QUICK) {
       // Existing is not enough — SOMETHING must be sellable, or the store is open with
       // nothing to buy. The migration defaults every row to 'soon', so running it is only
       // half the job and the half people forget.
-      const live = avail.rows.filter(p => p.availability === 'live');
-      if (live.length === 0) {
-        fail('at least one service is availability=live',
-             `all ${avail.rows.length} products are non-live — every buy button renders disabled`,
-             "UPDATE public.store_products SET availability='live' WHERE slug IN ('website-fix-quick', ...);");
+      // 'inquiry' IS OPEN FOR BUSINESS (2026-08-03). This asserted availability==='live' only,
+      // so the moment every service moved to the inquiry lane it blocked the push claiming the
+      // store was dead — while every service was in fact reachable through the quote modal.
+      //
+      // The gate was right to fire; its DEFINITION was stale. It exists to stop a deploy where a
+      // visitor has no way to begin, and 'live' stopped being the only way to begin. A guard whose
+      // model of the world is narrower than the world raises false alarms, and a false alarm on
+      // every push is how a real one gets waved through with --no-verify.
+      const live    = avail.rows.filter(p => p.availability === 'live');
+      const inquiry = avail.rows.filter(p => p.availability === 'inquiry');
+      const open    = live.length + inquiry.length;
+      if (open === 0) {
+        fail('at least one service is reachable (live or inquiry)',
+             `all ${avail.rows.length} products are soon/paused/hidden — a visitor has no way to start`,
+             "UPDATE public.store_products SET availability='live' WHERE slug IN ('website-fix-quick', ...);  " +
+             "-- or 'inquiry' to take quote requests instead of payments");
+      } else if (live.length === 0) {
+        // Not a failure — a deliberate, reversible business state worth stating out loud, because
+        // "no service can take money" should never be something you discover by accident.
+        pass('services reachable by QUOTE (no instant checkout)',
+             `${inquiry.length} on inquiry: ${inquiry.map(p => p.slug).join(', ')}`);
       } else {
-        pass('sellable services', live.map(p => p.slug).join(', '));
+        pass('sellable services', live.map(p => p.slug).join(', ') +
+             (inquiry.length ? ` · plus ${inquiry.length} on inquiry` : ''));
       }
     }
 
