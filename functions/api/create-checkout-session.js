@@ -81,6 +81,26 @@ export async function onRequestPost(context) {
     const cancelPath = RETURN_PAGES[String(payload.returnTo || '').toLowerCase()] || RETURN_PAGES.store;
     const cancelUrl = origin + cancelPath;
 
+    // WHY WE ASK FOR THE NAME — shown on the Stripe payment page (2026-08-04).
+    //
+    // billing_address_collection:'required' makes Stripe ask for a name, and an unexplained
+    // demand for a legal name on a payment form reads as either overreach or a scam. Saying
+    // plainly what it is for, and what it is NOT used for, is both the decent thing and the thing
+    // that keeps people from abandoning the checkout.
+    //
+    // EVERY CLAIM HERE IS BACKED BY THE PUBLISHED POLICY — checked against the live /privacy page
+    // on 2026-08-04, which states verbatim: "We do not sell, rent, or trade your personal data."
+    // Never write a promise in a checkout that the policy does not already make; that is how a
+    // reassurance becomes a misrepresentation.
+    //
+    // Defined ONCE and used by both payment paths, so the subscription and one-time flows cannot
+    // drift into telling customers two different things.
+    const NAME_NOTICE =
+      'The name on your payment method is recorded with your order documents so your agreement, ' +
+      'receipt and any support request identify you correctly. It is held for compliance and for ' +
+      'your own protection, is never shown publicly or on your work, and is never sold, rented or ' +
+      'traded. See our Privacy Policy.';
+
     let sessionParams;
 
     if (payload.priceId) {
@@ -96,6 +116,11 @@ export async function onRequestPost(context) {
         subscription_data: { metadata: { supabase_user_id: user.id } },
         automatic_tax: { enabled: taxEnabled },
         allow_promotion_codes: true,
+        // Same reason as the one-time path below — a recurring charge binds a person for longer,
+        // so a subscriber with no legal name on file is the worse of the two cases, not the
+        // lesser. Fixed in both because a gap fixed in one branch is a gap.
+        billing_address_collection: 'required',
+        custom_text: { submit: { message: NAME_NOTICE } },
       };
     } else if (payload.slug || (payload.items && payload.items.length)) {
       // --- One-time digital goods: single "Buy Now" OR a multi-item cart ----
@@ -176,6 +201,25 @@ export async function onRequestPost(context) {
         },
         automatic_tax: { enabled: taxEnabled },
         allow_promotion_codes: true,
+        // COLLECT A REAL LEGAL NAME (added 2026-08-04).
+        //
+        // Stripe does not collect the payer's name unless asked, so customer_details.name was
+        // null on EVERY session this account has ever created — verified against the live API.
+        // Nothing downstream could store a name because nothing upstream produced one, and the
+        // only human-readable identifier anywhere in the system was profiles.display_name, which
+        // holds gamertags: "Abyss", "Zolariz++", "nullthis.ttv".
+        //
+        // That is a compliance problem, not a cosmetic one. A consent record, a refund policy
+        // acknowledgement and a signed MSA all bind a PERSON. "Abyss agreed to the terms" names
+        // nobody and can be repudiated by anyone. The evidence chain is only as good as the
+        // identity at the end of it, and ours ended at a handle.
+        //
+        // 'required' makes Stripe collect the cardholder name and billing address — the name that
+        // matches the payment instrument, which is far stronger evidence than a self-typed field
+        // because the card issuer already verified it. It also improves fraud signals and is what
+        // automatic_tax wants for correct jurisdiction.
+        billing_address_collection: 'required',
+        custom_text: { submit: { message: NAME_NOTICE } },
       };
     } else {
       return json({ error: 'Provide a product slug, items, or a priceId.' }, 400, request, env);

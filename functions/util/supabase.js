@@ -99,16 +99,39 @@ export async function getCustomerMapping(env, userId) {
   return rows && rows[0] ? rows[0].stripe_customer_id : null;
 }
 
-export async function saveCustomerMapping(env, userId, stripeCustomerId, email) {
+/**
+ * `fullName` added 2026-08-04 — the payer's LEGAL name from Stripe (customer_details.name), which
+ * is the cardholder name the issuer already verified rather than free text someone typed.
+ *
+ * Deliberately NEVER overwrites a stored name with null. This is called at checkout-session
+ * creation (before the name exists) AND from the webhook (after it does), so a plain upsert would
+ * blank a real name on the customer's next purchase. Once identity is established it must not be
+ * erasable by an ordinary code path — that is the whole point of holding it.
+ */
+export async function saveCustomerMapping(env, userId, stripeCustomerId, email, fullName) {
+  const row = {
+    user_id: userId,
+    stripe_customer_id: stripeCustomerId,
+    email: email || null,
+  };
+  if (fullName) row.full_name = fullName;   // omit the key entirely when unknown
+
   await rest(env, 'customers', {
     method: 'POST',
     headers: adminHeaders(env, { Prefer: 'resolution=merge-duplicates' }),
-    body: JSON.stringify({
-      user_id: userId,
-      stripe_customer_id: stripeCustomerId,
-      email: email || null,
-    }),
+    body: JSON.stringify(row),
   });
+}
+
+/** The customer's legal name, or null when we genuinely do not have one. Never guesses. */
+export async function getCustomerName(env, userId) {
+  if (!userId) return null;
+  const rows = await rest(
+    env,
+    'customers?user_id=eq.' + encodeURIComponent(userId) + '&select=full_name&limit=1',
+    { headers: adminHeaders(env) }
+  );
+  return (rows && rows[0] && rows[0].full_name) || null;
 }
 
 // THE ONE PLACE THAT ANSWERS "what is this customer's email address?".

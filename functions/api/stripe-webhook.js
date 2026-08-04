@@ -20,6 +20,7 @@ import {
   logEvent,
   markTicketPaid,
   getProductBySlug,
+  saveCustomerMapping,
 } from '../util/supabase.js';
 import { verifyStripeSignature } from '../util/stripe.js';
 import { generateLicenseKey } from '../util/license.js';
@@ -274,14 +275,51 @@ async function notifyOrder(env, session, items, md, request, eventId) {
 
     const summary = named.length > 1 ? named.length + ' items' : (named[0] && named[0].name) || 'your order';
 
+    // THE LEGAL NAME (added 2026-08-04). This read .email out of customer_details and ignored
+    // .name sitting beside it — though until today Stripe was never asked to collect one, so it
+    // was null regardless (verified against every session on the live account).
+    //
+    // Why it matters more than a nicety: a consent record, a refund acknowledgement and an MSA
+    // all bind a PERSON. The only human-readable identifier in this system was
+    // profiles.display_name, which holds handles like "Abyss" and "Zolariz++". "Abyss agreed to
+    // the terms" identifies nobody and can be disowned by anyone — so the whole evidence chain
+    // was resting on a gamertag.
+    //
+    // The name from Stripe is the strongest one available: it is the cardholder name the issuer
+    // already verified, not a free-text field the customer typed. Kept null-safe because a
+    // pre-2026-08-04 session genuinely has no name and inventing one would be worse than none.
+    const payerName = (session.customer_details && session.customer_details.name) || null;
+
     const order = {
       amount: session.amount_total || 0,
       email: (session.customer_details && session.customer_details.email) || session.customer_email || null,
+      name: payerName,
       ticket: md.ticket_number || null,
       sessionId: session.id,
       summary,
       items: named,
     };
+
+    // PERSIST THE LEGAL NAME. This is the ONLY moment it exists: saveCustomerMapping runs at
+    // checkout-session CREATION, before the customer has typed anything, so without this the name
+    // arrives on the session and is thrown away when the request ends.
+    //
+    // Non-fatal on purpose. A failure here must never cost the customer their fulfilment — the
+    // payment already succeeded and the order is real whether or not we recorded who placed it.
+    // It IS logged as critical, because an order that cannot be attributed to a person is a
+    // compliance gap and silence is how those accumulate.
+    if (payerName && md.supabase_user_id) {
+      try {
+        await saveCustomerMapping(env, md.supabase_user_id, session.customer || null,
+                                  order.email, payerName);
+      } catch (nameErr) {
+        await logEvent(env, {
+          user_id: md.supabase_user_id, action: 'customer_name_not_recorded', severity: 'critical',
+          ip: 'worker', device_fingerprint: 'stripe-webhook',
+          detail: { session: session.id, error: String(nameErr && nameErr.message) },
+        }).catch(() => {});
+      }
+    }
 
     // Idempotency keys are derived from the Stripe EVENT id, so a retried webhook cannot
     // send a second copy of either email (Resend honours the key for 24h — well beyond
