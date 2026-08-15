@@ -30,14 +30,14 @@
   //   1. AUTHORISATION to access — not merely a promise to hand over credentials.
   //   2. AUTHORITY — that this person may lawfully grant access to that property.
   //   3. SCOPE — limited to the work ordered, on the URL they named.
-  var ACCESS_TERMS_VERSION = '2026-07-19';
+  var ACCESS_TERMS_VERSION = '2026-08-15';
   var ACCESS_AUTH_TEXT =
     'I authorise UND Industries (Universal Network Development LLC) to access the website ' +
     'or system I have identified above, using the access method I have chosen, for the sole ' +
     'purpose of performing the service I ordered. I confirm I own this property or am ' +
-    'authorised to grant this access. I understand access should be temporary and revocable, ' +
-    'and that I may revoke it at any time. I will complete the access steps within 24 hours ' +
-    'so work can begin.';
+    'authorised to grant this access. I have read and agree to the Terms of Use, Privacy Policy, ' +
+    'and Refund Policy (Florida jurisdiction), and I understand the Liability Limitation and Device Binding rules.';
+
 
   // Access methods with real steps the buyer follows. No passwords — invites/scoped only.
   var ACCESS_METHODS = {
