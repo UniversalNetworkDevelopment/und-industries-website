@@ -778,6 +778,11 @@
           // If the link is a song (Spotify/Apple/YouTube), preview the real player
           var embed = toPromoEmbed(p.url);
           if (embed) {
+            var mediaHtml = hasImg
+              ? '<div class="promo-banner-media"><img src="' + escapeHtml(p.image_url) + '" alt="' + escapeHtml(p.title || 'Promo') + '" loading="lazy">' +
+                '<span class="promo-banner-play" aria-hidden="true">▶</span></div>'
+              : '<div class="promo-banner-media promo-banner-noimg"><span class="promo-banner-play" aria-hidden="true">▶</span></div>';
+
             return '<div class="promo-banner promo-banner-embed">' +
               '<div class="promo-banner-body promo-embed-head">' +
                 '<span class="promo-banner-tag">' + badge + '</span>' +
@@ -785,10 +790,10 @@
                 (p.subtitle ? '<p class="promo-banner-sub">' + escapeHtml(p.subtitle) + '</p>' : '') +
                 (p.description ? '<p class="promo-banner-desc">' + escapeHtml(p.description) + '</p>' : '') +
               '</div>' +
-              '<div class="promo-embed-frame">' +
-                '<iframe src="' + escapeHtml(embed.src) + '" height="' + embed.height + '" width="100%" frameborder="0" ' +
-                  'loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" ' +
-                  'title="' + escapeHtml((p.title || 'Featured') + ' — ' + embed.label) + '"></iframe>' +
+              '<div class="promo-embed-frame" data-embed-src="' + escapeHtml(embed.src) + '" data-embed-height="' + embed.height + '" data-embed-title="' + escapeHtml((p.title || 'Featured') + ' — ' + embed.label) + '">' +
+                '<div class="promo-facade" role="button" tabindex="0" aria-label="Play ' + escapeHtml(p.title || embed.label) + '" style="cursor:pointer;">' +
+                  mediaHtml +
+                '</div>' +
               '</div>' +
             '</div>';
           }
@@ -808,6 +813,23 @@
           // No artwork → clean centered announcement instead of an empty rectangle
           return '<a href="' + escapeHtml(p.url) + '" class="promo-banner promo-banner-noimg" target="_blank" rel="noopener noreferrer">' + body + '</a>';
         }).join('');
+
+        // Event delegation for promo facade click-to-load iframe hydration
+        container.addEventListener('click', function (e) {
+          var facade = e.target.closest('.promo-facade');
+          if (!facade) return;
+          var frame = facade.closest('.promo-embed-frame');
+          if (!frame) return;
+          var src = frame.getAttribute('data-embed-src');
+          var height = frame.getAttribute('data-embed-height') || '152';
+          var title = frame.getAttribute('data-embed-title') || 'Featured Embed';
+          if (src) {
+            frame.innerHTML = '<iframe src="' + escapeHtml(src) + '" height="' + height + '" width="100%" frameborder="0" ' +
+              'allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" ' +
+              'title="' + escapeHtml(title) + '"></iframe>';
+          }
+        });
+
         if (section) section.removeAttribute('hidden');
       });
   }
