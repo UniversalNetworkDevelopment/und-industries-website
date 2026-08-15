@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0d0d0f">
+  <meta name="description" content="Manage registered devices and software license seats for U.N.D Industries software products.">
+  <title>Device Management | U.N.D Industries</title>
+  <link rel="stylesheet" href="assets/css/styles.css?v=ba7e99b6e6">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <style>
+    .dev-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem; }
+    .dev-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 0.75rem; margin-bottom: 1rem; }
+    .dev-name { font-weight: 600; font-size: 1.1rem; color: #f3f4f6; }
+    .dev-status { font-size: 0.8rem; padding: 0.2rem 0.6rem; border-radius: 4px; font-weight: 600; text-transform: uppercase; }
+    .dev-status.attested { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+    .dev-status.manual { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+    .dev-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; font-size: 0.9rem; color: #9ca3af; }
+    .dev-label { font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.25rem; }
+    .dev-val { color: #e5e7eb; word-break: break-all; }
+  </style>
+</head>
+<body data-page="devices">
+
+  <nav class="nav" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">U.N.D <span>Industries</span></a>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="store.html">Store</a></li>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="devices.html" class="active">Devices</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="section pt-nav">
+    <div class="container">
+      <div style="margin-bottom: 2rem;">
+        <h1 style="font-size:2rem; font-weight:700; color:#fff;">Registered Devices &amp; Seats</h1>
+        <p style="color:#9ca3af; margin-top:0.5rem;">Manage authorized device seats, view attestation status, and revoke lost or replaced devices.</p>
+      </div>
+
+      <div id="devices-root">
+        <p style="color:#9ca3af; font-style:italic;">Loading your registered devices...</p>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p class="footer-copy">&copy; 2026 U.N.D Industries. All rights reserved. <a href="terms.html">Terms</a> &bull; <a href="privacy.html">Privacy</a> &bull; <a href="dpa.md">DPA</a></p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
+  <script src="assets/js/devices.js"></script>
+</body>
+</html>

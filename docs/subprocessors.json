@@ -1,0 +1,36 @@
+{
+  "version": "2026-08-15",
+  "company": "Universal Network Development LLC (d/b/a U.N.D Industries)",
+  "notice_period_days": 30,
+  "contact": "contact.undindustries@gmail.com",
+  "subprocessors": [
+    {
+      "name": "Supabase Inc.",
+      "purpose": "User Authentication & Relational Database Infrastructure",
+      "location": "United States / EU Data Centers",
+      "transfer_mechanism": "EU Standard Contractual Clauses (SCCs)",
+      "security_standard": "SOC2 Type II / ISO 27001"
+    },
+    {
+      "name": "Stripe Inc.",
+      "purpose": "Payment Processing & Fraud Prevention",
+      "location": "United States",
+      "transfer_mechanism": "EU Standard Contractual Clauses (SCCs)",
+      "security_standard": "PCI-DSS Level 1 / SOC2 Type II"
+    },
+    {
+      "name": "Cloudflare Inc.",
+      "purpose": "CDN, DNS, Web Application Firewall & Bot Protection",
+      "location": "Global / United States",
+      "transfer_mechanism": "EU Standard Contractual Clauses (SCCs)",
+      "security_standard": "ISO 27001 / SOC2 Type II"
+    },
+    {
+      "name": "Resend Inc.",
+      "purpose": "Transactional Email & Order Notification Dispatch",
+      "location": "United States",
+      "transfer_mechanism": "EU Standard Contractual Clauses (SCCs)",
+      "security_standard": "SOC2 Type II"
+    }
+  ]
+}
