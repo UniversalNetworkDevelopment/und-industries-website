@@ -2201,6 +2201,7 @@ button.sidebar-link {
 }
 @media (max-width: 768px) {
   .store-layout { grid-template-columns: 1fr; }
+  .store-sidebar, .store-cart { position: static; }
 }
 
 /* Sidebar */
