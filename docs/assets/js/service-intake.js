@@ -35,8 +35,11 @@
     'I authorise UND Industries (Universal Network Development LLC) to access the website ' +
     'or system I have identified above, using the access method I have chosen, for the sole ' +
     'purpose of performing the service I ordered. I confirm I own this property or am ' +
-    'authorised to grant this access. I have read and agree to the Terms of Use, Privacy Policy, ' +
-    'and Refund Policy (Florida jurisdiction), and I understand the Liability Limitation and Device Binding rules.';
+    'authorised to grant this access. I understand access should be temporary and revocable, ' +
+    'and that I may revoke it at any time. I will complete the access steps within 24 hours ' +
+    'so work can begin. I have read and agree to the Terms of Use, Privacy Policy, and Refund Policy ' +
+    '(Florida jurisdiction), and I understand the Liability Limitation and Device Binding rules.';
+
 
 
   // Access methods with real steps the buyer follows. No passwords — invites/scoped only.
